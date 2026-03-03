@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="flex-1 flex w-full h-full overflow-hidden bg-gray-900">
+
+    <div class="w-full md:w-80 border-r border-gray-800 flex flex-col bg-gray-900 flex-shrink-0">
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-100">Tüm Notlar</h2>
+            <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0 inline">
+                {% csrf_token %}
+                <button type="submit"
+                    class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </form>
+        </div>
+
+        <div class="p-3 border-b border-gray-800">
+            <div class="relative">
+                <i
+                    class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"></i>
+                <input type="text" placeholder="Notlarda ara..."
+                    class="w-full bg-gray-800 text-sm text-gray-200 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-gray-500 border border-gray-700">
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto">
+            {% for note in notes %}
+            {% if active_note and note.id == active_note.id %}
+            <a href="{% url 'note_detail' note.id %}"
+                class="block p-4 border-b border-gray-800 bg-blue-900/20 cursor-pointer border-l-2 border-l-blue-500">
+                {% else %}
+                <a href="{% url 'note_detail' note.id %}"
+                    class="block p-4 border-b border-gray-800 hover:bg-gray-800/50 cursor-pointer transition border-l-2 border-l-transparent">
+                    {% endif %}
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-sm font-semibold text-gray-100 truncate pr-2">{{ note.title }}</h3>
+                        <span class="text-xs text-gray-500 whitespace-nowrap">{{ note.updated_at|date:"H:i" }}</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 truncate whitespace-nowrap">
+                        {{ note.content|striptags|default:"İçerik yok..." }}
+                    </p>
+                </a>
+                {% empty %}
+                <div class="p-4 text-center text-gray-500 text-sm">
+                    Henüz hiç notunuz yok.
+                </div>
+                {% endfor %}
+        </div>
+    </div>
+
+    <div class="hidden md:flex flex-1 flex-col bg-gray-950 relative z-0">
+
+        <div
+            class="h-14 border-b border-gray-800 px-6 flex items-center justify-between bg-gray-900 flex-shrink-0 relative z-10">
+            <div class="flex items-center space-x-1">
+                <button type="button" onclick="formatDoc('bold')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-bold text-sm"></i></button>
+                <button type="button" onclick="formatDoc('italic')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-italic text-sm"></i></button>
+                <button type="button" onclick="formatDoc('underline')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-underline text-sm"></i></button>
+                <div class="w-px h-5 bg-gray-700 mx-2"></div>
+                <button type="button" onclick="formatDoc('formatBlock', 'H3')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-heading text-sm"></i></button>
+                <button type="button" onclick="formatDoc('insertUnorderedList')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-list-ul text-sm"></i></button>
+                <button type="button" onclick="formatDoc('insertOrderedList')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-list-ol text-sm"></i></button>
+                <div class="w-px h-5 bg-gray-700 mx-2"></div>
+                <button type="button" onclick="formatDoc('formatBlock', 'PRE')"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-code text-sm"></i></button>
+                <button type="button" onclick="addLink()"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-link text-sm"></i></button>
+                <button type="button" onclick="addImage()"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition"><i
+                        class="fa-solid fa-image text-sm"></i></button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                {% if active_note %}
+                <span class="text-xs text-gray-500 mr-2">Son kayıt: {{ active_note.updated_at|date:"H:i" }}</span>
+                <button type="button" onclick="toggleFavorite()"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-yellow-400 hover:bg-gray-800 flex items-center justify-center transition"
+                    title="Favorilere Ekle"><i id="favorite-icon"
+                        class="{% if active_note.is_favorite %}fa-solid text-yellow-400{% else %}fa-regular{% endif %} fa-star"></i></button>
+                <button type="button"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-blue-400 hover:bg-gray-800 flex items-center justify-center transition"
+                    title="Paylaş"><i class="fa-solid fa-share-nodes"></i></button>
+
+                <a href="{% url 'note_delete' active_note.id %}"
+                    onclick="return confirm('Bu notu silmek istediğinize emin misiniz?');"
+                    class="w-8 h-8 rounded text-gray-400 hover:text-red-400 hover:bg-gray-800 flex items-center justify-center transition"
+                    title="Sil">
+                    <i class="fa-regular fa-trash-can"></i>
+                </a>
+
+                <button type="submit" form="note-form"
+                    class="px-4 py-1.5 ml-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-md transition shadow shadow-blue-500/20">Kaydet</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto w-full max-w-4xl mx-auto px-10 py-12">
+            {% if active_note %}
+            <form id="note-form" action="{% url 'note_save' active_note.id %}" method="POST"
+                class="h-full flex flex-col">
+                {% csrf_token %}
+                <input type="text" name="title" value="{{ active_note.title }}"
+                    class="w-full bg-transparent text-3xl font-bold text-gray-100 placeholder-gray-600 border-none focus:outline-none focus:ring-0 mb-4"
+                    placeholder="Not Başlığı...">
+
+                <div class="mb-6">
+                    <select id="select-category" onchange="document.getElementById('input-category').value = this.value"
+                        class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-1">
+                        <option value="note" {% if active_note.category == 'note' %}selected{% endif %}>Not</option>
+                        <option value="project" {% if active_note.category == 'project' %}selected{% endif %}>Proje
+                        </option>
+                        <option value="task" {% if active_note.category == 'task' %}selected{% endif %}>Görev</option>
+                    </select>
+                </div>
+
+                <input type="hidden" name="is_favorite" id="input-is-favorite"
+                    value="{% if active_note.is_favorite %}true{% else %}false{% endif %}">
+                <input type="hidden" name="category" id="input-category" value="{{ active_note.category }}">
+
+                {% with active_tags=active_note.tags.all %}
+                <input type="hidden" name="tags" id="input-tags"
+                    value="{% for tag in active_tags %}{{ tag.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+                <div class="flex items-center gap-2 mb-8 flex-wrap" id="tags-container">
+                    {% for tag in active_tags %}
+                    <span
+                        class="px-3 py-1 bg-gray-800 text-{{tag.color|default:'blue-500'}} rounded-md text-xs font-medium flex items-center">
+                        <i class="fa-solid fa-hashtag mr-1.5"></i> {{ tag.name }}
+                        <button type="button" class="ml-2 hover:text-white"
+                            onclick="removeTag('{{ tag.name }}', this)"><i class="fa-solid fa-xmark"></i></button>
+                    </span>
+                    {% endfor %}
+                    <button type="button" onclick="promptAddTag()"
+                        class="px-3 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500 rounded-md text-xs font-medium transition flex items-center">
+                        <i class="fa-solid fa-plus mr-1"></i> Etiket Ekle
+                    </button>
+                </div>
+                {% endwith %}
+
+                <input type="hidden" name="content" id="hidden-content">
+                <div id="editor-content" contenteditable="true"
+                    class="w-full h-full min-h-[500px] bg-transparent text-gray-300 border-none focus:outline-none focus:ring-0 leading-relaxed text-[15px] prose prose-invert max-w-none"
+                    placeholder="Notunuzu buraya yazmaya başlayın...">{{ active_note.content|safe }}</div>
+            </form>
+            {% else %}
+            <div class="h-full flex flex-col items-center justify-center text-gray-500">
+                <i class="fa-regular fa-file-lines text-6xl mb-4 text-gray-700"></i>
+                <p class="text-xl font-medium text-gray-400">Not görüntülemek için seçim yapın</p>
+                <p class="text-sm mt-2">veya yeni bir not oluşturun</p>
+                <form action="{% url 'note_create' %}" method="POST" class="mt-6">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition shadow-lg shadow-blue-500/20 flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> Yeni Not Oluştur
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    function formatDoc(cmd, value = null) {
+        document.execCommand(cmd, false, value);
+        document.getElementById('editor-content').focus();
+    }
+
+    function addImage() {
+        const url = prompt('Resim URL adresini girin:');
+        if (url) {
+            formatDoc('insertImage', url);
+        }
+    }
+
+    function addLink() {
+        const url = prompt('Bağlantı URL adresini girin:');
+        if (url) {
+            formatDoc('createLink', url);
+        }
+    }
+
+    function syncEditorContent() {
+        const contentDiv = document.getElementById('editor-content');
+        const hiddenInput = document.getElementById('hidden-content');
+        if (contentDiv && hiddenInput) {
+            const html = contentDiv.innerHTML.trim();
+            if (html === '<br>' || html === '') {
+                hiddenInput.value = '';
+            } else {
+                hiddenInput.value = html;
+            }
+        }
+    }
+
+    document.getElementById('note-form')?.addEventListener('submit', function (e) {
+        syncEditorContent();
+    });
+
+    function toggleFavorite() {
+        const input = document.getElementById('input-is-favorite');
+        const btnIcon = document.getElementById('favorite-icon');
+        if (input.value === 'true') {
+            input.value = 'false';
+            btnIcon.classList.remove('fa-solid', 'text-yellow-400');
+            btnIcon.classList.add('fa-regular');
+        } else {
+            input.value = 'true';
+            btnIcon.classList.remove('fa-regular');
+            btnIcon.classList.add('fa-solid', 'text-yellow-400');
+        }
+    }
+
+    function promptAddTag() {
+        const tagBox = prompt("Eklenecek etiket adını girin:");
+        if (!tagBox || !tagBox.trim()) return;
+
+        const tagName = tagBox.trim();
+        const inputTags = document.getElementById('input-tags');
+        let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
+
+        if (!currentTags.includes(tagName)) {
+            currentTags.push(tagName);
+            inputTags.value = currentTags.join(',');
+
+            const container = document.getElementById('tags-container');
+            const newSpan = document.createElement('span');
+            newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
+            newSpan.innerHTML = `<i class="fa-solid fa-hashtag mr-1.5"></i> ${tagName} <button type="button" class="ml-2 hover:text-white" onclick="removeTag('${tagName}', this)"><i class="fa-solid fa-xmark"></i></button>`;
+            container.insertBefore(newSpan, container.lastElementChild);
+        }
+    }
+
+    function removeTag(tagName, btnElement) {
+        const inputTags = document.getElementById('input-tags');
+        let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
+
+        currentTags = currentTags.filter(t => t !== tagName);
+        inputTags.value = currentTags.join(',');
+
+        btnElement.parentElement.remove();
+    }
+</script>
+<style>
+    #editor-content:empty:before {
+        content: attr(placeholder);
+        color: #4b5563;
+        pointer-events: none;
+        display: block;
+    }
+</style>
+{% endblock %}
+{% endblock %}
