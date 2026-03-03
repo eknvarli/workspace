@@ -93,9 +93,6 @@
                     class="w-8 h-8 rounded text-gray-400 hover:text-yellow-400 hover:bg-gray-800 flex items-center justify-center transition"
                     title="Favorilere Ekle"><i id="favorite-icon"
                         class="{% if active_note.is_favorite %}fa-solid text-yellow-400{% else %}fa-regular{% endif %} fa-star"></i></button>
-                <button type="button"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-blue-400 hover:bg-gray-800 flex items-center justify-center transition"
-                    title="Paylaş"><i class="fa-solid fa-share-nodes"></i></button>
 
                 <a href="{% url 'note_delete' active_note.id %}"
                     onclick="return confirm('Bu notu silmek istediğinize emin misiniz?');"

@@ -5,7 +5,7 @@ from core.models import Note
 
 @login_required
 def note_index(request, pk=None):
-    notes = request.user.notes.all()
+    notes = Note.objects.all()
     
     # Filtering based on GET parameters
     category_filter = request.GET.get('category')
@@ -23,7 +23,7 @@ def note_index(request, pk=None):
     active_note = None
     
     if pk:
-        active_note = get_object_or_404(Note, pk=pk, user=request.user)
+        active_note = get_object_or_404(Note, pk=pk)
     elif notes.exists():
         active_note = notes.first()
         
@@ -48,7 +48,7 @@ def note_create(request):
 
 @login_required
 def note_save(request, pk):
-    note = get_object_or_404(Note, pk=pk, user=request.user)
+    note = get_object_or_404(Note, pk=pk)
     
     if request.method == 'POST':
         title = request.POST.get('title', 'İsimsiz Not').strip()
@@ -81,7 +81,7 @@ def note_save(request, pk):
 
 @login_required
 def note_delete(request, pk):
-    note = get_object_or_404(Note, pk=pk, user=request.user)
+    note = get_object_or_404(Note, pk=pk)
     
     # Check both GET and POST for maximum compatibility with the UI
     note.delete()
