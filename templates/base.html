@@ -14,22 +14,90 @@
             font-family: 'Inter', sans-serif;
         }
 
+        body.theme-dark {
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+
+        body.theme-light {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        body.theme-light .bg-gray-950,
+        body.theme-light .bg-gray-900 {
+            background-color: #ffffff !important;
+        }
+
+        body.theme-light .bg-gray-800,
+        body.theme-light .bg-gray-800\/50 {
+            background-color: #f3f4f6 !important;
+        }
+
+        body.theme-light .bg-gray-700 {
+            background-color: #e5e7eb !important;
+        }
+
+        body.theme-light .border-gray-800,
+        body.theme-light .border-gray-700 {
+            border-color: #d1d5db !important;
+        }
+
+        body.theme-light .text-gray-100,
+        body.theme-light .text-gray-200 {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-gray-300,
+        body.theme-light .text-gray-400 {
+            color: #374151 !important;
+        }
+
+        body.theme-light .text-gray-500,
+        body.theme-light .text-gray-600 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .hover\:bg-gray-800:hover,
+        body.theme-light .hover\:bg-gray-800\/50:hover,
+        body.theme-light .hover\:bg-gray-700:hover {
+            background-color: #e5e7eb !important;
+        }
+
+        body.theme-light .hover\:text-gray-200:hover,
+        body.theme-light .hover\:text-gray-300:hover {
+            color: #111827 !important;
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        ::-webkit-scrollbar-track {
+        body.theme-dark ::-webkit-scrollbar-track {
             background: #1f2937;
         }
 
-        ::-webkit-scrollbar-thumb {
+        body.theme-dark ::-webkit-scrollbar-thumb {
             background: #374151;
             border-radius: 4px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        body.theme-dark ::-webkit-scrollbar-thumb:hover {
             background: #4b5563;
+        }
+
+        body.theme-light ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+        }
+
+        body.theme-light ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        body.theme-light ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
@@ -37,7 +105,7 @@
     {% progressive_web_app_meta %}
 </head>
 
-<body class="bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
+<body data-theme-preference="{{ active_theme|default:'dark' }}" class="theme-dark bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
     <div class="flex h-full">
         <div id="sidebar-overlay"
             class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
@@ -65,22 +133,22 @@
                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">Koleksiyonlar</div>
 
                 <a href="{% url 'index' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if not request.GET.category and not request.GET.favorite %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if not request.GET.category and not request.GET.favorite and not request.GET.tag %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-file-lines mr-3 w-4 text-center"></i>
                     Tüm Notlar
                 </a>
                 <a href="{% url 'index' %}?favorite=1"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.GET.favorite == '1' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if request.GET.favorite == '1' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-star mr-3 w-4 text-center"></i>
                     Favoriler
                 </a>
-                <a href="{% url 'index' %}?category=project"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.GET.category == 'project' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
+                <a href="{% url 'projects' %}"
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'projects' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-folder-open mr-3 w-4 text-center"></i>
                     Projeler
                 </a>
-                <a href="{% url 'index' %}?category=task"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.GET.category == 'task' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
+                <a href="{% url 'tasks' %}"
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'tasks' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-check-square mr-3 w-4 text-center"></i>
                     Görevler
                 </a>
@@ -102,8 +170,8 @@
             </nav>
 
             <div class="p-4 border-t border-gray-800 space-y-1">
-                <a href="/"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition">
+                <a href="{% url 'settings' %}"
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'settings' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-gear mr-3 w-4 text-center"></i>
                     Ayarlar
                 </a>
@@ -139,8 +207,78 @@
         </div>
     </div>
 
+    <div id="user-profile-popup" class="fixed inset-0 bg-black/50 hidden z-[70] items-center justify-center px-4" onclick="closeUserProfilePopup()">
+        <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-100">Kullanıcı Bilgisi</h3>
+                <button type="button" onclick="closeUserProfilePopup()" class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="bg-gray-800 rounded-lg p-3">
+                    <p id="user-popup-username" class="text-sm font-semibold text-gray-100">-</p>
+                    <p id="user-popup-position" class="text-xs text-blue-400 mt-1">-</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-gray-800 rounded p-2.5">
+                        <p class="text-gray-500">Kayıt Tarihi</p>
+                        <p id="user-popup-registered" class="text-gray-200 mt-1">-</p>
+                    </div>
+                    <div class="bg-gray-800 rounded p-2.5">
+                        <p class="text-gray-500">Son Aktif</p>
+                        <p id="user-popup-last-active" class="text-gray-200 mt-1">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-[11px]">
+                    <div class="bg-gray-800 rounded p-2 text-center">
+                        <p id="user-popup-projects" class="text-gray-100 font-semibold">0</p>
+                        <p class="text-gray-500 mt-1">Projeler</p>
+                    </div>
+                    <div class="bg-gray-800 rounded p-2 text-center">
+                        <p id="user-popup-tasks" class="text-gray-100 font-semibold">0</p>
+                        <p class="text-gray-500 mt-1">Görevler</p>
+                    </div>
+                    <div class="bg-gray-800 rounded p-2 text-center">
+                        <p id="user-popup-notes" class="text-gray-100 font-semibold">0</p>
+                        <p class="text-gray-500 mt-1">Notlar</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-500 mb-2">Son İşlemler</p>
+                    <div id="user-popup-actions" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% block scripts %}
     <script>
+        const themePreference = document.body.dataset.themePreference || 'dark';
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function applyTheme(preference) {
+            let resolvedTheme = preference;
+            if (preference === 'system') {
+                resolvedTheme = darkModeQuery.matches ? 'dark' : 'light';
+            }
+
+            document.body.classList.remove('theme-dark', 'theme-light');
+            document.body.classList.add(`theme-${resolvedTheme}`);
+        }
+
+        applyTheme(themePreference);
+
+        if (themePreference === 'system') {
+            darkModeQuery.addEventListener('change', function () {
+                applyTheme('system');
+            });
+        }
+
         const mobileMenuBtn = document.getElementById('mobile-menu-button');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -174,6 +312,64 @@
                     toggleSidebar();
                 }
             });
+        });
+
+        function closeUserProfilePopup() {
+            const popup = document.getElementById('user-profile-popup');
+            popup.classList.remove('flex');
+            popup.classList.add('hidden');
+        }
+
+        async function openUserProfileById(userId) {
+            if (!userId) return;
+
+            try {
+                const response = await fetch(`/users/${userId}/summary/`);
+                if (!response.ok) {
+                    throw new Error('Kullanıcı bilgisi alınamadı.');
+                }
+
+                const data = await response.json();
+
+                document.getElementById('user-popup-username').textContent = data.username || '-';
+                document.getElementById('user-popup-position').textContent = data.position || '-';
+                document.getElementById('user-popup-registered').textContent = data.registered_at || '-';
+                document.getElementById('user-popup-last-active').textContent = data.last_active || '-';
+                document.getElementById('user-popup-projects').textContent = data.assigned_projects || 0;
+                document.getElementById('user-popup-tasks').textContent = data.assigned_tasks || 0;
+                document.getElementById('user-popup-notes').textContent = data.assigned_notes || 0;
+
+                const actionsContainer = document.getElementById('user-popup-actions');
+                actionsContainer.innerHTML = '';
+                if (data.recent_actions && data.recent_actions.length) {
+                    data.recent_actions.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'bg-gray-800 rounded p-2';
+                        row.innerHTML = `<p class="text-xs text-gray-200">${item.text}</p><p class="text-[11px] text-gray-500 mt-1">${item.date}</p>`;
+                        actionsContainer.appendChild(row);
+                    });
+                } else {
+                    const empty = document.createElement('p');
+                    empty.className = 'text-xs text-gray-500';
+                    empty.textContent = 'İşlem kaydı bulunmuyor.';
+                    actionsContainer.appendChild(empty);
+                }
+
+                const popup = document.getElementById('user-profile-popup');
+                popup.classList.remove('hidden');
+                popup.classList.add('flex');
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.addEventListener('click', function (event) {
+            const trigger = event.target.closest('.user-profile-trigger');
+            if (!trigger) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            openUserProfileById(trigger.dataset.userId);
         });
     </script>
     {% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Görevler{% endblock %}
+
+{% block content %}
+<div class="flex-1 h-full overflow-y-auto bg-gray-950">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-100">Görevler</h1>
+            <p class="text-sm text-gray-400 mt-1">Not satırlarından üretilen ve manuel oluşturulan görevler.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                <p class="text-xs text-gray-500">Toplam Görev</p>
+                <p class="text-xl font-semibold text-gray-100 mt-1">{{ tasks.count }}</p>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                <p class="text-xs text-gray-500">Bana Atanan</p>
+                <p class="text-xl font-semibold text-gray-100 mt-1">{{ my_tasks.count }}</p>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                <p class="text-xs text-gray-500">Projeli Görev</p>
+                <p class="text-xl font-semibold text-gray-100 mt-1">{{ project_tasks_count }}</p>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden mb-6">
+            <div class="px-4 py-3 border-b border-gray-800">
+                <h2 class="text-sm font-semibold text-gray-100">Aktif Görevler</h2>
+            </div>
+            <div class="grid grid-cols-12 px-4 py-3 border-b border-gray-800 text-[11px] text-gray-500 uppercase tracking-wider">
+                <div class="col-span-4">Görev</div>
+                <div class="col-span-2">Sahibi</div>
+                <div class="col-span-2">Proje</div>
+                <div class="col-span-2">Kaynak Not</div>
+                <div class="col-span-1 text-right">Saat</div>
+                <div class="col-span-1 text-right">İşlem</div>
+            </div>
+
+            <div class="divide-y divide-gray-800">
+                {% for task in active_tasks %}
+                <div class="grid grid-cols-12 px-4 py-3 hover:bg-gray-800/60 transition text-sm">
+                    <div class="col-span-4 text-gray-100 truncate pr-2">
+                        <a href="{% url 'note_detail' task.id %}" class="hover:text-white transition">{{ task.title }}</a>
+                    </div>
+                    <div class="col-span-2 text-gray-300 truncate">
+                        {% if task.assigned_user %}
+                        <span data-user-id="{{ task.assigned_user.id }}" class="user-profile-trigger hover:text-white transition cursor-pointer">{{ task.assigned_user.username }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                    <div class="col-span-2 text-gray-300 truncate">
+                        {% if task.assigned_project %}
+                        <a href="{% url 'project_detail' task.assigned_project.id %}" class="hover:text-white transition">{{ task.assigned_project.name }}</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                    <div class="col-span-2 text-gray-400 truncate">
+                        {% if task.parent_note %}
+                        <a href="{% url 'note_detail' task.parent_note.id %}" class="hover:text-gray-200 transition">{{ task.parent_note.title }}</a>
+                        {% else %}
+                        Manuel
+                        {% endif %}
+                    </div>
+                    <div class="col-span-1 text-right text-gray-500">{{ task.updated_at|date:'H:i' }}</div>
+                    <div class="col-span-1 text-right">
+                        <form action="{% url 'task_toggle_complete' task.id %}" method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="complete" value="1">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="text-xs px-2 py-1 rounded bg-emerald-900/30 text-emerald-300 hover:bg-emerald-800/40 transition">
+                                Tamamla
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-4 py-10 text-center text-gray-500">
+                    Görev bulunmuyor. Not içine <span class="text-gray-300">+ görev metni</span> yazarak görev oluşturabilirsin.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-800">
+                <h2 class="text-sm font-semibold text-gray-100">Arşiv (Tamamlanan Görevler)</h2>
+            </div>
+            <div class="grid grid-cols-12 px-4 py-3 border-b border-gray-800 text-[11px] text-gray-500 uppercase tracking-wider">
+                <div class="col-span-4">Görev</div>
+                <div class="col-span-2">Sahibi</div>
+                <div class="col-span-2">Proje</div>
+                <div class="col-span-2">Tamamlanma</div>
+                <div class="col-span-1 text-right">Saat</div>
+                <div class="col-span-1 text-right">İşlem</div>
+            </div>
+
+            <div class="divide-y divide-gray-800">
+                {% for task in archived_tasks %}
+                <div class="grid grid-cols-12 px-4 py-3 hover:bg-gray-800/60 transition text-sm">
+                    <div class="col-span-4 text-gray-400 truncate pr-2 line-through">
+                        <a href="{% url 'note_detail' task.id %}" class="hover:text-gray-200 transition">{{ task.title }}</a>
+                    </div>
+                    <div class="col-span-2 text-gray-300 truncate">
+                        {% if task.assigned_user %}
+                        <span data-user-id="{{ task.assigned_user.id }}" class="user-profile-trigger hover:text-white transition cursor-pointer">{{ task.assigned_user.username }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                    <div class="col-span-2 text-gray-300 truncate">
+                        {% if task.assigned_project %}
+                        <a href="{% url 'project_detail' task.assigned_project.id %}" class="hover:text-white transition">{{ task.assigned_project.name }}</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                    <div class="col-span-2 text-gray-400 truncate">{{ task.completed_at|date:'d.m.Y' }}</div>
+                    <div class="col-span-1 text-right text-gray-500">{{ task.updated_at|date:'H:i' }}</div>
+                    <div class="col-span-1 text-right">
+                        <form action="{% url 'task_toggle_complete' task.id %}" method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="complete" value="0">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="text-xs px-2 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 transition">
+                                Geri Al
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-4 py-8 text-center text-gray-500">
+                    Arşivde tamamlanan görev yok.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

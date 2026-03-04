@@ -8,13 +8,19 @@
         class="w-full md:w-80 border-r border-gray-800 flex flex-col bg-gray-900 flex-shrink-0 z-10 transition-transform duration-300 {% if active_note %}hidden md:flex{% else %}flex{% endif %}">
         <div class="p-4 border-b border-gray-800 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-100">Tüm Notlar</h2>
-            <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0 inline">
-                {% csrf_token %}
-                <button type="submit"
-                    class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shadow-lg shadow-blue-500/20">
-                    <i class="fa-solid fa-plus"></i>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="openProjectModal()"
+                    class="px-2.5 h-8 rounded-md border border-gray-700 text-gray-300 text-xs hover:text-white hover:border-gray-500 transition flex items-center">
+                    <i class="fa-solid fa-diagram-project mr-1.5"></i> Proje
                 </button>
-            </form>
+                <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0 inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shadow-lg shadow-blue-500/20">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </form>
+            </div>
         </div>
 
         <div class="p-3 border-b border-gray-800">
@@ -29,16 +35,32 @@
         <div class="flex-1 overflow-y-auto">
             {% for note in notes %}
             <a href="{% url 'note_detail' note.id %}"
-                class="block p-4 border-b border-gray-800 cursor-pointer transition border-l-2 {% if active_note and note.id == active_note.id %}bg-blue-900/20 border-l-blue-500{% else %}hover:bg-gray-800/50 border-l-transparent{% endif %}">
+                class="note-item block p-4 border-b border-gray-800 cursor-pointer transition border-l-2 {% if active_note and note.id == active_note.id %}bg-blue-900/20 border-l-blue-500{% else %}hover:bg-gray-800/50 border-l-transparent{% endif %}"
+                data-note-id="{{ note.id }}"
+                data-assign-url="{% url 'note_assign' note.id %}">
                 <div class="flex justify-between items-start mb-1">
                     <h3 class="text-sm font-semibold text-gray-100 truncate pr-2">{{ note.title }}
-                        <span class="text-gray-400 text-xs">({{ note.user.username }})</span>
+                        <span data-user-id="{{ note.user.id }}"
+                            class="user-profile-trigger text-gray-400 text-xs hover:text-gray-200 transition cursor-pointer">({{ note.user.username }})</span>
                     </h3>
                     <span class="text-xs text-gray-500 whitespace-nowrap">{{ note.updated_at|date:"H:i" }}</span>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 truncate whitespace-nowrap">
                     {{ note.content|striptags|default:"İçerik yok..." }}
                 </p>
+                <div class="assignment-badges flex items-center gap-2 mt-2 flex-wrap">
+                    {% if note.assigned_user %}
+                    <span class="assigned-user-badge user-profile-trigger px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300 hover:text-white transition cursor-pointer"
+                        data-user-id="{{ note.assigned_user.id }}">
+                        <i class="fa-regular fa-user mr-1"></i>{{ note.assigned_user.username }}
+                    </span>
+                    {% endif %}
+                    {% if note.assigned_project %}
+                    <span class="assigned-project-badge px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300">
+                        <i class="fa-solid fa-diagram-project mr-1"></i>{{ note.assigned_project.name }}
+                    </span>
+                    {% endif %}
+                </div>
             </a>
             {% empty %}
             <div class="p-4 text-center text-gray-500 text-sm">
@@ -53,7 +75,7 @@
 
         <div
             class="h-14 border-b border-gray-800 px-4 md:px-6 flex items-center justify-between bg-gray-900 flex-shrink-0 relative z-10">
-            <div class="flex items-center space-x-1">
+            <div id="editor-toolbar" class="flex items-center space-x-1">
                 <button type="button" onclick="showNoteList()"
                     class="md:hidden w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition mr-2">
                     <i class="fa-solid fa-chevron-left text-sm"></i>
@@ -103,6 +125,8 @@
                 {% if active_note %}
                 <span class="text-xs text-gray-500 mr-2">Son kayıt: {{ active_note.updated_at|date:"H:i" }}</span>
                 <button type="button" onclick="toggleFavorite()"
+                    id="favorite-button"
+                    data-url="{% url 'note_toggle_favorite' active_note.id %}"
                     class="w-8 h-8 rounded text-gray-400 hover:text-yellow-400 hover:bg-gray-800 flex items-center justify-center transition"
                     title="Favorilere Ekle">
                     <i id="favorite-icon"
@@ -188,18 +212,205 @@
         </div>
     </div>
 </div>
+
+<div id="input-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeInputModal()">
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
+        <h3 id="input-modal-title" class="text-lg font-semibold text-gray-100 mb-3">Girdi</h3>
+        <input id="input-modal-field" type="text"
+            class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="">
+        <div id="input-modal-suggestions" class="hidden mt-3 flex flex-wrap gap-2"></div>
+        <div class="flex justify-end gap-2 mt-4">
+            <button type="button" onclick="closeInputModal()"
+                class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
+            <button type="button" id="input-modal-submit" onclick="submitInputModal()"
+                class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Ekle</button>
+        </div>
+    </div>
+</div>
+
+<div id="project-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeProjectModal()">
+    <div class="w-full max-w-xl bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-semibold text-gray-100 mb-4">Yeni Proje Oluştur</h3>
+        <form action="{% url 'project_create' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1.5">Proje Adı</label>
+                <input name="name" type="text" required
+                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Proje Rengi</label>
+                    <select name="color"
+                        class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="blue-500">Mavi</option>
+                        <option value="emerald-500">Yeşil</option>
+                        <option value="amber-500">Sarı</option>
+                        <option value="rose-500">Kırmızı</option>
+                        <option value="violet-500">Mor</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Proje Temsilcisi</label>
+                    <select name="representative_id"
+                        class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="">Seçiniz</option>
+                        {% for user_item in users %}
+                        <option value="{{ user_item.id }}">{{ user_item.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1.5">Proje Katılımcıları</label>
+                <select name="participant_ids" multiple
+                    class="w-full h-32 bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    {% for user_item in users %}
+                    <option value="{{ user_item.id }}">{{ user_item.username }}</option>
+                    {% endfor %}
+                </select>
+                <p class="text-[11px] text-gray-500 mt-1">Birden fazla seçim için Ctrl tuşunu kullanın.</p>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1.5">Proje Açıklaması</label>
+                <textarea name="description" rows="3"
+                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeProjectModal()"
+                    class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
+                <button type="submit"
+                    class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Oluştur</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="note-context-menu" class="fixed hidden z-50 w-60 bg-gray-900 border border-gray-800 rounded-lg shadow-xl p-2">
+    <div class="px-2 py-1 text-[11px] text-gray-500">Kullanıcıya Ata</div>
+    <div class="max-h-28 overflow-y-auto mb-2">
+        {% for user_item in users %}
+        <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800 rounded"
+            onclick="assignNote('user', '{{ user_item.id }}', '{{ user_item.username }}')">
+            <i class="fa-regular fa-user mr-1.5"></i>{{ user_item.username }}
+        </button>
+        {% empty %}
+        <div class="px-2 py-1.5 text-xs text-gray-500">Kullanıcı yok</div>
+        {% endfor %}
+    </div>
+    <div class="px-2 py-1 text-[11px] text-gray-500">Projeye Ata</div>
+    <div class="max-h-28 overflow-y-auto mb-2">
+        {% for project_item in projects %}
+        <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800 rounded"
+            onclick="assignNote('project', '{{ project_item.id }}', '{{ project_item.name|escapejs }}')">
+            <i class="fa-solid fa-diagram-project mr-1.5"></i>{{ project_item.name }}
+        </button>
+        {% empty %}
+        <div class="px-2 py-1.5 text-xs text-gray-500">Proje yok</div>
+        {% endfor %}
+    </div>
+    <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-rose-400 hover:bg-gray-800 rounded"
+        onclick="assignNote('clear', '', '')">
+        <i class="fa-solid fa-xmark mr-1.5"></i>Atamayı Kaldır
+    </button>
+</div>
 {% endblock %}
 
 {% block scripts %}
+{{ block.super }}
 <script>
+    let modalSubmitHandler = null;
+    let activeContextNote = null;
+    const existingTagNames = [{% for tag in request.user.tags.all %}'{{ tag.name|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+
     function formatDoc(cmd, value = null) {
+        const editor = document.getElementById('editor-content');
+        if (!editor) return;
+
+        editor.focus();
         document.execCommand(cmd, false, value);
-        document.getElementById('editor-content').focus();
+        editor.focus();
+    }
+
+    function openInputModal({ title, placeholder = '', value = '', submitText = 'Ekle', onSubmit, suggestions = [] }) {
+        const modal = document.getElementById('input-modal');
+        const modalTitle = document.getElementById('input-modal-title');
+        const modalInput = document.getElementById('input-modal-field');
+        const modalSubmit = document.getElementById('input-modal-submit');
+        const suggestionsContainer = document.getElementById('input-modal-suggestions');
+
+        modalTitle.textContent = title;
+        modalInput.placeholder = placeholder;
+        modalInput.value = value;
+        modalSubmit.textContent = submitText;
+
+        suggestionsContainer.innerHTML = '';
+        if (suggestions.length) {
+            suggestionsContainer.classList.remove('hidden');
+            suggestions.forEach(tagName => {
+                const tagBtn = document.createElement('button');
+                tagBtn.type = 'button';
+                tagBtn.className = 'px-2.5 py-1 rounded border border-gray-700 text-xs text-gray-300 hover:text-white hover:border-gray-500 transition';
+                tagBtn.textContent = tagName;
+                tagBtn.onclick = function () {
+                    modalInput.value = tagName;
+                    modalInput.focus();
+                };
+                suggestionsContainer.appendChild(tagBtn);
+            });
+        } else {
+            suggestionsContainer.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        modalSubmitHandler = onSubmit;
+        setTimeout(() => modalInput.focus(), 0);
+    }
+
+    function closeInputModal() {
+        const modal = document.getElementById('input-modal');
+        const suggestionsContainer = document.getElementById('input-modal-suggestions');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.classList.add('hidden');
+        modalSubmitHandler = null;
+    }
+
+    function openProjectModal() {
+        const modal = document.getElementById('project-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeProjectModal() {
+        const modal = document.getElementById('project-modal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    function submitInputModal() {
+        const modalInput = document.getElementById('input-modal-field');
+        const value = modalInput.value.trim();
+        if (!value || !modalSubmitHandler) return;
+
+        modalSubmitHandler(value);
+        closeInputModal();
     }
 
     function addImage() {
-        const url = prompt('Resim URL adresini girin:');
-        if (url) formatDoc('insertImage', url);
+        openInputModal({
+            title: 'Görsel Ekle',
+            placeholder: 'Resim URL adresini girin (https://...)',
+            submitText: 'Görsel Ekle',
+            onSubmit: function (url) {
+                formatDoc('insertImage', url);
+            }
+        });
     }
 
     function addLink() {
@@ -220,39 +431,110 @@
         syncEditorContent();
     });
 
-    function toggleFavorite() {
+    function getCsrfToken() {
+        const fromForm = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (fromForm) return fromForm.value;
+
+        const cookieValue = `; ${document.cookie}`;
+        const parts = cookieValue.split('; csrftoken=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+
+    async function toggleFavorite() {
         const input = document.getElementById('input-is-favorite');
         const btnIcon = document.getElementById('favorite-icon');
-        if (input.value === 'true') {
-            input.value = 'false';
-            btnIcon.classList.remove('fa-solid', 'text-yellow-400');
-            btnIcon.classList.add('fa-regular');
-        } else {
-            input.value = 'true';
-            btnIcon.classList.remove('fa-regular');
-            btnIcon.classList.add('fa-solid', 'text-yellow-400');
+        const favoriteButton = document.getElementById('favorite-button');
+
+        if (!input || !btnIcon || !favoriteButton) return;
+
+        const nextValue = input.value !== 'true';
+
+        favoriteButton.disabled = true;
+        try {
+            const response = await fetch(favoriteButton.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: `is_favorite=${nextValue ? 'true' : 'false'}`,
+            });
+
+            if (!response.ok) {
+                throw new Error('Favori durumu güncellenemedi.');
+            }
+
+            const result = await response.json();
+            const isFavorite = !!result.is_favorite;
+
+            input.value = isFavorite ? 'true' : 'false';
+            if (isFavorite) {
+                btnIcon.classList.remove('fa-regular');
+                btnIcon.classList.add('fa-solid', 'text-yellow-400');
+            } else {
+                btnIcon.classList.remove('fa-solid', 'text-yellow-400');
+                btnIcon.classList.add('fa-regular');
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            favoriteButton.disabled = false;
         }
     }
 
     function promptAddTag() {
-        const tagBox = prompt("Eklenecek etiket adını girin:");
-        if (!tagBox || !tagBox.trim()) return;
+        openInputModal({
+            title: 'Etiket Ekle',
+            placeholder: 'Eklenecek etiket adını girin',
+            submitText: 'Etiket Ekle',
+            suggestions: existingTagNames,
+            onSubmit: function (tagName) {
+                const inputTags = document.getElementById('input-tags');
+                let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
 
-        const tagName = tagBox.trim();
-        const inputTags = document.getElementById('input-tags');
-        let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
+                if (!currentTags.includes(tagName)) {
+                    currentTags.push(tagName);
+                    inputTags.value = currentTags.join(',');
 
-        if (!currentTags.includes(tagName)) {
-            currentTags.push(tagName);
-            inputTags.value = currentTags.join(',');
+                    const container = document.getElementById('tags-container');
+                    const newSpan = document.createElement('span');
+                    newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
 
-            const container = document.getElementById('tags-container');
-            const newSpan = document.createElement('span');
-            newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
-            newSpan.innerHTML = `<i class="fa-solid fa-hashtag mr-1.5"></i> ${tagName} <button type="button" class="ml-2 hover:text-white" onclick="removeTag('${tagName}', this)"><i class="fa-solid fa-xmark"></i></button>`;
-            container.insertBefore(newSpan, container.lastElementChild);
-        }
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-solid fa-hashtag mr-1.5';
+                    newSpan.appendChild(icon);
+
+                    const labelText = document.createTextNode(` ${tagName}`);
+                    newSpan.appendChild(labelText);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'ml-2 hover:text-white';
+                    removeButton.onclick = function () {
+                        removeTag(tagName, removeButton);
+                    };
+
+                    const removeIcon = document.createElement('i');
+                    removeIcon.className = 'fa-solid fa-xmark';
+                    removeButton.appendChild(removeIcon);
+                    newSpan.appendChild(removeButton);
+
+                    container.insertBefore(newSpan, container.lastElementChild);
+                }
+            }
+        });
     }
+
+    document.getElementById('input-modal-field')?.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitInputModal();
+        }
+        if (e.key === 'Escape') {
+            closeInputModal();
+        }
+    });
 
     function removeTag(tagName, btnElement) {
         const inputTags = document.getElementById('input-tags');
@@ -276,10 +558,108 @@
         }
     }
 
+    function closeNoteContextMenu() {
+        const menu = document.getElementById('note-context-menu');
+        menu.classList.add('hidden');
+        activeContextNote = null;
+    }
+
+    function openNoteContextMenu(event, noteElement) {
+        event.preventDefault();
+
+        const menu = document.getElementById('note-context-menu');
+        activeContextNote = noteElement;
+
+        menu.classList.remove('hidden');
+        menu.style.left = `${event.clientX}px`;
+        menu.style.top = `${event.clientY}px`;
+
+        const menuRect = menu.getBoundingClientRect();
+        if (menuRect.right > window.innerWidth) {
+            menu.style.left = `${window.innerWidth - menuRect.width - 12}px`;
+        }
+        if (menuRect.bottom > window.innerHeight) {
+            menu.style.top = `${window.innerHeight - menuRect.height - 12}px`;
+        }
+    }
+
+    function updateAssignmentBadges(noteElement, assignType, targetLabel, targetId) {
+        const badgesContainer = noteElement.querySelector('.assignment-badges');
+        if (!badgesContainer) return;
+
+        badgesContainer.innerHTML = '';
+
+        if (assignType === 'user') {
+            const badge = document.createElement('span');
+            badge.className = 'assigned-user-badge user-profile-trigger px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300 hover:text-white transition cursor-pointer';
+            badge.dataset.userId = targetId;
+            badge.innerHTML = `<i class="fa-regular fa-user mr-1"></i>${targetLabel}`;
+            badgesContainer.appendChild(badge);
+            return;
+        }
+
+        if (assignType === 'project') {
+            const badge = document.createElement('span');
+            badge.className = 'assigned-project-badge px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300';
+            badge.innerHTML = `<i class="fa-solid fa-diagram-project mr-1"></i>${targetLabel}`;
+            badgesContainer.appendChild(badge);
+        }
+    }
+
+    async function assignNote(assignType, targetId, targetLabel) {
+        if (!activeContextNote) return;
+
+        const assignUrl = activeContextNote.dataset.assignUrl;
+        if (!assignUrl) return;
+
+        try {
+            const response = await fetch(assignUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: `assign_type=${encodeURIComponent(assignType)}&target_id=${encodeURIComponent(targetId || '')}`,
+            });
+
+            if (!response.ok) {
+                throw new Error('Atama işlemi başarısız oldu.');
+            }
+
+            updateAssignmentBadges(activeContextNote, assignType, targetLabel, targetId);
+            closeNoteContextMenu();
+        } catch (error) {
+            console.error(error);
+            closeNoteContextMenu();
+        }
+    }
+
     window.addEventListener('load', function () {
+        document.querySelectorAll('#editor-toolbar button').forEach(function (button) {
+            button.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+            });
+        });
+
         if (window.innerWidth < 768 && "{{ active_note.id|default:'' }}" !== "") {
             showEditor();
         }
+
+        document.querySelectorAll('.note-item').forEach(function (noteElement) {
+            noteElement.addEventListener('contextmenu', function (event) {
+                openNoteContextMenu(event, noteElement);
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('note-context-menu');
+            if (!menu.contains(event.target)) {
+                closeNoteContextMenu();
+            }
+        });
+
+        document.addEventListener('scroll', closeNoteContextMenu, true);
+        window.addEventListener('resize', closeNoteContextMenu);
     });
 </script>
 
