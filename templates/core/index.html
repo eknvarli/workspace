@@ -188,18 +188,74 @@
         </div>
     </div>
 </div>
+
+<div id="input-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeInputModal()">
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
+        <h3 id="input-modal-title" class="text-lg font-semibold text-gray-100 mb-3">Girdi</h3>
+        <input id="input-modal-field" type="text"
+            class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="">
+        <div class="flex justify-end gap-2 mt-4">
+            <button type="button" onclick="closeInputModal()"
+                class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
+            <button type="button" id="input-modal-submit" onclick="submitInputModal()"
+                class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Ekle</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    let modalSubmitHandler = null;
+
     function formatDoc(cmd, value = null) {
         document.execCommand(cmd, false, value);
         document.getElementById('editor-content').focus();
     }
 
+    function openInputModal({ title, placeholder = '', value = '', submitText = 'Ekle', onSubmit }) {
+        const modal = document.getElementById('input-modal');
+        const modalTitle = document.getElementById('input-modal-title');
+        const modalInput = document.getElementById('input-modal-field');
+        const modalSubmit = document.getElementById('input-modal-submit');
+
+        modalTitle.textContent = title;
+        modalInput.placeholder = placeholder;
+        modalInput.value = value;
+        modalSubmit.textContent = submitText;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        modalSubmitHandler = onSubmit;
+        setTimeout(() => modalInput.focus(), 0);
+    }
+
+    function closeInputModal() {
+        const modal = document.getElementById('input-modal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        modalSubmitHandler = null;
+    }
+
+    function submitInputModal() {
+        const modalInput = document.getElementById('input-modal-field');
+        const value = modalInput.value.trim();
+        if (!value || !modalSubmitHandler) return;
+
+        modalSubmitHandler(value);
+        closeInputModal();
+    }
+
     function addImage() {
-        const url = prompt('Resim URL adresini girin:');
-        if (url) formatDoc('insertImage', url);
+        openInputModal({
+            title: 'Görsel Ekle',
+            placeholder: 'Resim URL adresini girin (https://...)',
+            submitText: 'Görsel Ekle',
+            onSubmit: function (url) {
+                formatDoc('insertImage', url);
+            }
+        });
     }
 
     function addLink() {
@@ -235,24 +291,56 @@
     }
 
     function promptAddTag() {
-        const tagBox = prompt("Eklenecek etiket adını girin:");
-        if (!tagBox || !tagBox.trim()) return;
+        openInputModal({
+            title: 'Etiket Ekle',
+            placeholder: 'Eklenecek etiket adını girin',
+            submitText: 'Etiket Ekle',
+            onSubmit: function (tagName) {
+                const inputTags = document.getElementById('input-tags');
+                let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
 
-        const tagName = tagBox.trim();
-        const inputTags = document.getElementById('input-tags');
-        let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
+                if (!currentTags.includes(tagName)) {
+                    currentTags.push(tagName);
+                    inputTags.value = currentTags.join(',');
 
-        if (!currentTags.includes(tagName)) {
-            currentTags.push(tagName);
-            inputTags.value = currentTags.join(',');
+                    const container = document.getElementById('tags-container');
+                    const newSpan = document.createElement('span');
+                    newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
 
-            const container = document.getElementById('tags-container');
-            const newSpan = document.createElement('span');
-            newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
-            newSpan.innerHTML = `<i class="fa-solid fa-hashtag mr-1.5"></i> ${tagName} <button type="button" class="ml-2 hover:text-white" onclick="removeTag('${tagName}', this)"><i class="fa-solid fa-xmark"></i></button>`;
-            container.insertBefore(newSpan, container.lastElementChild);
-        }
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-solid fa-hashtag mr-1.5';
+                    newSpan.appendChild(icon);
+
+                    const labelText = document.createTextNode(` ${tagName}`);
+                    newSpan.appendChild(labelText);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'ml-2 hover:text-white';
+                    removeButton.onclick = function () {
+                        removeTag(tagName, removeButton);
+                    };
+
+                    const removeIcon = document.createElement('i');
+                    removeIcon.className = 'fa-solid fa-xmark';
+                    removeButton.appendChild(removeIcon);
+                    newSpan.appendChild(removeButton);
+
+                    container.insertBefore(newSpan, container.lastElementChild);
+                }
+            }
+        });
     }
+
+    document.getElementById('input-modal-field')?.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitInputModal();
+        }
+        if (e.key === 'Escape') {
+            closeInputModal();
+        }
+    });
 
     function removeTag(tagName, btnElement) {
         const inputTags = document.getElementById('input-tags');
