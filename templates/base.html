@@ -31,7 +31,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #4b5563;
         }
-
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,8 +39,11 @@
 
 <body class="bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
     <div class="flex h-full">
+        <div id="sidebar-overlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+
         <aside id="sidebar"
-            class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col hidden md:flex flex-shrink-0">
+            class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-50 transform -translate-x-full md:translate-x-0 md:static md:flex transition-transform duration-300 ease-in-out flex-shrink-0">
             <div class="h-16 flex items-center px-6 border-b border-gray-800">
                 <i class="fa-solid fa-book-open text-blue-500 text-xl mr-3"></i>
                 <span class="text-xl font-bold text-gray-100 tracking-tight">Workspace</span>
@@ -55,7 +57,8 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-200 truncate">{{ request.user.username|default:'Misafir' }}
                     </p>
-                    <p class="text-xs text-gray-500 truncate">{% if request.user.is_superuser %}Administrator{% elif request.user.is_staff %}Moderator{% else %}User{% endif %}</p>
+                    <p class="text-xs text-gray-500 truncate">{% if request.user.is_superuser %}Administrator{% elif
+                        request.user.is_staff %}Moderator{% else %}User{% endif %}</p>
                 </div>
             </div>
 
@@ -114,14 +117,20 @@
         </aside>
 
         <div class="flex-1 flex flex-col min-w-0 bg-gray-900 overflow-hidden relative">
-            <header class="h-16 border-b border-gray-800 flex items-center px-4 md:hidden flex-shrink-0 bg-gray-900">
-                <button id="mobile-menu-button" class="mr-4 text-gray-400 hover:text-gray-200">
-                    <i class="fa-solid fa-bars text-lg"></i>
+            <header
+                class="h-16 border-b border-gray-800 flex items-center px-4 md:hidden flex-shrink-0 bg-gray-900 z-30">
+                <button id="mobile-menu-button"
+                    class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-200 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
                 </button>
-                <div class="flex-1 font-semibold text-gray-200">Workspace</div>
-                <button class="text-blue-500">
-                    <i class="fa-solid fa-pen-to-square text-lg"></i>
-                </button>
+                <div class="flex-1 font-bold text-gray-100 px-2 tracking-tight">Workspace</div>
+                <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="w-10 h-10 flex items-center justify-center text-blue-500 hover:text-blue-400">
+                        <i class="fa-solid fa-pen-to-square text-xl"></i>
+                    </button>
+                </form>
             </header>
 
             <main class="flex-1 overflow-hidden flex h-full">
@@ -133,14 +142,39 @@
 
     {% block scripts %}
     <script>
-        document.getElementById('mobile-menu-button')?.addEventListener('click', function () {
-            var sb = document.getElementById('sidebar');
-            if (sb) {
-                sb.classList.toggle('hidden');
-                sb.classList.toggle('absolute');
-                sb.classList.toggle('z-50');
-                sb.classList.toggle('h-full');
+        const mobileMenuBtn = document.getElementById('mobile-menu-button');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebarOverlay.classList.remove('opacity-0');
+                    sidebarOverlay.classList.add('opacity-100');
+                }, 10);
+                document.body.classList.add('overflow-hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.remove('opacity-100');
+                sidebarOverlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    sidebarOverlay.classList.add('hidden');
+                }, 300);
+                document.body.classList.remove('overflow-hidden');
             }
+        }
+
+        mobileMenuBtn?.addEventListener('click', toggleSidebar);
+        sidebarOverlay?.addEventListener('click', toggleSidebar);
+
+        sidebar?.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
         });
     </script>
     {% endblock %}
