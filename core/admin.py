@@ -5,3 +5,5 @@ from core.models import *
 
 admin.site.register(Note)
 admin.site.register(Tag)
+admin.site.register(Project)
+admin.site.register(UserPresence)
