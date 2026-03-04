@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['workspace.turkish.systems', 'localhost', ]
 
 
 # Application definition
@@ -82,10 +82,15 @@ WSGI_APPLICATION = 'workspace.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'workspaceturkishsystem_db'),
+        'USER': os.getenv('POSTGRES_USER', 'workspaceturkishsystem_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'workspaceturkishsystem_password'),
+        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
+
 
 
 # Password validation

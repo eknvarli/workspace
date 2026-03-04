@@ -34,6 +34,82 @@ class Project(models.Model):
         ordering = ['-updated_at']
 
 
+class Customer(models.Model):
+    STATUS_CHOICES = [
+        ('lead', 'Potansiyel'),
+        ('active', 'Aktif'),
+        ('inactive', 'Pasif'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers')
+    name = models.CharField(max_length=150)
+    company_name = models.CharField(max_length=200, blank=True)
+    sector = models.CharField(max_length=120, blank=True)
+    title = models.CharField(max_length=120, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    alternate_phone = models.CharField(max_length=30, blank=True)
+    website = models.URLField(blank=True)
+    city = models.CharField(max_length=120, blank=True)
+    country = models.CharField(max_length=120, blank=True)
+    address = models.TextField(blank=True)
+    tax_office = models.CharField(max_length=120, blank=True)
+    tax_number = models.CharField(max_length=50, blank=True)
+    preferred_contact_channel = models.CharField(max_length=80, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='lead')
+    source = models.CharField(max_length=120, blank=True)
+    budget_expectation = models.CharField(max_length=120, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        if self.company_name:
+            return f"{self.name} - {self.company_name}"
+        return self.name
+
+    class Meta:
+        ordering = ['-updated_at']
+
+
+class CustomerQuote(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Taslak'),
+        ('sent', 'Gönderildi'),
+        ('approved', 'Onaylandı'),
+        ('rejected', 'Reddedildi'),
+        ('revision', 'Revizyon Bekliyor'),
+    ]
+
+    CURRENCY_CHOICES = [
+        ('TRY', 'TRY'),
+        ('USD', 'USD'),
+        ('EUR', 'EUR'),
+        ('GBP', 'GBP'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer_quotes')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='quotes')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    reference_code = models.CharField(max_length=80, blank=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='TRY')
+    quote_date = models.DateField()
+    valid_until = models.DateField(null=True, blank=True)
+    follow_up_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.title}"
+
+    class Meta:
+        ordering = ['-quote_date', '-updated_at']
+
+
 class UserPresence(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='presence')
     last_active_at = models.DateTimeField(auto_now=True)

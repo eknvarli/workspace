@@ -5,9 +5,12 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.utils.html import strip_tags
 from django.utils import timezone
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from django.db import models
 import re
 import html
-from core.models import Note, Project, UserPresence
+from core.models import Note, Project, UserPresence, Customer, CustomerQuote
 
 
 def _extract_task_lines_from_content(content):
@@ -346,6 +349,175 @@ def project_detail(request, pk):
         'project_users': participant_users,
     }
     return render(request, 'core/project_detail.html', context)
+
+
+@login_required
+def customer_index(request):
+    customers = Customer.objects.filter(user=request.user).prefetch_related('quotes')
+    query = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+
+    if query:
+        customers = customers.filter(
+            models.Q(name__icontains=query)
+            | models.Q(company_name__icontains=query)
+            | models.Q(sector__icontains=query)
+            | models.Q(email__icontains=query)
+            | models.Q(phone__icontains=query)
+        )
+
+    if status:
+        customers = customers.filter(status=status)
+
+    context = {
+        'customers': customers,
+        'query': query,
+        'status_filter': status,
+        'customer_statuses': Customer.STATUS_CHOICES,
+    }
+    return render(request, 'core/customers.html', context)
+
+
+@login_required
+def customer_create(request):
+    if request.method != 'POST':
+        return redirect('customers')
+
+    name = request.POST.get('name', '').strip()
+    if not name:
+        messages.error(request, 'Müşteri adı zorunludur.')
+        return redirect('customers')
+
+    allowed_customer_statuses = {choice[0] for choice in Customer.STATUS_CHOICES}
+    selected_status = request.POST.get('status', 'lead') or 'lead'
+    if selected_status not in allowed_customer_statuses:
+        selected_status = 'lead'
+
+    customer = Customer.objects.create(
+        user=request.user,
+        name=name,
+        company_name=request.POST.get('company_name', '').strip(),
+        sector=request.POST.get('sector', '').strip(),
+        title=request.POST.get('title', '').strip(),
+        email=request.POST.get('email', '').strip(),
+        phone=request.POST.get('phone', '').strip(),
+        alternate_phone=request.POST.get('alternate_phone', '').strip(),
+        website=request.POST.get('website', '').strip(),
+        city=request.POST.get('city', '').strip(),
+        country=request.POST.get('country', '').strip(),
+        address=request.POST.get('address', '').strip(),
+        tax_office=request.POST.get('tax_office', '').strip(),
+        tax_number=request.POST.get('tax_number', '').strip(),
+        preferred_contact_channel=request.POST.get('preferred_contact_channel', '').strip(),
+        status=selected_status,
+        source=request.POST.get('source', '').strip(),
+        budget_expectation=request.POST.get('budget_expectation', '').strip(),
+        notes=request.POST.get('notes', '').strip(),
+    )
+
+    messages.success(request, 'Müşteri oluşturuldu.')
+    return redirect('customer_detail', pk=customer.pk)
+
+
+def _safe_parse_date(date_text):
+    if not date_text:
+        return None
+    try:
+        return date.fromisoformat(date_text)
+    except ValueError:
+        return None
+
+
+@login_required
+def customer_detail(request, pk):
+    customer = get_object_or_404(Customer, pk=pk, user=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_customer':
+            allowed_customer_statuses = {choice[0] for choice in Customer.STATUS_CHOICES}
+            selected_status = request.POST.get('status', 'lead') or 'lead'
+            if selected_status not in allowed_customer_statuses:
+                selected_status = 'lead'
+
+            customer.name = request.POST.get('name', customer.name).strip() or customer.name
+            customer.company_name = request.POST.get('company_name', '').strip()
+            customer.sector = request.POST.get('sector', '').strip()
+            customer.title = request.POST.get('title', '').strip()
+            customer.email = request.POST.get('email', '').strip()
+            customer.phone = request.POST.get('phone', '').strip()
+            customer.alternate_phone = request.POST.get('alternate_phone', '').strip()
+            customer.website = request.POST.get('website', '').strip()
+            customer.city = request.POST.get('city', '').strip()
+            customer.country = request.POST.get('country', '').strip()
+            customer.address = request.POST.get('address', '').strip()
+            customer.tax_office = request.POST.get('tax_office', '').strip()
+            customer.tax_number = request.POST.get('tax_number', '').strip()
+            customer.preferred_contact_channel = request.POST.get('preferred_contact_channel', '').strip()
+            customer.status = selected_status
+            customer.source = request.POST.get('source', '').strip()
+            customer.budget_expectation = request.POST.get('budget_expectation', '').strip()
+            customer.notes = request.POST.get('notes', '').strip()
+            customer.save()
+            messages.success(request, 'Müşteri bilgileri güncellendi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+        if action == 'create_quote':
+            quote_title = request.POST.get('quote_title', '').strip()
+            quote_amount_raw = request.POST.get('quote_amount', '0').strip() or '0'
+            quote_date_value = _safe_parse_date(request.POST.get('quote_date', '').strip())
+
+            if not quote_title:
+                messages.error(request, 'Teklif başlığı zorunludur.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            if not quote_date_value:
+                messages.error(request, 'Teklif tarihi geçersiz.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            try:
+                quote_amount = Decimal(quote_amount_raw)
+            except InvalidOperation:
+                messages.error(request, 'Teklif tutarı sayısal olmalı.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            allowed_quote_statuses = {choice[0] for choice in CustomerQuote.STATUS_CHOICES}
+            selected_quote_status = request.POST.get('quote_status', 'draft') or 'draft'
+            if selected_quote_status not in allowed_quote_statuses:
+                selected_quote_status = 'draft'
+
+            allowed_currencies = {choice[0] for choice in CustomerQuote.CURRENCY_CHOICES}
+            selected_currency = request.POST.get('currency', 'TRY') or 'TRY'
+            if selected_currency not in allowed_currencies:
+                selected_currency = 'TRY'
+
+            CustomerQuote.objects.create(
+                user=request.user,
+                customer=customer,
+                title=quote_title,
+                description=request.POST.get('quote_description', '').strip(),
+                reference_code=request.POST.get('reference_code', '').strip(),
+                amount=quote_amount,
+                currency=selected_currency,
+                quote_date=quote_date_value,
+                valid_until=_safe_parse_date(request.POST.get('valid_until', '').strip()),
+                follow_up_date=_safe_parse_date(request.POST.get('follow_up_date', '').strip()),
+                status=selected_quote_status,
+                notes=request.POST.get('quote_notes', '').strip(),
+            )
+            messages.success(request, 'Müşteri teklifi eklendi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+    quotes = customer.quotes.all()
+    context = {
+        'customer': customer,
+        'quotes': quotes,
+        'customer_statuses': Customer.STATUS_CHOICES,
+        'quote_statuses': CustomerQuote.STATUS_CHOICES,
+        'currency_choices': CustomerQuote.CURRENCY_CHOICES,
+    }
+    return render(request, 'core/customer_detail.html', context)
 
 
 @login_required
