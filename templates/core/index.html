@@ -75,7 +75,7 @@
 
         <div
             class="h-14 border-b border-gray-800 px-4 md:px-6 flex items-center justify-between bg-gray-900 flex-shrink-0 relative z-10">
-            <div class="flex items-center space-x-1">
+            <div id="editor-toolbar" class="flex items-center space-x-1">
                 <button type="button" onclick="showNoteList()"
                     class="md:hidden w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition mr-2">
                     <i class="fa-solid fa-chevron-left text-sm"></i>
@@ -219,6 +219,7 @@
         <input id="input-modal-field" type="text"
             class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="">
+        <div id="input-modal-suggestions" class="hidden mt-3 flex flex-wrap gap-2"></div>
         <div class="flex justify-end gap-2 mt-4">
             <button type="button" onclick="closeInputModal()"
                 class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
@@ -318,27 +319,51 @@
 {% endblock %}
 
 {% block scripts %}
+{{ block.super }}
 <script>
-    {{ block.super }}
-
     let modalSubmitHandler = null;
     let activeContextNote = null;
+    const existingTagNames = [{% for tag in request.user.tags.all %}'{{ tag.name|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
 
     function formatDoc(cmd, value = null) {
+        const editor = document.getElementById('editor-content');
+        if (!editor) return;
+
+        editor.focus();
         document.execCommand(cmd, false, value);
-        document.getElementById('editor-content').focus();
+        editor.focus();
     }
 
-    function openInputModal({ title, placeholder = '', value = '', submitText = 'Ekle', onSubmit }) {
+    function openInputModal({ title, placeholder = '', value = '', submitText = 'Ekle', onSubmit, suggestions = [] }) {
         const modal = document.getElementById('input-modal');
         const modalTitle = document.getElementById('input-modal-title');
         const modalInput = document.getElementById('input-modal-field');
         const modalSubmit = document.getElementById('input-modal-submit');
+        const suggestionsContainer = document.getElementById('input-modal-suggestions');
 
         modalTitle.textContent = title;
         modalInput.placeholder = placeholder;
         modalInput.value = value;
         modalSubmit.textContent = submitText;
+
+        suggestionsContainer.innerHTML = '';
+        if (suggestions.length) {
+            suggestionsContainer.classList.remove('hidden');
+            suggestions.forEach(tagName => {
+                const tagBtn = document.createElement('button');
+                tagBtn.type = 'button';
+                tagBtn.className = 'px-2.5 py-1 rounded border border-gray-700 text-xs text-gray-300 hover:text-white hover:border-gray-500 transition';
+                tagBtn.textContent = tagName;
+                tagBtn.onclick = function () {
+                    modalInput.value = tagName;
+                    modalInput.focus();
+                };
+                suggestionsContainer.appendChild(tagBtn);
+            });
+        } else {
+            suggestionsContainer.classList.add('hidden');
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
 
@@ -348,8 +373,11 @@
 
     function closeInputModal() {
         const modal = document.getElementById('input-modal');
+        const suggestionsContainer = document.getElementById('input-modal-suggestions');
         modal.classList.remove('flex');
         modal.classList.add('hidden');
+        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.classList.add('hidden');
         modalSubmitHandler = null;
     }
 
@@ -460,6 +488,7 @@
             title: 'Etiket Ekle',
             placeholder: 'Eklenecek etiket adını girin',
             submitText: 'Etiket Ekle',
+            suggestions: existingTagNames,
             onSubmit: function (tagName) {
                 const inputTags = document.getElementById('input-tags');
                 let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
@@ -606,6 +635,12 @@
     }
 
     window.addEventListener('load', function () {
+        document.querySelectorAll('#editor-toolbar button').forEach(function (button) {
+            button.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+            });
+        });
+
         if (window.innerWidth < 768 && "{{ active_note.id|default:'' }}" !== "") {
             showEditor();
         }

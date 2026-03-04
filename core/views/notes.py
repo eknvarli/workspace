@@ -3,11 +3,105 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from django.utils.html import strip_tags
+from django.utils import timezone
+import re
+import html
 from core.models import Note, Project, UserPresence
+
+
+def _extract_task_lines_from_content(content):
+    if not content:
+        return []
+
+    normalized = (
+        content
+        .replace('</div>', '\n')
+        .replace('</p>', '\n')
+        .replace('<br>', '\n')
+        .replace('<br/>', '\n')
+        .replace('<br />', '\n')
+    )
+    plain_text = html.unescape(strip_tags(normalized))
+
+    tasks = []
+    task_pattern = re.compile(r'^\+\s*(?:\[@([^\]]+)\]\s*)?(.*)$')
+
+    for line in plain_text.splitlines():
+        current_line = line.strip()
+        if not current_line:
+            continue
+
+        match = task_pattern.match(current_line)
+        if not match:
+            continue
+
+        username = (match.group(1) or '').strip()
+        task_text = (match.group(2) or '').strip()
+        if not task_text:
+            continue
+
+        tasks.append({
+            'username': username,
+            'text': task_text,
+        })
+
+    return tasks
+
+
+def _sync_note_tasks(note):
+    if note.category == 'task':
+        return
+
+    extracted_tasks = _extract_task_lines_from_content(note.content or '')
+    existing_tasks = list(note.child_tasks.filter(category='task').select_related('assigned_user'))
+    existing_by_key = {
+        ((task.title or '').strip().lower(), task.assigned_user_id): task
+        for task in existing_tasks
+    }
+
+    if not extracted_tasks:
+        note.child_tasks.filter(category='task').delete()
+        return
+
+    seen_task_ids = set()
+
+    for item in extracted_tasks:
+        assigned_user = note.user
+        if item['username']:
+            mentioned_user = User.objects.filter(username__iexact=item['username']).first()
+            if mentioned_user:
+                assigned_user = mentioned_user
+
+        task_title = item['text'][:255]
+        lookup_key = (task_title.strip().lower(), assigned_user.id if assigned_user else None)
+        existing_task = existing_by_key.get(lookup_key)
+
+        if existing_task:
+            existing_task.content = item['text']
+            existing_task.assigned_project = note.assigned_project
+            existing_task.parent_note = note
+            existing_task.save(update_fields=['content', 'assigned_project', 'parent_note', 'updated_at'])
+            seen_task_ids.add(existing_task.id)
+            continue
+
+        Note.objects.create(
+            user=note.user,
+            title=task_title,
+            content=item['text'],
+            category='task',
+            assigned_user=assigned_user,
+            assigned_project=note.assigned_project,
+            parent_note=note,
+        )
+
+    stale_tasks = [task.id for task in existing_tasks if task.id not in seen_task_ids]
+    if stale_tasks:
+        Note.objects.filter(id__in=stale_tasks).delete()
 
 @login_required
 def note_index(request, pk=None):
-    notes = Note.objects.filter(user=request.user).select_related('assigned_user', 'assigned_project')
+    notes = Note.objects.filter(user=request.user).exclude(category='task').select_related('assigned_user', 'assigned_project')
     
     # Filtering based on GET parameters
     category_filter = request.GET.get('category')
@@ -72,6 +166,8 @@ def note_save(request, pk):
         note.category = category
         note.is_favorite = is_favorite
         note.save()
+
+        _sync_note_tasks(note)
         
         # Handle Tags (comma separated names)
         note.tags.clear()
@@ -192,6 +288,40 @@ def project_index(request):
         'users': users,
     }
     return render(request, 'core/projects.html', context)
+
+
+@login_required
+def task_index(request):
+    tasks = Note.objects.filter(user=request.user, category='task').select_related('assigned_user', 'assigned_project', 'parent_note')
+    active_tasks = tasks.filter(is_completed=False)
+    archived_tasks = tasks.filter(is_completed=True)
+    my_tasks = active_tasks.filter(assigned_user=request.user)
+    project_tasks_count = active_tasks.exclude(assigned_project__isnull=True).count()
+
+    context = {
+        'tasks': tasks,
+        'active_tasks': active_tasks,
+        'archived_tasks': archived_tasks,
+        'my_tasks': my_tasks,
+        'project_tasks_count': project_tasks_count,
+    }
+    return render(request, 'core/tasks.html', context)
+
+
+@login_required
+def task_toggle_complete(request, pk):
+    if request.method != 'POST':
+        return redirect('tasks')
+
+    task = get_object_or_404(Note, pk=pk, user=request.user, category='task')
+    mark_completed = request.POST.get('complete') == '1'
+
+    task.is_completed = mark_completed
+    task.completed_at = timezone.now() if mark_completed else None
+    task.save(update_fields=['is_completed', 'completed_at', 'updated_at'])
+
+    next_url = request.POST.get('next') or 'tasks'
+    return redirect(next_url)
 
 
 @login_required

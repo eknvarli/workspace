@@ -14,22 +14,90 @@
             font-family: 'Inter', sans-serif;
         }
 
+        body.theme-dark {
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+
+        body.theme-light {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        body.theme-light .bg-gray-950,
+        body.theme-light .bg-gray-900 {
+            background-color: #ffffff !important;
+        }
+
+        body.theme-light .bg-gray-800,
+        body.theme-light .bg-gray-800\/50 {
+            background-color: #f3f4f6 !important;
+        }
+
+        body.theme-light .bg-gray-700 {
+            background-color: #e5e7eb !important;
+        }
+
+        body.theme-light .border-gray-800,
+        body.theme-light .border-gray-700 {
+            border-color: #d1d5db !important;
+        }
+
+        body.theme-light .text-gray-100,
+        body.theme-light .text-gray-200 {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-gray-300,
+        body.theme-light .text-gray-400 {
+            color: #374151 !important;
+        }
+
+        body.theme-light .text-gray-500,
+        body.theme-light .text-gray-600 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .hover\:bg-gray-800:hover,
+        body.theme-light .hover\:bg-gray-800\/50:hover,
+        body.theme-light .hover\:bg-gray-700:hover {
+            background-color: #e5e7eb !important;
+        }
+
+        body.theme-light .hover\:text-gray-200:hover,
+        body.theme-light .hover\:text-gray-300:hover {
+            color: #111827 !important;
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        ::-webkit-scrollbar-track {
+        body.theme-dark ::-webkit-scrollbar-track {
             background: #1f2937;
         }
 
-        ::-webkit-scrollbar-thumb {
+        body.theme-dark ::-webkit-scrollbar-thumb {
             background: #374151;
             border-radius: 4px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        body.theme-dark ::-webkit-scrollbar-thumb:hover {
             background: #4b5563;
+        }
+
+        body.theme-light ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+        }
+
+        body.theme-light ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        body.theme-light ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
@@ -37,7 +105,7 @@
     {% progressive_web_app_meta %}
 </head>
 
-<body class="bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
+<body data-theme-preference="{{ active_theme|default:'dark' }}" class="theme-dark bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
     <div class="flex h-full">
         <div id="sidebar-overlay"
             class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
@@ -79,8 +147,8 @@
                     <i class="fa-solid fa-folder-open mr-3 w-4 text-center"></i>
                     Projeler
                 </a>
-                <a href="{% url 'index' %}?category=task"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if request.GET.category == 'task' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
+                <a href="{% url 'tasks' %}"
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'tasks' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-check-square mr-3 w-4 text-center"></i>
                     Görevler
                 </a>
@@ -102,8 +170,8 @@
             </nav>
 
             <div class="p-4 border-t border-gray-800 space-y-1">
-                <a href="/"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition">
+                <a href="{% url 'settings' %}"
+                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'settings' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
                     <i class="fa-solid fa-gear mr-3 w-4 text-center"></i>
                     Ayarlar
                 </a>
@@ -190,6 +258,27 @@
 
     {% block scripts %}
     <script>
+        const themePreference = document.body.dataset.themePreference || 'dark';
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function applyTheme(preference) {
+            let resolvedTheme = preference;
+            if (preference === 'system') {
+                resolvedTheme = darkModeQuery.matches ? 'dark' : 'light';
+            }
+
+            document.body.classList.remove('theme-dark', 'theme-light');
+            document.body.classList.add(`theme-${resolvedTheme}`);
+        }
+
+        applyTheme(themePreference);
+
+        if (themePreference === 'system') {
+            darkModeQuery.addEventListener('change', function () {
+                applyTheme('system');
+            });
+        }
+
         const mobileMenuBtn = document.getElementById('mobile-menu-button');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
