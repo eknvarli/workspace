@@ -57,8 +57,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-200 truncate">{{ request.user.username|default:'Misafir' }}
                     </p>
-                    <p class="text-xs text-gray-500 truncate">{% if request.user.is_superuser %}Administrator{% elif
-                        request.user.is_staff %}Moderator{% else %}User{% endif %}</p>
+                    <p class="text-xs text-gray-500 truncate">{% if request.user.is_superuser %}Administrator{% elif request.user.is_staff %}Moderator{% else %}User{% endif %}</p>
                 </div>
             </div>
 
