@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Sayfa Bulunamadı | Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        body.theme-dark { background-color: #111827; color: #e5e7eb; }
+        body.theme-light { background-color: #f3f4f6; color: #111827; }
+
+        .error-card {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(8px);
+        }
+        body.theme-light .error-card {
+            background: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="theme-dark h-screen flex items-center justify-center p-6 antialiased">
+
+    <div class="max-w-md w-full text-center">
+        <div class="relative mb-8">
+            <h1 class="text-9xl font-black text-blue-300 select-none">404</h1>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fa-solid fa- map-location-dot text-6xl text-blue-500 animate-bounce"></i>
+            </div>
+        </div>
+
+        <div class="error-card border border-gray-800 rounded-2xl p-8 shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-100 mb-2">Aradığınız sayfa kaybolmuş...</h2>
+            <p class="text-gray-400 mb-8">
+                Görünüşe göre bu sayfa Workspace arşivlerinde bulunmuyor veya taşınmış olabilir.
+            </p>
+
+            <div class="flex flex-col space-y-3">
+                <a href="{% url 'index' %}" 
+                   class="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all transform hover:scale-[1.02] active:scale-95">
+                    <i class="fa-solid fa-house mr-2"></i>
+                    Workspace'e Dön
+                </a>
+                
+                <button onclick="window.history.back()" 
+                        class="flex items-center justify-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold rounded-lg border border-gray-700 transition-all">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Geri Git
+                </button>
+            </div>
+        </div>
+
+        <p class="mt-8 text-sm text-gray-500">
+            Hata olduğunu düşünüyorsanız lütfen yönetici ile iletişime geçin.
+        </p>
+    </div>
+
+    <script>
+        const themePreference = localStorage.getItem('theme') || 'dark';
+        if (themePreference === 'light') {
+            document.body.classList.remove('theme-dark');
+            document.body.classList.add('theme-light');
+        }
+    </script>
+</body>
+</html>
