@@ -28,6 +28,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-producti
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000','https://workspace.turkish.systems']
+
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = None
 
 
 # Application definition
