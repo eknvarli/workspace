@@ -5,6 +5,9 @@ urlpatterns = [
     # Notes paths
     path('', note_index, name='index'),
     path('projects/', project_index, name='projects'),
+    path('customers/', customer_index, name='customers'),
+    path('customers/new/', customer_create, name='customer_create'),
+    path('customers/<int:pk>/', customer_detail, name='customer_detail'),
     path('tasks/', task_index, name='tasks'),
     path('projects/<int:pk>/', project_detail, name='project_detail'),
     path('users/<int:pk>/summary/', user_summary, name='user_summary'),

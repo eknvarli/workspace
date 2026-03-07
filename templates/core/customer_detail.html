@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="flex-1 h-full overflow-y-auto bg-gray-950">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 py-8">
+        <div class="mb-8">
+            <a href="{% url 'customers' %}" class="text-sm text-gray-400 hover:text-gray-200 transition">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i>Musterilere Don
+            </a>
+            <div class="mt-3 flex items-start justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-100">{{ customer.name }}</h1>
+                    <p class="text-sm text-gray-400 mt-1">{{ customer.company_name|default:'Firma belirtilmedi' }} | {{ customer.get_status_display }}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/40">Detayli Musteri Karti</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <section class="xl:col-span-2 bg-gray-900 border border-gray-800 rounded-xl p-5">
+                <h2 class="text-base font-semibold text-gray-100 mb-4">Musteri Bilgileri</h2>
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_customer">
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Musteri Adi</label>
+                            <input name="name" type="text" value="{{ customer.name }}" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Musteri Kodu</label>
+                            <input name="customer_code" type="text" value="{{ customer.customer_code }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Musteri Tipi</label>
+                            <select name="customer_type" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in customer_types %}
+                                <option value="{{ value }}" {% if customer.customer_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Oncelik</label>
+                            <select name="priority" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in customer_priorities %}
+                                <option value="{{ value }}" {% if customer.priority == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Firma</label>
+                            <input name="company_name" type="text" value="{{ customer.company_name }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Sektor</label>
+                            <input name="sector" type="text" value="{{ customer.sector }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Unvan</label>
+                            <input name="title" type="text" value="{{ customer.title }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Calisan Sayisi</label>
+                            <input name="employee_count" type="number" min="0" value="{{ customer.employee_count|default:'' }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">E-posta</label>
+                            <input name="email" type="email" value="{{ customer.email }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Telefon</label>
+                            <input name="phone" type="text" value="{{ customer.phone }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Alternatif Telefon</label>
+                            <input name="alternate_phone" type="text" value="{{ customer.alternate_phone }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">WhatsApp</label>
+                            <input name="whatsapp_phone" type="text" value="{{ customer.whatsapp_phone }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Web Sitesi</label>
+                            <input name="website" type="url" value="{{ customer.website }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">LinkedIn</label>
+                            <input name="linkedin_url" type="url" value="{{ customer.linkedin_url }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Iletisim Kanali</label>
+                            <input name="preferred_contact_channel" type="text" value="{{ customer.preferred_contact_channel }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Durum</label>
+                            <select name="status" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in customer_statuses %}
+                                <option value="{{ value }}" {% if customer.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Yetkili Kisi</label>
+                            <input name="primary_contact_name" type="text" value="{{ customer.primary_contact_name }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Yetkili Unvan</label>
+                            <input name="primary_contact_title" type="text" value="{{ customer.primary_contact_title }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Yetkili E-posta</label>
+                            <input name="primary_contact_email" type="email" value="{{ customer.primary_contact_email }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Yetkili Telefon</label>
+                            <input name="primary_contact_phone" type="text" value="{{ customer.primary_contact_phone }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Sehir</label>
+                            <input name="city" type="text" value="{{ customer.city }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Ilce</label>
+                            <input name="district" type="text" value="{{ customer.district }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Posta Kodu</label>
+                            <input name="postal_code" type="text" value="{{ customer.postal_code }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Ulke</label>
+                            <input name="country" type="text" value="{{ customer.country }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Adres</label>
+                            <textarea name="address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.address }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Fatura Adresi</label>
+                            <textarea name="invoice_address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.invoice_address }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Sevkiyat Adresi</label>
+                            <textarea name="shipping_address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.shipping_address }}</textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Vergi Dairesi</label>
+                                <input name="tax_office" type="text" value="{{ customer.tax_office }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Vergi Numarasi</label>
+                                <input name="tax_number" type="text" value="{{ customer.tax_number }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">E-fatura Mukellefi</label>
+                                <label class="flex items-center gap-2 text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5">
+                                    <input name="is_e_invoice_customer" type="checkbox" {% if customer.is_e_invoice_customer %}checked{% endif %} class="rounded border-gray-600 bg-gray-700 text-blue-500">
+                                    Evet
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">E-fatura Alias</label>
+                                <input name="e_invoice_alias" type="text" value="{{ customer.e_invoice_alias }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Musteri Kaynagi</label>
+                            <input name="source" type="text" value="{{ customer.source }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Butce Beklentisi</label>
+                            <input name="budget_expectation" type="text" value="{{ customer.budget_expectation }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Tahmini Yillik Ciro</label>
+                            <input name="annual_revenue_expectation" type="number" step="0.01" min="0" value="{{ customer.annual_revenue_expectation|default:'' }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Odeme Vadesi (Gun)</label>
+                            <input name="payment_terms_days" type="number" min="0" value="{{ customer.payment_terms_days|default:'' }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Karar Verici</label>
+                            <input name="decision_maker" type="text" value="{{ customer.decision_maker }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Karar Verici Iletisim</label>
+                            <input name="decision_maker_contact" type="text" value="{{ customer.decision_maker_contact }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Son Temas Tarihi</label>
+                            <input name="last_contacted_at" type="date" value="{% if customer.last_contacted_at %}{{ customer.last_contacted_at|date:'Y-m-d' }}{% endif %}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Sonraki Takip Tarihi</label>
+                            <input name="next_follow_up_at" type="date" value="{% if customer.next_follow_up_at %}{{ customer.next_follow_up_at|date:'Y-m-d' }}{% endif %}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Agri Noktalari</label>
+                            <textarea name="pain_points" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.pain_points }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Rakip Bilgisi</label>
+                            <textarea name="competitor_info" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.competitor_info }}</textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Notlar</label>
+                        <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ customer.notes }}</textarea>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition">Musteri Bilgilerini Kaydet</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="xl:col-span-1 bg-gray-900 border border-gray-800 rounded-xl p-5">
+                <h2 class="text-base font-semibold text-gray-100 mb-4">Yeni Teklif Ekle</h2>
+                <form method="POST" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_quote">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Teklif Basligi</label>
+                        <input name="quote_title" type="text" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Referans Kodu</label>
+                        <input name="reference_code" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Tutar</label>
+                            <input name="quote_amount" type="number" step="0.01" min="0" value="0" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Indirim</label>
+                            <input name="discount_amount" type="number" step="0.01" min="0" value="0" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">KDV (%)</label>
+                            <input name="tax_rate" type="number" step="0.01" min="0" value="20" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Para Birimi</label>
+                            <select name="currency" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in currency_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Durum</label>
+                            <select name="quote_status" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in quote_statuses %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Asama</label>
+                            <select name="quote_stage" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                {% for value, label in quote_stages %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Kazanim Olasiligi (%)</label>
+                        <input name="probability_percent" type="number" min="0" max="100" value="50" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Teklif Tarihi</label>
+                        <input name="quote_date" type="date" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Gecerlilik Tarihi</label>
+                        <input name="valid_until" type="date" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Takip Tarihi</label>
+                        <input name="follow_up_date" type="date" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Teslim Suresi</label>
+                        <input name="delivery_time" type="text" placeholder="Orn: 21 gun" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Odeme Kosullari</label>
+                        <input name="quote_payment_terms" type="text" placeholder="Orn: %50 pesin, %50 teslim" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Kapsam Kalemleri</label>
+                        <textarea name="scope_items" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Teklif Aciklamasi</label>
+                        <textarea name="quote_description" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Notlar</label>
+                        <textarea name="quote_notes" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition">Teklif Ekle</button>
+                </form>
+            </section>
+        </div>
+
+        <section class="bg-gray-900 border border-gray-800 rounded-xl p-5 mt-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-100">Teklif Gecmisi</h2>
+                <span class="text-xs text-gray-500">Toplam: {{ quotes.count }}</span>
+            </div>
+
+            {% if quotes %}
+            <div class="space-y-3">
+                {% for quote in quotes %}
+                <details class="border border-gray-800 rounded-lg bg-gray-950/40" {% if forloop.first %}open{% endif %}>
+                    <summary class="cursor-pointer list-none flex items-center justify-between px-4 py-3">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-100">{{ quote.title }}</p>
+                            <p class="text-xs text-gray-500">{{ quote.reference_code|default:'Referans yok' }} | {{ quote.quote_date|date:'d.m.Y' }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-200">{{ quote.total_amount }} {{ quote.currency }}</p>
+                            <p class="text-xs text-gray-500">{{ quote.get_status_display }} | {{ quote.get_stage_display }}</p>
+                        </div>
+                    </summary>
+
+                    <div class="px-4 pb-4 pt-1 border-t border-gray-800">
+                        <form method="POST" class="space-y-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_quote">
+                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Baslik</label>
+                                    <input name="quote_title" type="text" value="{{ quote.title }}" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Referans</label>
+                                    <input name="reference_code" type="text" value="{{ quote.reference_code }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Para Birimi</label>
+                                    <select name="currency" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                        {% for value, label in currency_choices %}
+                                        <option value="{{ value }}" {% if quote.currency == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Tutar</label>
+                                    <input name="quote_amount" type="number" step="0.01" min="0" value="{{ quote.amount }}" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Indirim</label>
+                                    <input name="discount_amount" type="number" step="0.01" min="0" value="{{ quote.discount_amount }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">KDV (%)</label>
+                                    <input name="tax_rate" type="number" step="0.01" min="0" value="{{ quote.tax_rate }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Olasilik (%)</label>
+                                    <input name="probability_percent" type="number" min="0" max="100" value="{{ quote.probability_percent }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Durum</label>
+                                    <select name="quote_status" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                        {% for value, label in quote_statuses %}
+                                        <option value="{{ value }}" {% if quote.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Asama</label>
+                                    <select name="quote_stage" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                        {% for value, label in quote_stages %}
+                                        <option value="{{ value }}" {% if quote.stage == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Teslim Suresi</label>
+                                    <input name="delivery_time" type="text" value="{{ quote.delivery_time }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Teklif Tarihi</label>
+                                    <input name="quote_date" type="date" value="{{ quote.quote_date|date:'Y-m-d' }}" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Gecerlilik</label>
+                                    <input name="valid_until" type="date" value="{% if quote.valid_until %}{{ quote.valid_until|date:'Y-m-d' }}{% endif %}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1.5">Takip</label>
+                                    <input name="follow_up_date" type="date" value="{% if quote.follow_up_date %}{{ quote.follow_up_date|date:'Y-m-d' }}{% endif %}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Odeme Kosullari</label>
+                                <input name="quote_payment_terms" type="text" value="{{ quote.payment_terms }}" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Kapsam Kalemleri</label>
+                                <textarea name="scope_items" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ quote.scope_items }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Aciklama</label>
+                                <textarea name="quote_description" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ quote.description }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5">Notlar</label>
+                                <textarea name="quote_notes" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">{{ quote.notes }}</textarea>
+                            </div>
+
+                            <div class="flex items-center justify-end gap-2 pt-1">
+                                <button type="submit" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition">Teklifi Guncelle</button>
+                            </div>
+                        </form>
+
+                        <form method="POST" class="mt-2 flex justify-end" onsubmit="return confirm('Bu teklifi silmek istediginize emin misiniz?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete_quote">
+                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                            <button type="submit" class="px-3 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-600/30 rounded-lg text-sm transition">Teklifi Sil</button>
+                        </form>
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="py-8 text-center text-gray-500">Bu musteriye ait teklif yok.</div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block title %}Musteriler{% endblock %}
+
+{% block content %}
+<div class="flex-1 h-full overflow-y-auto bg-gray-950">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 py-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-100">Musteriler</h1>
+                <p class="text-sm text-gray-400 mt-1">Detayli musteri kartlari olusturun, tum iletisim ve teklif surecini tek ekrandan yonetin.</p>
+            </div>
+            <button type="button" onclick="openCustomerModal()"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition w-full md:w-auto">
+                <i class="fa-solid fa-plus mr-2"></i>Yeni Musteri
+            </button>
+        </div>
+
+        <form method="GET" class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-3">
+                <label class="block text-xs text-gray-400 mb-1.5">Ara</label>
+                <input name="q" value="{{ query }}" type="text" placeholder="Ad, kod, firma, sektor, iletisim"
+                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1.5">Durum</label>
+                <select name="status"
+                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="">Hepsi</option>
+                    {% for value, label in customer_statuses %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-4 flex justify-end">
+                <button type="submit" class="px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg transition">Filtrele</button>
+            </div>
+        </form>
+
+        {% if customers %}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {% for customer in customers %}
+            <a href="{% url 'customer_detail' customer.id %}" class="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col hover:border-gray-700 transition">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-100">{{ customer.name }}</h3>
+                        <p class="text-sm text-gray-500">{{ customer.company_name|default:'Firma belirtilmedi' }}</p>
+                    </div>
+                    <span class="text-[11px] px-2 py-1 rounded bg-gray-800 text-gray-300">{{ customer.get_status_display }}</span>
+                </div>
+
+                <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+                    <span class="px-2 py-1 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">Tip: {{ customer.get_customer_type_display }}</span>
+                    <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">Oncelik: {{ customer.get_priority_display }}</span>
+                </div>
+
+                <div class="mt-4 space-y-2 text-sm">
+                    <p class="text-gray-300"><i class="fa-solid fa-id-card mr-2 text-gray-500"></i>{{ customer.customer_code|default:'Kod yok' }}</p>
+                    <p class="text-gray-300"><i class="fa-solid fa-building mr-2 text-gray-500"></i>{{ customer.sector|default:'Sektor belirtilmedi' }}</p>
+                    <p class="text-gray-300"><i class="fa-solid fa-user-tie mr-2 text-gray-500"></i>{{ customer.primary_contact_name|default:'Yetkili belirtilmedi' }}</p>
+                    <p class="text-gray-300"><i class="fa-solid fa-envelope mr-2 text-gray-500"></i>{{ customer.email|default:'E-posta yok' }}</p>
+                    <p class="text-gray-300"><i class="fa-solid fa-phone mr-2 text-gray-500"></i>{{ customer.phone|default:'Telefon yok' }}</p>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Teklif Sayisi</span>
+                    <span class="text-gray-200 font-semibold">{{ customer.quotes.count }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="border border-dashed border-gray-700 rounded-xl p-10 text-center bg-gray-900/50">
+            <i class="fa-solid fa-users text-4xl text-gray-700 mb-3"></i>
+            <p class="text-gray-300 text-lg font-medium">Henuz musteri eklenmemis</p>
+            <p class="text-gray-500 text-sm mt-1">Yeni musteri olusturarak baslayin.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="customer-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeCustomerModal()">
+    <div class="w-full max-w-5xl bg-gray-900 border border-gray-800 rounded-xl p-5 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-semibold text-gray-100 mb-4">Yeni Musteri Olustur</h3>
+        <form action="{% url 'customer_create' %}" method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Musteri Adi</label>
+                    <input name="name" type="text" required class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Musteri Kodu</label>
+                    <input name="customer_code" type="text" placeholder="MST-001" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Musteri Tipi</label>
+                    <select name="customer_type" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        <option value="company">Kurumsal</option>
+                        <option value="individual">Bireysel</option>
+                        <option value="public">Kamu</option>
+                        <option value="partner">Is Ortagi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Oncelik</label>
+                    <select name="priority" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        <option value="medium">Orta</option>
+                        <option value="low">Dusuk</option>
+                        <option value="high">Yuksek</option>
+                        <option value="critical">Kritik</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Firma</label>
+                    <input name="company_name" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Sektor</label>
+                    <input name="sector" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Unvan</label>
+                    <input name="title" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Calisan Sayisi</label>
+                    <input name="employee_count" type="number" min="0" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">E-posta</label>
+                    <input name="email" type="email" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Telefon</label>
+                    <input name="phone" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Alternatif Telefon</label>
+                    <input name="alternate_phone" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">WhatsApp</label>
+                    <input name="whatsapp_phone" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Web Sitesi</label>
+                    <input name="website" type="url" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">LinkedIn</label>
+                    <input name="linkedin_url" type="url" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Tercih Edilen Iletisim</label>
+                    <input name="preferred_contact_channel" type="text" placeholder="Telefon, E-posta, WhatsApp" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Durum</label>
+                    <select name="status" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                        {% for value, label in customer_statuses %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Yetkili Kisi</label>
+                    <input name="primary_contact_name" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Yetkili Unvani</label>
+                    <input name="primary_contact_title" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Yetkili E-posta</label>
+                    <input name="primary_contact_email" type="email" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Yetkili Telefon</label>
+                    <input name="primary_contact_phone" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Sehir</label>
+                    <input name="city" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Ilce</label>
+                    <input name="district" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Posta Kodu</label>
+                    <input name="postal_code" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Ulke</label>
+                    <input name="country" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Adres</label>
+                    <textarea name="address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Fatura Adresi</label>
+                    <textarea name="invoice_address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Sevkiyat Adresi</label>
+                    <textarea name="shipping_address" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Vergi Dairesi</label>
+                        <input name="tax_office" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Vergi Numarasi</label>
+                        <input name="tax_number" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">E-fatura Mukellefi</label>
+                        <label class="flex items-center gap-2 text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5">
+                            <input name="is_e_invoice_customer" type="checkbox" class="rounded border-gray-600 bg-gray-700 text-blue-500">
+                            Evet
+                        </label>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">E-fatura Alias</label>
+                        <input name="e_invoice_alias" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Musteri Kaynagi</label>
+                    <input name="source" type="text" placeholder="Referans, LinkedIn" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Butce Beklentisi</label>
+                    <input name="budget_expectation" type="text" placeholder="150.000 TRY" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Tahmini Yillik Ciro</label>
+                    <input name="annual_revenue_expectation" type="number" step="0.01" min="0" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Odeme Vadesi (Gun)</label>
+                    <input name="payment_terms_days" type="number" min="0" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Karar Verici</label>
+                    <input name="decision_maker" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Karar Verici Iletisim</label>
+                    <input name="decision_maker_contact" type="text" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Son Temas Tarihi</label>
+                    <input name="last_contacted_at" type="date" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Sonraki Takip Tarihi</label>
+                    <input name="next_follow_up_at" type="date" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Agri Noktalari</label>
+                    <textarea name="pain_points" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5">Rakip Bilgisi</label>
+                    <textarea name="competitor_info" rows="2" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-1.5">Notlar</label>
+                <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeCustomerModal()" class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgec</button>
+                <button type="submit" class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Olustur</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    function openCustomerModal() {
+        const modal = document.getElementById('customer-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeCustomerModal() {
+        const modal = document.getElementById('customer-modal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+</script>
+{% endblock %}

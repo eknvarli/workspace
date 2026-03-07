@@ -5,9 +5,12 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.utils.html import strip_tags
 from django.utils import timezone
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from django.db import models
 import re
 import html
-from core.models import Note, Project, UserPresence
+from core.models import Note, Project, UserPresence, Customer, CustomerQuote
 
 
 def _extract_task_lines_from_content(content):
@@ -101,7 +104,7 @@ def _sync_note_tasks(note):
 
 @login_required
 def note_index(request, pk=None):
-    notes = Note.objects.all()
+    notes = Note.objects.all().select_related('user', 'assigned_user', 'assigned_project').prefetch_related('tags')
     
     # Filtering based on GET parameters
     category_filter = request.GET.get('category')
@@ -115,6 +118,17 @@ def note_index(request, pk=None):
     tag_filter = request.GET.get('tag')
     if tag_filter:
         notes = notes.filter(tags__name=tag_filter)
+
+    query = request.GET.get('q', '').strip()
+    if query:
+        notes = notes.filter(
+            models.Q(title__icontains=query)
+            | models.Q(content__icontains=query)
+            | models.Q(tags__name__icontains=query)
+            | models.Q(user__username__icontains=query)
+            | models.Q(assigned_user__username__icontains=query)
+            | models.Q(assigned_project__name__icontains=query)
+        ).distinct()
     
     active_note = None
     
@@ -131,6 +145,7 @@ def note_index(request, pk=None):
         'active_note': active_note,
         'projects': projects,
         'users': users,
+        'query': query,
     }
     return render(request, 'core/index.html', context)
 
@@ -346,6 +361,360 @@ def project_detail(request, pk):
         'project_users': participant_users,
     }
     return render(request, 'core/project_detail.html', context)
+
+
+@login_required
+def customer_index(request):
+    customers = Customer.objects.all().prefetch_related('quotes')
+    query = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+
+    if query:
+        customers = customers.filter(
+            models.Q(name__icontains=query)
+            | models.Q(customer_code__icontains=query)
+            | models.Q(company_name__icontains=query)
+            | models.Q(sector__icontains=query)
+            | models.Q(email__icontains=query)
+            | models.Q(phone__icontains=query)
+            | models.Q(primary_contact_name__icontains=query)
+            | models.Q(primary_contact_email__icontains=query)
+        )
+
+    if status:
+        customers = customers.filter(status=status)
+
+    context = {
+        'customers': customers,
+        'query': query,
+        'status_filter': status,
+        'customer_statuses': Customer.STATUS_CHOICES,
+    }
+    return render(request, 'core/customers.html', context)
+
+
+@login_required
+def customer_create(request):
+    if request.method != 'POST':
+        return redirect('customers')
+
+    name = request.POST.get('name', '').strip()
+    if not name:
+        messages.error(request, 'Müşteri adı zorunludur.')
+        return redirect('customers')
+
+    allowed_customer_statuses = {choice[0] for choice in Customer.STATUS_CHOICES}
+    selected_status = request.POST.get('status', 'lead') or 'lead'
+    if selected_status not in allowed_customer_statuses:
+        selected_status = 'lead'
+
+    customer = Customer.objects.create(
+        user=request.user,
+        name=name,
+        company_name=request.POST.get('company_name', '').strip(),
+        customer_code=request.POST.get('customer_code', '').strip(),
+        customer_type=request.POST.get('customer_type', 'company').strip() or 'company',
+        priority=request.POST.get('priority', 'medium').strip() or 'medium',
+        sector=request.POST.get('sector', '').strip(),
+        title=request.POST.get('title', '').strip(),
+        employee_count=_safe_parse_int(request.POST.get('employee_count')),
+        annual_revenue_expectation=_safe_parse_decimal(request.POST.get('annual_revenue_expectation', ''), default=None),
+        email=request.POST.get('email', '').strip(),
+        phone=request.POST.get('phone', '').strip(),
+        alternate_phone=request.POST.get('alternate_phone', '').strip(),
+        whatsapp_phone=request.POST.get('whatsapp_phone', '').strip(),
+        website=request.POST.get('website', '').strip(),
+        linkedin_url=request.POST.get('linkedin_url', '').strip(),
+        primary_contact_name=request.POST.get('primary_contact_name', '').strip(),
+        primary_contact_title=request.POST.get('primary_contact_title', '').strip(),
+        primary_contact_email=request.POST.get('primary_contact_email', '').strip(),
+        primary_contact_phone=request.POST.get('primary_contact_phone', '').strip(),
+        city=request.POST.get('city', '').strip(),
+        district=request.POST.get('district', '').strip(),
+        postal_code=request.POST.get('postal_code', '').strip(),
+        country=request.POST.get('country', '').strip(),
+        address=request.POST.get('address', '').strip(),
+        invoice_address=request.POST.get('invoice_address', '').strip(),
+        shipping_address=request.POST.get('shipping_address', '').strip(),
+        tax_office=request.POST.get('tax_office', '').strip(),
+        tax_number=request.POST.get('tax_number', '').strip(),
+        is_e_invoice_customer=_safe_parse_bool(request.POST.get('is_e_invoice_customer')),
+        e_invoice_alias=request.POST.get('e_invoice_alias', '').strip(),
+        payment_terms_days=_safe_parse_int(request.POST.get('payment_terms_days')),
+        preferred_contact_channel=request.POST.get('preferred_contact_channel', '').strip(),
+        status=selected_status,
+        source=request.POST.get('source', '').strip(),
+        budget_expectation=request.POST.get('budget_expectation', '').strip(),
+        decision_maker=request.POST.get('decision_maker', '').strip(),
+        decision_maker_contact=request.POST.get('decision_maker_contact', '').strip(),
+        pain_points=request.POST.get('pain_points', '').strip(),
+        competitor_info=request.POST.get('competitor_info', '').strip(),
+        last_contacted_at=_safe_parse_date(request.POST.get('last_contacted_at', '').strip()),
+        next_follow_up_at=_safe_parse_date(request.POST.get('next_follow_up_at', '').strip()),
+        notes=request.POST.get('notes', '').strip(),
+    )
+
+    messages.success(request, 'Müşteri oluşturuldu.')
+    return redirect('customer_detail', pk=customer.pk)
+
+
+def _safe_parse_date(date_text):
+    if not date_text:
+        return None
+    try:
+        return date.fromisoformat(date_text)
+    except ValueError:
+        return None
+
+def _safe_parse_decimal(value_text, default=Decimal('0')):
+    value = (value_text or '').strip()
+    if not value:
+        return default
+    try:
+        return Decimal(value)
+    except InvalidOperation:
+        return default
+
+def _safe_parse_int(value_text, default=None):
+    value = (value_text or '').strip()
+    if not value:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+def _safe_parse_bool(value_text):
+    return (value_text or '').strip().lower() in {'1', 'true', 'on', 'yes'}
+
+def _build_quote_total(amount, discount_amount, tax_rate):
+    subtotal = amount - discount_amount
+    if subtotal < 0:
+        subtotal = Decimal('0')
+    tax_multiplier = Decimal('1') + (tax_rate / Decimal('100'))
+    return (subtotal * tax_multiplier).quantize(Decimal('0.01'))
+
+
+@login_required
+def customer_detail(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    allowed_customer_types = {choice[0] for choice in Customer.TYPE_CHOICES}
+    allowed_customer_priorities = {choice[0] for choice in Customer.PRIORITY_CHOICES}
+    allowed_quote_stages = {choice[0] for choice in CustomerQuote.STAGE_CHOICES}
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_customer':
+            allowed_customer_statuses = {choice[0] for choice in Customer.STATUS_CHOICES}
+            selected_status = request.POST.get('status', 'lead') or 'lead'
+            if selected_status not in allowed_customer_statuses:
+                selected_status = 'lead'
+
+            customer.name = request.POST.get('name', customer.name).strip() or customer.name
+            customer.company_name = request.POST.get('company_name', '').strip()
+            selected_type = request.POST.get('customer_type', 'company') or 'company'
+            if selected_type not in allowed_customer_types:
+                selected_type = 'company'
+            customer.customer_type = selected_type
+
+            selected_priority = request.POST.get('priority', 'medium') or 'medium'
+            if selected_priority not in allowed_customer_priorities:
+                selected_priority = 'medium'
+            customer.priority = selected_priority
+
+            customer.customer_code = request.POST.get('customer_code', '').strip()
+            customer.sector = request.POST.get('sector', '').strip()
+            customer.title = request.POST.get('title', '').strip()
+            customer.employee_count = _safe_parse_int(request.POST.get('employee_count'))
+            customer.annual_revenue_expectation = _safe_parse_decimal(request.POST.get('annual_revenue_expectation', ''), default=None)
+            customer.email = request.POST.get('email', '').strip()
+            customer.phone = request.POST.get('phone', '').strip()
+            customer.alternate_phone = request.POST.get('alternate_phone', '').strip()
+            customer.whatsapp_phone = request.POST.get('whatsapp_phone', '').strip()
+            customer.website = request.POST.get('website', '').strip()
+            customer.linkedin_url = request.POST.get('linkedin_url', '').strip()
+            customer.primary_contact_name = request.POST.get('primary_contact_name', '').strip()
+            customer.primary_contact_title = request.POST.get('primary_contact_title', '').strip()
+            customer.primary_contact_email = request.POST.get('primary_contact_email', '').strip()
+            customer.primary_contact_phone = request.POST.get('primary_contact_phone', '').strip()
+            customer.city = request.POST.get('city', '').strip()
+            customer.district = request.POST.get('district', '').strip()
+            customer.postal_code = request.POST.get('postal_code', '').strip()
+            customer.country = request.POST.get('country', '').strip()
+            customer.address = request.POST.get('address', '').strip()
+            customer.invoice_address = request.POST.get('invoice_address', '').strip()
+            customer.shipping_address = request.POST.get('shipping_address', '').strip()
+            customer.tax_office = request.POST.get('tax_office', '').strip()
+            customer.tax_number = request.POST.get('tax_number', '').strip()
+            customer.is_e_invoice_customer = _safe_parse_bool(request.POST.get('is_e_invoice_customer'))
+            customer.e_invoice_alias = request.POST.get('e_invoice_alias', '').strip()
+            customer.payment_terms_days = _safe_parse_int(request.POST.get('payment_terms_days'))
+            customer.preferred_contact_channel = request.POST.get('preferred_contact_channel', '').strip()
+            customer.status = selected_status
+            customer.source = request.POST.get('source', '').strip()
+            customer.budget_expectation = request.POST.get('budget_expectation', '').strip()
+            customer.decision_maker = request.POST.get('decision_maker', '').strip()
+            customer.decision_maker_contact = request.POST.get('decision_maker_contact', '').strip()
+            customer.pain_points = request.POST.get('pain_points', '').strip()
+            customer.competitor_info = request.POST.get('competitor_info', '').strip()
+            customer.last_contacted_at = _safe_parse_date(request.POST.get('last_contacted_at', '').strip())
+            customer.next_follow_up_at = _safe_parse_date(request.POST.get('next_follow_up_at', '').strip())
+            customer.notes = request.POST.get('notes', '').strip()
+            customer.save()
+            messages.success(request, 'Müşteri bilgileri güncellendi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+        if action == 'create_quote':
+            quote_title = request.POST.get('quote_title', '').strip()
+            quote_amount_raw = request.POST.get('quote_amount', '0').strip() or '0'
+            quote_date_value = _safe_parse_date(request.POST.get('quote_date', '').strip())
+
+            if not quote_title:
+                messages.error(request, 'Teklif başlığı zorunludur.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            if not quote_date_value:
+                messages.error(request, 'Teklif tarihi geçersiz.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            quote_amount = _safe_parse_decimal(quote_amount_raw, default=None)
+            if quote_amount is None:
+                messages.error(request, 'Teklif tutarı sayısal olmalı.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            quote_discount = _safe_parse_decimal(request.POST.get('discount_amount', ''), default=Decimal('0'))
+            quote_tax_rate = _safe_parse_decimal(request.POST.get('tax_rate', ''), default=Decimal('20'))
+            if quote_tax_rate < 0:
+                quote_tax_rate = Decimal('0')
+
+            allowed_quote_statuses = {choice[0] for choice in CustomerQuote.STATUS_CHOICES}
+            selected_quote_status = request.POST.get('quote_status', 'draft') or 'draft'
+            if selected_quote_status not in allowed_quote_statuses:
+                selected_quote_status = 'draft'
+
+            selected_quote_stage = request.POST.get('quote_stage', 'proposal') or 'proposal'
+            if selected_quote_stage not in allowed_quote_stages:
+                selected_quote_stage = 'proposal'
+
+            probability_percent = _safe_parse_int(request.POST.get('probability_percent', ''), default=50)
+            if probability_percent is None:
+                probability_percent = 50
+            probability_percent = max(0, min(probability_percent, 100))
+
+            allowed_currencies = {choice[0] for choice in CustomerQuote.CURRENCY_CHOICES}
+            selected_currency = request.POST.get('currency', 'TRY') or 'TRY'
+            if selected_currency not in allowed_currencies:
+                selected_currency = 'TRY'
+
+            total_amount = _build_quote_total(quote_amount, quote_discount, quote_tax_rate)
+
+            CustomerQuote.objects.create(
+                user=request.user,
+                customer=customer,
+                title=quote_title,
+                description=request.POST.get('quote_description', '').strip(),
+                reference_code=request.POST.get('reference_code', '').strip(),
+                amount=quote_amount,
+                discount_amount=quote_discount,
+                tax_rate=quote_tax_rate,
+                total_amount=total_amount,
+                currency=selected_currency,
+                quote_date=quote_date_value,
+                valid_until=_safe_parse_date(request.POST.get('valid_until', '').strip()),
+                follow_up_date=_safe_parse_date(request.POST.get('follow_up_date', '').strip()),
+                status=selected_quote_status,
+                stage=selected_quote_stage,
+                probability_percent=probability_percent,
+                delivery_time=request.POST.get('delivery_time', '').strip(),
+                payment_terms=request.POST.get('quote_payment_terms', '').strip(),
+                scope_items=request.POST.get('scope_items', '').strip(),
+                notes=request.POST.get('quote_notes', '').strip(),
+            )
+            messages.success(request, 'Müşteri teklifi eklendi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+        if action == 'update_quote':
+            quote_id = request.POST.get('quote_id', '').strip()
+            quote = CustomerQuote.objects.filter(id=quote_id, customer=customer).first()
+            if not quote:
+                messages.error(request, 'Teklif bulunamadi.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            title = request.POST.get('quote_title', '').strip()
+            quote_date_value = _safe_parse_date(request.POST.get('quote_date', '').strip())
+            amount = _safe_parse_decimal(request.POST.get('quote_amount', ''), default=None)
+            if not title or not quote_date_value or amount is None:
+                messages.error(request, 'Teklif baslik, tarih ve tutar bilgileri zorunlu ve gecerli olmalidir.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            discount_amount = _safe_parse_decimal(request.POST.get('discount_amount', ''), default=Decimal('0'))
+            tax_rate = _safe_parse_decimal(request.POST.get('tax_rate', ''), default=Decimal('20'))
+            if tax_rate < 0:
+                tax_rate = Decimal('0')
+
+            quote.title = title
+            quote.description = request.POST.get('quote_description', '').strip()
+            quote.reference_code = request.POST.get('reference_code', '').strip()
+            quote.amount = amount
+            quote.discount_amount = discount_amount
+            quote.tax_rate = tax_rate
+            quote.total_amount = _build_quote_total(amount, discount_amount, tax_rate)
+            quote.quote_date = quote_date_value
+            quote.valid_until = _safe_parse_date(request.POST.get('valid_until', '').strip())
+            quote.follow_up_date = _safe_parse_date(request.POST.get('follow_up_date', '').strip())
+
+            status = request.POST.get('quote_status', 'draft') or 'draft'
+            if status not in {choice[0] for choice in CustomerQuote.STATUS_CHOICES}:
+                status = 'draft'
+            quote.status = status
+
+            stage = request.POST.get('quote_stage', 'proposal') or 'proposal'
+            if stage not in allowed_quote_stages:
+                stage = 'proposal'
+            quote.stage = stage
+
+            probability_percent = _safe_parse_int(request.POST.get('probability_percent', ''), default=50)
+            if probability_percent is None:
+                probability_percent = 50
+            quote.probability_percent = max(0, min(probability_percent, 100))
+
+            currency = request.POST.get('currency', 'TRY') or 'TRY'
+            if currency not in {choice[0] for choice in CustomerQuote.CURRENCY_CHOICES}:
+                currency = 'TRY'
+            quote.currency = currency
+
+            quote.delivery_time = request.POST.get('delivery_time', '').strip()
+            quote.payment_terms = request.POST.get('quote_payment_terms', '').strip()
+            quote.scope_items = request.POST.get('scope_items', '').strip()
+            quote.notes = request.POST.get('quote_notes', '').strip()
+            quote.save()
+            messages.success(request, 'Teklif guncellendi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+        if action == 'delete_quote':
+            quote_id = request.POST.get('quote_id', '').strip()
+            quote = CustomerQuote.objects.filter(id=quote_id, customer=customer).first()
+            if not quote:
+                messages.error(request, 'Teklif bulunamadi.')
+                return redirect('customer_detail', pk=customer.pk)
+
+            quote.delete()
+            messages.success(request, 'Teklif silindi.')
+            return redirect('customer_detail', pk=customer.pk)
+
+    quotes = customer.quotes.all()
+    context = {
+        'customer': customer,
+        'quotes': quotes,
+        'customer_statuses': Customer.STATUS_CHOICES,
+        'customer_types': Customer.TYPE_CHOICES,
+        'customer_priorities': Customer.PRIORITY_CHOICES,
+        'quote_statuses': CustomerQuote.STATUS_CHOICES,
+        'quote_stages': CustomerQuote.STAGE_CHOICES,
+        'currency_choices': CustomerQuote.CURRENCY_CHOICES,
+    }
+    return render(request, 'core/customer_detail.html', context)
 
 
 @login_required
