@@ -41,24 +41,62 @@ class Customer(models.Model):
         ('inactive', 'Pasif'),
     ]
 
+    TYPE_CHOICES = [
+        ('individual', 'Bireysel'),
+        ('company', 'Kurumsal'),
+        ('public', 'Kamu'),
+        ('partner', 'Is Ortagi'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Dusuk'),
+        ('medium', 'Orta'),
+        ('high', 'Yuksek'),
+        ('critical', 'Kritik'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers')
     name = models.CharField(max_length=150)
     company_name = models.CharField(max_length=200, blank=True)
+    customer_code = models.CharField(max_length=40, blank=True)
+    customer_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='company')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     sector = models.CharField(max_length=120, blank=True)
     title = models.CharField(max_length=120, blank=True)
+    employee_count = models.PositiveIntegerField(null=True, blank=True)
+    annual_revenue_expectation = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     alternate_phone = models.CharField(max_length=30, blank=True)
+    whatsapp_phone = models.CharField(max_length=30, blank=True)
     website = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+    primary_contact_name = models.CharField(max_length=150, blank=True)
+    primary_contact_title = models.CharField(max_length=120, blank=True)
+    primary_contact_email = models.EmailField(blank=True)
+    primary_contact_phone = models.CharField(max_length=30, blank=True)
     city = models.CharField(max_length=120, blank=True)
+    district = models.CharField(max_length=120, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
     country = models.CharField(max_length=120, blank=True)
     address = models.TextField(blank=True)
+    invoice_address = models.TextField(blank=True)
+    shipping_address = models.TextField(blank=True)
     tax_office = models.CharField(max_length=120, blank=True)
     tax_number = models.CharField(max_length=50, blank=True)
+    is_e_invoice_customer = models.BooleanField(default=False)
+    e_invoice_alias = models.CharField(max_length=120, blank=True)
+    payment_terms_days = models.PositiveSmallIntegerField(null=True, blank=True)
     preferred_contact_channel = models.CharField(max_length=80, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='lead')
     source = models.CharField(max_length=120, blank=True)
     budget_expectation = models.CharField(max_length=120, blank=True)
+    decision_maker = models.CharField(max_length=150, blank=True)
+    decision_maker_contact = models.CharField(max_length=120, blank=True)
+    pain_points = models.TextField(blank=True)
+    competitor_info = models.TextField(blank=True)
+    last_contacted_at = models.DateField(null=True, blank=True)
+    next_follow_up_at = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -88,17 +126,32 @@ class CustomerQuote(models.Model):
         ('GBP', 'GBP'),
     ]
 
+    STAGE_CHOICES = [
+        ('qualification', 'On Gorusme'),
+        ('proposal', 'Teklif Hazirlaniyor'),
+        ('negotiation', 'Muzakere'),
+        ('final', 'Final Asamasi'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer_quotes')
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='quotes')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     reference_code = models.CharField(max_length=80, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=20)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='TRY')
     quote_date = models.DateField()
     valid_until = models.DateField(null=True, blank=True)
     follow_up_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default='proposal')
+    probability_percent = models.PositiveSmallIntegerField(default=50)
+    delivery_time = models.CharField(max_length=120, blank=True)
+    payment_terms = models.CharField(max_length=200, blank=True)
+    scope_items = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

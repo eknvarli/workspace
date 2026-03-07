@@ -83,12 +83,8 @@ WSGI_APPLICATION = 'workspace.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'workspaceturkishsystem_db'),
-        'USER': os.getenv('POSTGRES_USER', 'workspaceturkishsystem_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'workspaceturkishsystem_password'),
-        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
