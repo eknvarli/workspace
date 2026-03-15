@@ -487,7 +487,6 @@ export default function Dashboard() {
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ekip Üyeleri</p>
                                     <div className="mt-3 flex items-end justify-between">
                                         <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.member_count}</h3>
-                                        <span className="text-[10px] font-bold text-slate-400 mb-1">Aktif Kullanıcı</span>
                                     </div>
                                 </div>
                                 <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
