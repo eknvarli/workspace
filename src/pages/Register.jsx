@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEnvelope, FaArrowRight, FaEye, FaEyeSlash } from "react-icons/fa";
+import api from "../api/axios";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -10,9 +11,13 @@ export default function Register() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setSuccess("");
+
         if (!username || !email || !password || !confirmPassword) {
             setError("Lütfen tüm alanları doldurun.");
             return;
@@ -21,126 +26,141 @@ export default function Register() {
             setError("Şifreler birbiriyle uyuşmuyor.");
             return;
         }
-        navigate("/login");
+
+        try {
+            await api.post("/register/", { username, email, password });
+            setSuccess("Kayıt başarılı! Lütfen yöneticinin hesabınızı onaylamasını bekleyin.");
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+        } catch (err) {
+            if (err.response && err.response.data) {
+                const data = err.response.data;
+                const firstError = Object.values(data)[0];
+                setError(Array.isArray(firstError) ? firstError[0] : "Kayıt sırasında bir hata oluştu.");
+            } else {
+                setError("Sunucuya bağlanılamadı.");
+            }
+        }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-6 relative overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-blue-600/20 rounded-full blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-600/10 rounded-full blur-[150px]" />
+        <div className="min-h-screen flex items-center justify-center bg-[#020617] p-6">
+            <div className="max-w-md w-full border border-white/5 bg-[#0a0f1e] p-10 shadow-2xl">
+                <div className="mb-10 border-b border-white/5 pb-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-8 w-8 bg-blue-600 flex items-center justify-center font-black text-white">W</div>
+                        <span className="text-sm font-black text-white tracking-widest uppercase">Workspace Portal</span>
+                    </div>
+                    <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Yeni Kayıt</h1>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-2">Ekibin Bir Parçası Olun</p>
+                </div>
 
-            <div className="max-w-md w-full z-10">
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">
-                            Workspace <span className="text-xs text-gray-300 font-light tracking-normal">by TurkishSystems</span>
-                        </h1>
-                        <p className="text-gray-400 font-medium">
-                            Ekibe katılmak için yeni bir hesap oluştur.
-                        </p>
+                {success && (
+                    <div className="mb-8 border-l-4 border-emerald-600 bg-emerald-600/10 p-4">
+                        <p className="text-[11px] font-black text-emerald-500 uppercase tracking-widest leading-relaxed">{success}</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="mb-8 border-l-4 border-rose-600 bg-rose-600/10 p-4">
+                        <p className="text-[11px] font-black text-rose-500 uppercase tracking-widest">{error}</p>
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kullanıcı Adı</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-600">
+                                <FaUser size={14} />
+                            </div>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                                placeholder="USERNAME"
+                                className="block w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-widest"
+                            />
+                        </div>
                     </div>
 
-                    {error && (
-                        <div className="mb-6 animate-pulse">
-                            <div className="p-4 rounded-xl text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20">
-                                {error}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">E-Posta</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-600">
+                                <FaEnvelope size={14} />
                             </div>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                placeholder="EMAIL@ADDRESS.COM"
+                                className="block w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-widest"
+                            />
                         </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">Kullanıcı Adı</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500 text-gray-500">
-                                    <FaUser size={18} />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    required
-                                    placeholder="kullanici_adi"
-                                    className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">E-Posta</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500 text-gray-500">
-                                    <FaEnvelope size={18} />
-                                </div>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    placeholder="eposta@adresiniz.com"
-                                    className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">Şifre</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500 text-gray-500">
-                                    <FaLock size={18} />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    placeholder="••••••••"
-                                    className="block w-full pl-11 pr-12 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-blue-400 transition-colors"
-                                >
-                                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">Şifre Tekrar</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500 text-gray-500">
-                                    <FaLock size={18} />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                    placeholder="••••••••"
-                                    className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10"
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full group relative flex items-center justify-center py-4 px-6 mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98]"
-                        >
-                            <span>Hesap Oluştur</span>
-                            <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </form>
-
-                    <div className="mt-8 text-center border-t border-white/5 pt-6">
-                        <p className="text-gray-400 text-sm">
-                            Zaten hesabınız var mı?{" "}
-                            <Link to="/login" className="text-white font-bold hover:underline decoration-blue-500 underline-offset-4">
-                                Giriş Yap
-                            </Link>
-                        </p>
                     </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Şifre</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-600">
+                                <FaLock size={14} />
+                            </div>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="••••••••"
+                                className="block w-full pl-11 pr-12 py-3.5 bg-white/5 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-widest"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-600 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Şifre Tekrar</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-600">
+                                <FaLock size={14} />
+                            </div>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                placeholder="••••••••"
+                                className="block w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-blue-600 transition-colors uppercase tracking-widest"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full flex items-center justify-between py-5 px-8 mt-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-[0.3em] transition-all"
+                    >
+                        <span>Hesap Oluştur</span>
+                        <FaArrowRight />
+                    </button>
+                </form>
+
+                <div className="mt-12 pt-8 border-t border-white/5 text-center">
+                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                        Zaten hesabınız var mı?{" "}
+                        <Link to="/login" className="text-white hover:text-blue-500 transition-colors border-b border-white/20 pb-0.5 ml-2">
+                            GİRİŞ YAP
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
