@@ -57,8 +57,19 @@ def dashboard(request):
         .prefetch_related(Prefetch('project_memberships', queryset=ProjectMembership.objects.select_related('user')))
         .order_by('name')
     )
-    notes = Note.objects.filter(organization=current_org, author=request.user).select_related('project').prefetch_related('tags').order_by('-is_pinned', '-updated_at')[:20]
-    selected_note = notes.first()
+    favorite_notes = (
+        Note.objects.filter(organization=current_org, author=request.user, is_pinned=True)
+        .select_related('project')
+        .prefetch_related('tags')
+        .order_by('-updated_at')[:12]
+    )
+    all_notes = (
+        Note.objects.filter(organization=current_org, author=request.user)
+        .select_related('project')
+        .prefetch_related('tags')
+        .order_by('-is_pinned', '-updated_at')[:40]
+    )
+    selected_note = all_notes.first()
     activity_logs = ActivityLog.objects.filter(organization=current_org).select_related('actor', 'task', 'project')[:8]
     announcements = Announcement.objects.filter(organization=current_org).select_related('author')[:5]
     memberships = current_org.memberships.select_related('user', 'user__profile').all()
@@ -76,9 +87,10 @@ def dashboard(request):
     }
     context = {
         **get_workspace_shell_context(request=request, current_org=current_org),
-        'projects': projects[:8],
+        'projects': projects[:24],
         'active_projects': projects.filter(status=Project.Status.ACTIVE)[:6],
-        'notes': notes,
+        'favorite_notes': favorite_notes,
+        'all_notes': all_notes,
         'selected_note': selected_note,
         'activity_logs': activity_logs,
         'announcements': announcements,

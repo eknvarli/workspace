@@ -13,36 +13,36 @@
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     <span class="text-slate-700">Dashboard</span>
                 </div>
-                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Genel bakis</h2>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Genel bakış</h2>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" onclick="createTag()" class="ws-btn ws-btn-secondary">Etiket ekle</button>
-                <button type="button" onclick="createNote()" class="ws-btn ws-btn-primary">Yeni not</button>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" class="rounded-xl bg-[#f7f1ea] px-3 py-2 font-semibold text-slate-900 shadow-sm">Genel</button>
-            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Projeler</button>
-            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Aktivite</button>
-            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Notlar</button>
+            <button type="button" class="dashboard-tab rounded-xl bg-[#f7f1ea] px-3 py-2 font-semibold text-slate-900 shadow-sm" data-target="general">Genel</button>
+            <button type="button" class="dashboard-tab rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]" data-target="projects">Projeler</button>
+            <button type="button" class="dashboard-tab rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]" data-target="activity">Aktivite</button>
+            <button type="button" class="dashboard-tab rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]" data-target="notes">Notlar</button>
         </div>
     </section>
 
-    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif proje</p><p class="ws-stat-value">{{ workspace_metrics.project_active }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Tum proje</p><p class="ws-stat-value">{{ workspace_metrics.project_total }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Acik gorev</p><p class="ws-stat-value">{{ workspace_metrics.task_open }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif kullanici</p><p class="ws-stat-value">{{ workspace_metrics.member_active }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Gelen istek</p><p class="ws-stat-value">{{ workspace_metrics.pending_requests }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Kritik uyari</p><p class="ws-stat-value">{{ workspace_metrics.critical_alerts }}</p></div>
-    </section>
+    <section data-dashboard-panel="general" class="dashboard-panel space-y-5">
+        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif proje</p><p class="ws-stat-value">{{ workspace_metrics.project_active }}</p></div>
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Tüm proje</p><p class="ws-stat-value">{{ workspace_metrics.project_total }}</p></div>
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Açık görev</p><p class="ws-stat-value">{{ workspace_metrics.task_open }}</p></div>
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif kullanıcı</p><p class="ws-stat-value">{{ workspace_metrics.member_active }}</p></div>
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Gelen istek</p><p class="ws-stat-value">{{ workspace_metrics.pending_requests }}</p></div>
+            <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Kritik uyarı</p><p class="ws-stat-value">{{ workspace_metrics.critical_alerts }}</p></div>
+        </section>
 
-    <div class="grid gap-6 xl:grid-cols-[320px_1fr_340px]">
+        <div class="grid gap-6 xl:grid-cols-[320px_1fr_340px]">
         <section class="space-y-6">
             <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Canli durum</p>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Canlı durum</p>
                         <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Aktif ekip</h2>
                     </div>
                     <span class="text-xs text-slate-400">{{ active_members|length }}</span>
@@ -57,7 +57,7 @@
                         </div>
                     </button>
                     {% empty %}
-                    <p class="text-sm text-slate-400">Aktif kullanici gorunmuyor.</p>
+                    <p class="text-sm text-slate-400">Aktif kullanıcı görünmüyor.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -86,7 +86,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Duyurular</p>
-                        <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Guncellemeler</h2>
+                        <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Güncellemeler</h2>
                     </div>
                     <span class="text-xs text-slate-400">{{ announcements|length }}</span>
                 </div>
@@ -104,11 +104,11 @@
         </section>
 
         <section class="space-y-6">
-            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+            <div id="dashboard-projects-section" class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Ana kontrol</p>
-                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Workspace ozeti</h2>
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Workspace özeti</h2>
                     </div>
                 </div>
                 <div class="mt-6 grid gap-4 lg:grid-cols-2">
@@ -123,7 +123,7 @@
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <p class="text-sm font-semibold text-slate-900">{{ project.name }}</p>
-                                        <p class="mt-1 text-xs text-slate-400">{{ project.get_visibility_display }} · {{ project.project_memberships.count }} uye</p>
+                                        <p class="mt-1 text-xs text-slate-400">{{ project.get_visibility_display }} · {{ project.project_memberships.count }} üye</p>
                                     </div>
                                     <span class="h-3 w-3 rounded-full" style="background: {{ project.color }}"></span>
                                 </div>
@@ -135,7 +135,7 @@
                     </div>
                     <div class="rounded-3xl border border-[#ebd6d0] bg-[#f8ece8] p-5">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-black tracking-tight text-slate-900">Uyarilar</h3>
+                            <h3 class="text-lg font-black tracking-tight text-slate-900">Uyarılar</h3>
                             <span class="text-xs text-slate-400">{{ critical_alerts|length }}</span>
                         </div>
                         <div class="mt-4 space-y-3">
@@ -145,7 +145,7 @@
                                 <p class="mt-1 text-xs text-slate-500">{{ alert.project.name|default:'Genel' }} · {{ alert.amount }} {{ alert.currency }}</p>
                             </div>
                             {% empty %}
-                            <p class="text-sm text-slate-400">Kritik finans uyarisi yok.</p>
+                            <p class="text-sm text-slate-400">Kritik finans uyarısı yok.</p>
                             {% endfor %}
                             {% for task in due_tasks %}
                             <div class="rounded-2xl border border-[#eadab8] bg-[#fbf4ea] p-4">
@@ -158,64 +158,34 @@
                 </div>
             </div>
 
-            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+            <div id="dashboard-notes-section" class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Merkez alan</p>
-                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Notlar ve dokumantasyon</h2>
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Favori notlar</h2>
                     </div>
+                    <button type="button" onclick="activateDashboardTab('notes')" class="ws-btn ws-btn-primary">Tüm notları aç</button>
                 </div>
-                <div class="mt-6 grid gap-5 lg:grid-cols-[260px_1fr]">
-                    <div id="note-list" class="space-y-2">
-                        {% for note in notes %}
-                        <button type="button" class="note-item w-full rounded-2xl border border-[#eee7de] bg-[#f7f1ea] px-4 py-3 text-left transition hover:bg-[#f4eee7]" data-id="{{ note.id }}" data-title="{{ note.title|escapejs }}" data-content="{{ note.content|escapejs }}" data-pinned="{{ note.is_pinned|yesno:'true,false' }}" data-project-id="{{ note.project_id|default:'' }}" data-note-type="{{ note.note_type }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}" onclick="selectNote(this)">
+                <div class="mt-6 space-y-3">
+                        {% for note in favorite_notes %}
+                        <button type="button" class="w-full rounded-2xl border border-[#eee7de] bg-[#f7f1ea] px-4 py-4 text-left transition hover:bg-[#f4eee7]" onclick="openNoteInNotesTab({{ note.id }})">
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-slate-900">{{ note.title|default:'Basliksiz not' }}</p>
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız not' }}</p>
                                     <p class="mt-1 truncate text-xs text-slate-400">{{ note.get_note_type_display }}{% if note.project %} · {{ note.project.name }}{% endif %}</p>
                                 </div>
-                                {% if note.is_pinned %}<span class="text-xs text-[#2f5b8f]">Sabit</span>{% endif %}
+                                <span class="text-xs text-[#2f5b8f]">Favori</span>
                             </div>
                         </button>
                         {% empty %}
-                        <p class="text-sm text-slate-400">Ilk notunuzu olusturun.</p>
+                        <p class="text-sm text-slate-400">Burada yalnızca favori notlar görünür. İlk favori notunuzu oluşturun.</p>
                         {% endfor %}
-                    </div>
-                    <div class="rounded-3xl border border-[#ece3d8] bg-[#f7f1ea] p-5">
-                        <div class="grid gap-3 md:grid-cols-3">
-                            <select id="note-project" class="ws-input ws-select">
-                                <option value="">Proje bagla</option>
-                                {% for project in available_projects %}
-                                <option value="{{ project.id }}" {% if selected_note.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <select id="note-type" class="ws-input ws-select">
-                                <option value="note" {% if selected_note.note_type == 'note' or not selected_note %}selected{% endif %}>Not</option>
-                                <option value="documentation" {% if selected_note.note_type == 'documentation' %}selected{% endif %}>Dokumantasyon</option>
-                                <option value="plan" {% if selected_note.note_type == 'plan' %}selected{% endif %}>Plan</option>
-                            </select>
-                            <select id="note-tags" class="ws-input min-h-14" multiple>
-                                {% for tag in available_tags %}
-                                <option value="{{ tag.id }}" {% if selected_note and tag in selected_note.tags.all %}selected{% endif %}>{{ tag.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <input id="note-title" class="mt-4 w-full bg-transparent text-2xl font-black tracking-tight text-slate-900 outline-none" placeholder="Not basligi" value="{{ selected_note.title|default:'' }}">
-                        <textarea id="note-content" class="mt-4 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-slate-600 outline-none" placeholder="Buraya istediginiz notlari yazin...">{{ selected_note.content|default:'' }}</textarea>
-                        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                            <label class="inline-flex items-center gap-2 text-sm text-slate-600"><input id="note-pinned" type="checkbox" {% if selected_note and selected_note.is_pinned %}checked{% endif %}> Sabitle</label>
-                            <div class="flex gap-2">
-                                <button type="button" onclick="deleteNote()" class="ws-btn ws-btn-secondary">Sil</button>
-                                <button type="button" onclick="saveNote()" class="ws-btn ws-btn-primary">Kaydet</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
 
         <section class="space-y-6">
-            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+            <div id="dashboard-activity-section" class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
                 <h2 class="text-xl font-black tracking-tight text-slate-900">Son aktiviteler</h2>
                 <div class="mt-4 space-y-3">
                     {% for activity in activity_logs %}
@@ -224,7 +194,7 @@
                         <p class="mt-1 text-xs text-slate-400">{{ activity.created_at|date:'d.m.Y H:i' }}</p>
                     </div>
                     {% empty %}
-                    <p class="text-sm text-slate-400">Aktivite kaydi yok.</p>
+                    <p class="text-sm text-slate-400">Aktivite kaydı yok.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -248,13 +218,181 @@
                 </div>
             </div>
         </section>
-    </div>
+        </div>
+    </section>
+
+    <section data-dashboard-panel="projects" class="dashboard-panel hidden rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Projeler</p>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Tüm projeler</h2>
+            </div>
+            <span class="text-xs text-slate-400">{{ projects|length }}</span>
+        </div>
+        <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {% for project in projects %}
+            <a href="{% url 'project_detail_page' project.id %}?workspace={{ current_organization.slug }}" class="block rounded-3xl border border-[#eee7de] bg-[#f7f1ea] p-5 transition hover:bg-[#f4eee7]">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-base font-semibold text-slate-900">{{ project.name }}</p>
+                        <p class="mt-2 text-sm text-slate-500">{{ project.get_status_display }} · {{ project.get_visibility_display }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ project.project_memberships.count }} üye</p>
+                    </div>
+                    <span class="mt-1 h-3 w-3 rounded-full" style="background: {{ project.color }}"></span>
+                </div>
+            </a>
+            {% empty %}
+            <p class="text-sm text-slate-400">Proje bulunmuyor.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section data-dashboard-panel="activity" class="dashboard-panel hidden grid gap-6 xl:grid-cols-[340px_1fr]">
+        <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Aktif kullanıcılar</p>
+                    <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Ekip görünürlüğü</h2>
+                </div>
+                <span class="text-xs text-slate-400">{{ active_members|length }}</span>
+            </div>
+            <div class="mt-4 space-y-3">
+                {% for membership in active_members %}
+                <button type="button" onclick="openUserProfile({{ membership.user.id }})" class="flex w-full items-center gap-3 rounded-3xl border border-[#eee7de] bg-[#f7f1ea] p-3 text-left transition hover:bg-[#f4eee7]">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4ecf6] text-sm font-bold text-[#2f5b8f]">{{ membership.user.username|first|upper }}</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold text-slate-900">{{ membership.user.get_full_name|default:membership.user.username }}</p>
+                        <p class="mt-1 truncate text-xs text-slate-400">{{ membership.user.profile.job_title|default:membership.get_role_display }} · {{ membership.user.profile.presence_status|default:'offline' }}</p>
+                    </div>
+                </button>
+                {% empty %}
+                <p class="text-sm text-slate-400">Aktif kullanıcı görünmüyor.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Kullanıcı logları</p>
+                    <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Kim ne yaptı</h2>
+                </div>
+                <span class="text-xs text-slate-400">{{ activity_logs|length }}</span>
+            </div>
+            <div class="mt-4 space-y-3">
+                {% for activity in activity_logs %}
+                <div class="rounded-2xl border border-[#eee7de] bg-[#f7f1ea] p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">{{ activity.actor.username|default:'Sistem' }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ activity.verb }}</p>
+                        </div>
+                        <p class="text-xs text-slate-400">{{ activity.created_at|date:'d.m.Y H:i' }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-400">Aktivite kaydı yok.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section data-dashboard-panel="notes" class="dashboard-panel hidden rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Notlar</p>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Tüm notlar</h2>
+            </div>
+            <button type="button" onclick="createNote()" class="ws-btn ws-btn-primary">Yeni not</button>
+        </div>
+        <div class="mt-6 grid gap-5 lg:grid-cols-[320px_1fr]">
+            <div id="note-list" class="max-h-[36rem] space-y-2 overflow-y-auto pr-1">
+                {% for note in all_notes %}
+                <button type="button" class="note-item w-full rounded-2xl border border-[#eee7de] bg-[#f7f1ea] px-4 py-3 text-left transition hover:bg-[#f4eee7]" data-id="{{ note.id }}" data-title="{{ note.title|escapejs }}" data-content="{{ note.content|escapejs }}" data-pinned="{{ note.is_pinned|yesno:'true,false' }}" data-project-id="{{ note.project_id|default:'' }}" data-note-type="{{ note.note_type }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}" onclick="selectNote(this)">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız not' }}</p>
+                            <p class="mt-1 truncate text-xs text-slate-400">{{ note.get_note_type_display }}{% if note.project %} · {{ note.project.name }}{% endif %}</p>
+                        </div>
+                        {% if note.is_pinned %}<span class="text-xs text-[#2f5b8f]">Favori</span>{% endif %}
+                    </div>
+                </button>
+                {% empty %}
+                <p class="text-sm text-slate-400">Henüz not yok. İlk notunuzu oluşturun.</p>
+                {% endfor %}
+            </div>
+            <div class="rounded-3xl border border-[#ece3d8] bg-[#f7f1ea] p-5">
+                <div class="grid gap-3 md:grid-cols-3">
+                    <select id="note-project" class="ws-input ws-select">
+                        <option value="">Proje bağla</option>
+                        {% for project in available_projects %}
+                        <option value="{{ project.id }}" {% if selected_note.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="note-type" class="ws-input ws-select">
+                        <option value="note" {% if selected_note.note_type == 'note' or not selected_note %}selected{% endif %}>Not</option>
+                        <option value="documentation" {% if selected_note.note_type == 'documentation' %}selected{% endif %}>Dokümantasyon</option>
+                        <option value="plan" {% if selected_note.note_type == 'plan' %}selected{% endif %}>Plan</option>
+                    </select>
+                    <select id="note-tags" class="ws-input min-h-14" multiple>
+                        {% for tag in available_tags %}
+                        <option value="{{ tag.id }}" {% if selected_note and tag in selected_note.tags.all %}selected{% endif %}>{{ tag.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input id="note-title" class="mt-4 w-full bg-transparent text-2xl font-black tracking-tight text-slate-900 outline-none" placeholder="Not başlığı" value="{{ selected_note.title|default:'' }}">
+                <textarea id="note-content" class="mt-4 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-slate-600 outline-none" placeholder="Buraya istediğiniz notları yazın...">{{ selected_note.content|default:'' }}</textarea>
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-600"><input id="note-pinned" type="checkbox" {% if selected_note and selected_note.is_pinned %}checked{% endif %}> Favori olarak göster</label>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="deleteNote()" class="ws-btn ws-btn-secondary">Sil</button>
+                        <button type="button" onclick="saveNote()" class="ws-btn ws-btn-primary">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}
 
 {% block page_scripts %}
 <script>
     let selectedNoteId = {{ selected_note.id|default:'null' }};
+
+    function resetNoteEditor() {
+        selectedNoteId = null;
+        document.querySelectorAll('.note-item').forEach((item) => item.classList.remove('border-[#c7d5e6]', 'bg-[#edf3f8]'));
+        document.getElementById('note-title').value = '';
+        document.getElementById('note-content').value = '';
+        document.getElementById('note-pinned').checked = true;
+        document.getElementById('note-project').value = '';
+        document.getElementById('note-type').value = 'note';
+        Array.from(document.getElementById('note-tags').options).forEach((option) => {
+            option.selected = false;
+        });
+    }
+
+    function openNoteInNotesTab(noteId) {
+        activateDashboardTab('notes');
+        const noteButton = document.querySelector(`.note-item[data-id="${noteId}"]`);
+        if (noteButton) {
+            selectNote(noteButton);
+            noteButton.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function activateDashboardTab(target) {
+        document.querySelectorAll('.dashboard-tab').forEach((button) => {
+            const isActive = button.dataset.target === target;
+            button.classList.toggle('bg-[#f7f1ea]', isActive);
+            button.classList.toggle('text-slate-900', isActive);
+            button.classList.toggle('shadow-sm', isActive);
+            button.classList.toggle('font-semibold', isActive);
+            button.classList.toggle('text-slate-500', !isActive);
+        });
+        document.querySelectorAll('.dashboard-panel').forEach((panel) => {
+            panel.classList.toggle('hidden', panel.dataset.dashboardPanel !== target);
+        });
+    }
 
     function getSelectedValues(elementId) {
         return Array.from(document.getElementById(elementId).selectedOptions).map((item) => Number(item.value));
@@ -275,22 +413,10 @@
         });
     }
 
-    async function createNote() {
-        const response = await fetch('/api/notes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-            body: JSON.stringify({
-                organization: currentOrganizationId,
-                project: document.getElementById('note-project').value || null,
-                title: 'Yeni not',
-                content: '',
-                note_type: document.getElementById('note-type').value,
-                tag_ids: getSelectedValues('note-tags'),
-            }),
-        });
-        if (response.ok) {
-            window.location.reload();
-        }
+    function createNote() {
+        resetNoteEditor();
+        activateDashboardTab('notes');
+        document.getElementById('note-title').focus();
     }
 
     async function saveNote() {
@@ -340,6 +466,11 @@
         }
     }
 
+    document.querySelectorAll('.dashboard-tab').forEach((button) => {
+        button.addEventListener('click', () => activateDashboardTab(button.dataset.target));
+    });
+
+    activateDashboardTab('general');
     document.querySelector('.note-item')?.classList.add('border-[#c7d5e6]', 'bg-[#edf3f8]');
 </script>
 {% endblock %}

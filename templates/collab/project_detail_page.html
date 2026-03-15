@@ -18,15 +18,15 @@
                 <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{{ project.name }}</h2>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button type="button" onclick="createProjectNote('plan')" class="ws-btn ws-btn-secondary">Plan ekle</button>
-                <button type="button" onclick="createProjectNote('note')" class="ws-btn ws-btn-primary">Not ekle</button>
+                <button type="button" onclick="openProjectNoteEditor('plan')" class="ws-btn ws-btn-secondary">Plan ekle</button>
+                <button type="button" onclick="openProjectNoteEditor('note')" class="ws-btn ws-btn-primary">Not ekle</button>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-            <button type="button" class="project-tab-btn rounded-xl bg-[#f7f1ea] px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm" data-project-tab="lists">Gorev listeleri</button>
+            <button type="button" class="project-tab-btn rounded-xl bg-[#f7f1ea] px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm" data-project-tab="lists">Görev listeleri</button>
             <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="plans">Planlar</button>
-            <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="stats">Istatistik</button>
-            <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="documentation">Dokumantasyon</button>
+            <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="stats">İstatistik</button>
+            <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="documentation">Dokümantasyon</button>
             <button type="button" class="project-tab-btn rounded-xl px-3 py-2 text-sm text-slate-500 transition hover:bg-[#f4eee7]" data-project-tab="notes">Notlar</button>
         </div>
     </section>
@@ -34,18 +34,18 @@
     <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">Proje detayi</p>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">Proje detayı</p>
                 <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">{{ project.name }}</h2>
-                <p class="mt-3 text-sm leading-7 text-slate-600">{{ project.description|default:'Aciklama eklenmedi.' }}</p>
+                <p class="mt-3 text-sm leading-7 text-slate-600">{{ project.description|default:'Açıklama eklenmedi.' }}</p>
                 <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-500">
                     <span class="rounded-full bg-slate-100 px-3 py-1">{{ project.get_status_display }}</span>
                     <span class="rounded-full bg-slate-100 px-3 py-1">{{ project.get_visibility_display }}</span>
-                    <span class="rounded-full bg-slate-100 px-3 py-1">{{ project.project_memberships.count }} uye</span>
+                    <span class="rounded-full bg-slate-100 px-3 py-1">{{ project.project_memberships.count }} üye</span>
                 </div>
             </div>
             <div class="text-right">
                 <span class="ml-auto block h-4 w-4 rounded-full" style="background: {{ project.color }}"></span>
-                <p class="mt-4 text-xs uppercase tracking-[0.18em] text-slate-400">Owner</p>
+                <p class="mt-4 text-xs uppercase tracking-[0.18em] text-slate-400">Sahibi</p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">{{ project.owner.get_full_name|default:project.owner.username }}</p>
             </div>
         </div>
@@ -54,7 +54,7 @@
     <section data-project-tab-panel="lists" class="project-tab-panel grid gap-6 xl:grid-cols-[1fr_340px]">
         <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] overflow-hidden shadow-sm">
             <div class="border-b border-slate-200 px-5 py-4">
-                <h3 class="text-xl font-black tracking-tight text-slate-900">Gorev listeleri</h3>
+                <h3 class="text-xl font-black tracking-tight text-slate-900">Görev listeleri</h3>
             </div>
             <div class="grid gap-4 p-5 xl:grid-cols-5">
                 {% for column in project_task_columns %}
@@ -71,7 +71,7 @@
                                     <p class="text-sm font-semibold text-slate-900">{{ task.title }}</p>
                                     <p class="mt-1 text-xs text-slate-400">{{ task.get_priority_display }} · {{ task.progress_percentage }}%</p>
                                 </div>
-                                <span class="text-xs text-slate-400">{{ task.subtasks.count }} alt gorev</span>
+                                <span class="text-xs text-slate-400">{{ task.subtasks.count }} alt görev</span>
                             </div>
                             {% if task.tags.all %}
                             <div class="mt-3 flex flex-wrap gap-2">
@@ -96,7 +96,7 @@
                             {% endif %}
                         </div>
                         {% empty %}
-                        <div class="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-xs text-slate-400">Bos</div>
+                        <div class="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-xs text-slate-400">Boş</div>
                         {% endfor %}
                     </div>
                 </div>
@@ -106,7 +106,7 @@
 
         <aside class="space-y-6">
             <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
-                <h3 class="text-xl font-black tracking-tight text-slate-900">Uyeler</h3>
+                <h3 class="text-xl font-black tracking-tight text-slate-900">Üyeler</h3>
                 <div class="mt-4 space-y-3">
                     {% for membership in project.project_memberships.all %}
                     <button type="button" onclick="openUserProfile({{ membership.user.id }})" class="flex w-full items-center gap-3 rounded-2xl border border-slate-200 px-3 py-3 text-left transition hover:border-blue-200 hover:bg-blue-50/60">
@@ -117,16 +117,16 @@
                         </div>
                     </button>
                     {% empty %}
-                    <p class="text-sm text-slate-400">Uye bulunmuyor.</p>
+                    <p class="text-sm text-slate-400">Üye bulunmuyor.</p>
                     {% endfor %}
                 </div>
             </section>
 
             <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
-                <h3 class="text-xl font-black tracking-tight text-slate-900">Proje ozeti</h3>
+                <h3 class="text-xl font-black tracking-tight text-slate-900">Proje özeti</h3>
                 <div class="mt-4 space-y-3 text-sm text-slate-600">
-                    <div class="rounded-2xl bg-slate-50 p-4">Owner: {{ project.owner.get_full_name|default:project.owner.username }}</div>
-                    <div class="rounded-2xl bg-slate-50 p-4">Takim: {{ project.team.name|default:'Bagli takim yok' }}</div>
+                    <div class="rounded-2xl bg-slate-50 p-4">Sahibi: {{ project.owner.get_full_name|default:project.owner.username }}</div>
+                    <div class="rounded-2xl bg-slate-50 p-4">Takım: {{ project.team.name|default:'Bağlı takım yok' }}</div>
                     <div class="rounded-2xl bg-slate-50 p-4">Termin: {{ project.due_date|date:'d.m.Y'|default:'Belirtilmedi' }}</div>
                 </div>
             </section>
@@ -137,13 +137,13 @@
         <div class="space-y-6">
             <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
-                    <h3 class="text-xl font-black tracking-tight text-slate-900">Yol haritasi ve planlar</h3>
-                    <button type="button" onclick="createProjectNote('plan')" class="ws-btn ws-btn-primary">Plan ekle</button>
+                    <h3 class="text-xl font-black tracking-tight text-slate-900">Yol haritası ve planlar</h3>
+                    <button type="button" onclick="openProjectNoteEditor('plan')" class="ws-btn ws-btn-primary">Plan ekle</button>
                 </div>
                 <div class="mt-4 space-y-3">
                     {% for note in plan_notes %}
                     <div class="rounded-3xl border border-slate-200 p-4">
-                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Basliksiz plan' }}</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız plan' }}</p>
                         <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:220 }}</p>
                     </div>
                     {% empty %}
@@ -154,17 +154,17 @@
 
             <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
-                    <h3 class="text-xl font-black tracking-tight text-slate-900">Toplantilar</h3>
-                    <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">Toplanti olustur</button>
+                    <h3 class="text-xl font-black tracking-tight text-slate-900">Toplantılar</h3>
+                    <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">Toplantı oluştur</button>
                 </div>
                 <form id="meeting-form" class="mt-4 hidden space-y-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <input name="title" class="ws-input" placeholder="Toplanti basligi">
-                    <textarea name="description" rows="3" class="ws-input" placeholder="Aciklama"></textarea>
+                    <input name="title" class="ws-input" placeholder="Toplantı başlığı">
+                    <textarea name="description" rows="3" class="ws-input" placeholder="Açıklama"></textarea>
                     <div class="grid gap-3 md:grid-cols-2">
                         <input type="datetime-local" name="start_at" class="ws-input">
                         <input type="datetime-local" name="end_at" class="ws-input">
                     </div>
-                    <input name="meeting_url" class="ws-input" placeholder="Toplanti linki">
+                    <input name="meeting_url" class="ws-input" placeholder="Toplantı linki">
                     <select name="attendee_ids" multiple class="ws-input min-h-32">
                         {% for membership in memberships %}
                         <option value="{{ membership.user.id }}">{{ membership.user.get_full_name|default:membership.user.username }}</option>
@@ -176,9 +176,9 @@
                         <option value="member">Member</option>
                         <option value="guest">Guest</option>
                     </select>
-                    <input type="number" name="reminder_minutes_before" class="ws-input" value="30" placeholder="Hatirlatma dakikasi">
+                    <input type="number" name="reminder_minutes_before" class="ws-input" value="30" placeholder="Hatırlatma dakikası">
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                        <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">İptal</button>
                         <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
                     </div>
                 </form>
@@ -189,73 +189,77 @@
                         <p class="mt-1 text-xs text-slate-400">{{ event.start_at|date:'d.m.Y H:i' }} · {{ event.attendees.count }} katilimci</p>
                     </div>
                     {% empty %}
-                    <p class="text-sm text-slate-400">Toplanti bulunmuyor.</p>
+                    <p class="text-sm text-slate-400">Toplantı bulunmuyor.</p>
                     {% endfor %}
                 </div>
             </section>
         </div>
 
         <aside class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 space-y-3 shadow-sm">
-            <input id="project-plan-title" class="ws-input" placeholder="Plan basligi">
-            <textarea id="project-plan-content" rows="8" class="ws-input" placeholder="Hedefler, takvim, bagimliliklar"></textarea>
+            <div class="rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] p-4 text-sm text-slate-600">
+                <p class="font-semibold text-slate-900">Plan bilgileri</p>
+                <p class="mt-2">Başlık ve aşağıdaki alanları net girin: amaç, kapsam, teslimler, takvim, riskler ve bağımlılıklar.</p>
+            </div>
+            <input id="project-plan-title" class="ws-input" placeholder="Plan başlığı">
+            <textarea id="project-plan-content" rows="8" class="ws-input" placeholder="Hedefler, takvim, bağımlılıklar"></textarea>
             <select id="project-plan-tags" class="ws-input min-h-24" multiple>
                 {% for tag in available_tags %}
                 <option value="{{ tag.id }}">{{ tag.name }}</option>
                 {% endfor %}
             </select>
-            <button type="button" onclick="createProjectNote('plan')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
+            <button type="button" onclick="saveProjectNote('plan')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
         </aside>
     </section>
 
     <section data-project-tab-panel="stats" class="project-tab-panel hidden grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        <div class="ws-stat-card"><p class="ws-stat-label">Toplam gorev</p><p class="ws-stat-value">{{ project_stats.task_total }}</p></div>
+        <div class="ws-stat-card"><p class="ws-stat-label">Toplam görev</p><p class="ws-stat-value">{{ project_stats.task_total }}</p></div>
         <div class="ws-stat-card"><p class="ws-stat-label">Tamamlanan</p><p class="ws-stat-value">{{ project_stats.task_completed }}</p></div>
         <div class="ws-stat-card"><p class="ws-stat-label">Devam eden</p><p class="ws-stat-value">{{ project_stats.task_in_progress }}</p></div>
-        <div class="ws-stat-card"><p class="ws-stat-label">Toplanti</p><p class="ws-stat-value">{{ project_stats.meeting_total }}</p></div>
-        <div class="ws-stat-card"><p class="ws-stat-label">Uye</p><p class="ws-stat-value">{{ project_stats.member_total }}</p></div>
-        <div class="ws-stat-card"><p class="ws-stat-label">Dokuman</p><p class="ws-stat-value">{{ project_stats.documentation_total }}</p></div>
+        <div class="ws-stat-card"><p class="ws-stat-label">Toplantı</p><p class="ws-stat-value">{{ project_stats.meeting_total }}</p></div>
+        <div class="ws-stat-card"><p class="ws-stat-label">Üye</p><p class="ws-stat-value">{{ project_stats.member_total }}</p></div>
+        <div class="ws-stat-card"><p class="ws-stat-label">Doküman</p><p class="ws-stat-value">{{ project_stats.documentation_total }}</p></div>
     </section>
 
     <section data-project-tab-panel="documentation" class="project-tab-panel hidden grid gap-6 xl:grid-cols-[1fr_320px]">
         <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
             <div class="flex items-center justify-between gap-3">
-                <h3 class="text-xl font-black tracking-tight text-slate-900">Dokumantasyon</h3>
-                <button type="button" onclick="createProjectNote('documentation')" class="ws-btn ws-btn-primary">Dokuman ekle</button>
+                <h3 class="text-xl font-black tracking-tight text-slate-900">Dokümantasyon</h3>
+                <button type="button" onclick="openProjectNoteEditor('documentation')" class="ws-btn ws-btn-primary">Doküman ekle</button>
             </div>
             <div class="mt-4 space-y-3">
                 {% for note in documentation_notes %}
                 <div class="rounded-3xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Basliksiz dokuman' }}</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız doküman' }}</p>
                     <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:300 }}</p>
                 </div>
                 {% empty %}
-                <p class="text-sm text-slate-400">Dokuman eklenmedi.</p>
+                <p class="text-sm text-slate-400">Doküman eklenmedi.</p>
                 {% endfor %}
             </div>
         </div>
         <aside class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 space-y-3 shadow-sm">
-            <input id="project-documentation-title" class="ws-input" placeholder="Dokuman basligi">
+            <input id="project-documentation-title" class="ws-input" placeholder="Doküman başlığı">
             <textarea id="project-documentation-content" rows="10" class="ws-input" placeholder="Kurallar, kararlar, teknik notlar"></textarea>
             <select id="project-documentation-tags" class="ws-input min-h-24" multiple>
                 {% for tag in available_tags %}
                 <option value="{{ tag.id }}">{{ tag.name }}</option>
                 {% endfor %}
             </select>
-            <button type="button" onclick="createProjectNote('documentation')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
+            <button type="button" onclick="saveProjectNote('documentation')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
         </aside>
     </section>
 
     <section data-project-tab-panel="notes" class="project-tab-panel hidden grid gap-6 xl:grid-cols-[1fr_320px]">
         <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
             <div class="flex items-center justify-between gap-3">
-                <h3 class="text-xl font-black tracking-tight text-slate-900">Proje notlari</h3>
-                <button type="button" onclick="createProjectNote('note')" class="ws-btn ws-btn-primary">Not ekle</button>
+                <h3 class="text-xl font-black tracking-tight text-slate-900">Proje notları</h3>
+                <button type="button" onclick="openProjectNoteEditor('note')" class="ws-btn ws-btn-primary">Not ekle</button>
             </div>
             <div class="mt-4 space-y-3">
                 {% for note in general_notes %}
                 <div class="rounded-3xl border border-slate-200 p-4">
                     <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Basliksiz not' }}</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız not' }}</p>
                         <span class="text-xs text-slate-400">{{ note.author.username }}</span>
                     </div>
                     <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:280 }}</p>
@@ -266,14 +270,14 @@
             </div>
         </div>
         <aside class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 space-y-3 shadow-sm">
-            <input id="project-note-title" class="ws-input" placeholder="Not basligi">
-            <textarea id="project-note-content" rows="10" class="ws-input" placeholder="Kararlar, ozetler, gozlemler"></textarea>
+            <input id="project-note-title" class="ws-input" placeholder="Not başlığı">
+            <textarea id="project-note-content" rows="10" class="ws-input" placeholder="Kararlar, özetler, gözlemler"></textarea>
             <select id="project-note-tags" class="ws-input min-h-24" multiple>
                 {% for tag in available_tags %}
                 <option value="{{ tag.id }}">{{ tag.name }}</option>
                 {% endfor %}
             </select>
-            <button type="button" onclick="createProjectNote('note')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
+            <button type="button" onclick="saveProjectNote('note')" class="ws-btn ws-btn-primary w-full">Kaydet</button>
         </aside>
     </section>
 </div>
@@ -299,7 +303,63 @@
         };
     }
 
-    async function createProjectNote(type) {
+    function openProjectNoteEditor(type) {
+        const panelByType = {
+            plan: 'plans',
+            documentation: 'documentation',
+            note: 'notes',
+        };
+        const fieldPrefixByType = {
+            plan: 'plan',
+            documentation: 'documentation',
+            note: 'note',
+        };
+        const defaultTemplates = {
+            plan: {
+                title: `${new Date().getFullYear()} Planı`,
+                content: [
+                    'Amaç',
+                    '',
+                    'Kapsam',
+                    '',
+                    'Teslimler',
+                    '',
+                    'Takvim',
+                    '',
+                    'Riskler',
+                    '',
+                    'Bağımlılıklar',
+                    '',
+                    'Sorumlular',
+                    '',
+                ].join('\n'),
+            },
+            documentation: {
+                title: '',
+                content: '',
+            },
+            note: {
+                title: '',
+                content: '',
+            },
+        };
+        const prefix = fieldPrefixByType[type];
+        if (!prefix) return;
+        setProjectTab(panelByType[type]);
+        const titleInput = document.getElementById(`project-${prefix}-title`);
+        const contentInput = document.getElementById(`project-${prefix}-content`);
+        if (!titleInput || !contentInput) return;
+        if (!titleInput.value.trim() && defaultTemplates[type].title) {
+            titleInput.value = defaultTemplates[type].title;
+        }
+        if (!contentInput.value.trim() && defaultTemplates[type].content) {
+            contentInput.value = defaultTemplates[type].content;
+        }
+        titleInput.focus();
+        titleInput.select();
+    }
+
+    async function saveProjectNote(type) {
         const mapping = {
             plan: getProjectNoteValues('plan'),
             documentation: getProjectNoteValues('documentation'),
@@ -307,6 +367,16 @@
         };
         const values = mapping[type];
         if (!values) return;
+        if (!values.title.trim()) {
+            window.alert('Lütfen bir başlık girin.');
+            document.getElementById(`project-${type}-title`)?.focus();
+            return;
+        }
+        if (!values.content.trim()) {
+            window.alert('Lütfen içerik alanını doldurun.');
+            document.getElementById(`project-${type}-content`)?.focus();
+            return;
+        }
         const response = await fetch('/api/notes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },

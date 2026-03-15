@@ -58,7 +58,7 @@ def settings_page(request):
         if password_form.is_valid():
             user = password_form.save()
             update_session_auth_hash(request, user)
-            messages.success(request, 'Sifreniz guncellendi.')
+            messages.success(request, 'Şifreniz güncellendi.')
             return redirect('settings')
     elif request.method == 'POST':
         user_form = AccountUserForm(request.POST, instance=request.user)
@@ -67,7 +67,7 @@ def settings_page(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Hesap ayarlariniz kaydedildi.')
+            messages.success(request, 'Hesap ayarlarınız kaydedildi.')
             return redirect('settings')
     else:
         user_form = AccountUserForm(instance=request.user)

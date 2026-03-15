@@ -22,7 +22,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-slate-900">{{ current_organization.name }}</p>
-                                <p class="text-xs text-slate-500">Calisma alani</p>
+                                <p class="text-xs text-slate-500">Çalışma alanı</p>
                             </div>
                         </div>
                         <i class="fa-solid fa-angle-down text-sm text-slate-400"></i>
@@ -41,7 +41,7 @@
                 <nav class="space-y-1 border-b border-[#ece4da] p-4">
                     <a href="/?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'dashboard' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-solid fa-house w-4 text-slate-400"></i> Ana sayfa</a>
                     <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'notifications_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-envelope w-4 text-slate-400"></i> Gelen kutusu</a>
-                    <a href="{% url 'tasks_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'tasks_page' %}bg-[#e4ecf6] text-[#2f5b8f] shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-solid fa-list-check w-4 text-slate-400"></i> Calismalar</a>
+                    <a href="{% url 'tasks_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'tasks_page' %}bg-[#e4ecf6] text-[#2f5b8f] shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-solid fa-list-check w-4 text-slate-400"></i> Çalışmalar</a>
                     <a href="{% url 'finance_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'finance_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-chart-bar w-4 text-slate-400"></i> Panolar</a>
                     <a href="{% url 'customers_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'customers_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-compass w-4 text-slate-400"></i> Hedefler</a>
                     <a href="{% url 'settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900"><i class="fa-solid fa-ellipsis w-4 text-slate-400"></i> Daha fazla</a>
@@ -81,11 +81,11 @@
                         {% endfor %}
                     </div>
                     <button type="button" class="mt-4 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-slate-500 transition hover:bg-[#f4eee7] hover:text-slate-900">
-                        <i class="fa-solid fa-plus"></i> Alan olustur
+                        <i class="fa-solid fa-plus"></i> Alan oluştur
                     </button>
                 </div>
                 <div class="border-t border-[#ece4da] p-4">
-                    <a href="{% url 'logout' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-500 hover:bg-[#f4eee7] hover:text-slate-900"><i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Cikis</a>
+                    <a href="{% url 'logout' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-500 hover:bg-[#f4eee7] hover:text-slate-900"><i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Çıkış</a>
                 </div>
             </div>
         </aside>
@@ -100,13 +100,13 @@
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span>{{ current_organization.name }}</span>
                             <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            <span class="text-slate-600">Calisma alani</span>
+                            <span class="text-slate-600">Çalışma alanı</span>
                         </div>
                         <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{% block page_heading %}Workspace{% endblock %}</h1>
                     </div>
                     <div class="hidden items-center gap-2 rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-2 text-sm text-slate-500 xl:flex">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        <span>Suchen</span>
+                        <span>Ara</span>
                     </div>
                     <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] text-slate-600 shadow-sm">
                         <i class="fa-solid fa-bell"></i>
@@ -152,7 +152,7 @@
         <div class="ws-modal max-w-2xl p-6" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">User profile</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Kullanıcı profili</p>
                     <h3 id="profile-modal-title" class="mt-2 text-2xl font-black tracking-tight text-slate-900">Profil</h3>
                 </div>
                 <button type="button" onclick="closeUserProfile()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-[#f7f1ea] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
@@ -168,7 +168,7 @@
         <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <div>
                 <p class="text-sm font-black tracking-tight text-slate-900">Sohbet</p>
-                <p class="text-xs text-slate-400">LinkedIn tarzi hizli mesajlasma</p>
+                <p class="text-xs text-slate-400">LinkedIn tarzı hızlı mesajlaşma</p>
             </div>
             <div class="flex gap-2">
                 <button type="button" onclick="openChatComposer()" class="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 text-slate-600"><i class="fa-solid fa-plus"></i></button>
@@ -178,12 +178,12 @@
         <div class="grid h-[460px] grid-cols-[130px_1fr]">
             <div id="chat-conversations" class="border-r border-slate-200 bg-slate-50 p-2"></div>
             <div class="flex h-full flex-col">
-                <div id="chat-widget-title" class="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700">Bir sohbet secin</div>
+                <div id="chat-widget-title" class="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700">Bir sohbet seçin</div>
                 <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-3 space-y-3"></div>
                 <form id="chat-form" class="border-t border-slate-200 p-3" onsubmit="submitConversationMessage(event)">
-                    <textarea id="chat-input" rows="3" class="ws-input" placeholder="Mesaj yazin"></textarea>
+                    <textarea id="chat-input" rows="3" class="ws-input" placeholder="Mesaj yazın"></textarea>
                     <div class="mt-3 flex justify-end">
-                        <button type="submit" class="ws-btn ws-btn-primary">Gonder</button>
+                        <button type="submit" class="ws-btn ws-btn-primary">Gönder</button>
                     </div>
                 </form>
             </div>
@@ -195,13 +195,13 @@
             <div class="flex items-center justify-between gap-3">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Yeni sohbet</p>
-                    <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Konusma olustur</h3>
+                    <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Konuşma oluştur</h3>
                 </div>
                 <button type="button" onclick="closeChatComposer()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-[#f7f1ea] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="chat-composer-form" class="mt-6 space-y-4">
                 <div>
-                    <label class="ws-label">Konusma adi</label>
+                    <label class="ws-label">Konuşma adı</label>
                     <input name="name" class="ws-input">
                 </div>
                 <div>
@@ -212,7 +212,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="ws-label">Katilimcilar</label>
+                    <label class="ws-label">Katılımcılar</label>
                     <select name="participant_ids" multiple class="ws-input min-h-40">
                         {% for membership in memberships %}
                         <option value="{{ membership.user.id }}">{{ membership.user.get_full_name|default:membership.user.username }}</option>
@@ -220,8 +220,8 @@
                     </select>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeChatComposer()" class="ws-btn ws-btn-secondary">Iptal</button>
-                    <button type="submit" class="ws-btn ws-btn-primary">Olustur</button>
+                    <button type="button" onclick="closeChatComposer()" class="ws-btn ws-btn-secondary">İptal</button>
+                    <button type="submit" class="ws-btn ws-btn-primary">Oluştur</button>
                 </div>
             </form>
         </div>
@@ -263,7 +263,7 @@
                     <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center">
                         ${user.avatar ? `<img src="${user.avatar}" alt="Avatar" class="mx-auto h-24 w-24 rounded-3xl object-cover">` : `<div class="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-50 text-3xl font-black text-blue-600">${user.username.charAt(0).toUpperCase()}</div>`}
                         <p class="mt-4 text-lg font-black text-slate-900">${user.username}</p>
-                        <p class="mt-1 text-sm text-slate-500">${user.profile?.job_title || 'Rol tanimlanmadi'}</p>
+                        <p class="mt-1 text-sm text-slate-500">${user.profile?.job_title || 'Rol tanımlanmadı'}</p>
                     </div>
                     <div class="space-y-4">
                         <section class="rounded-3xl border border-slate-200 p-4">
@@ -272,7 +272,7 @@
                         </section>
                         <section class="rounded-3xl border border-slate-200 p-4">
                             <p class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Workspace rolleri</p>
-                            <div class="mt-3 space-y-2">${(user.workspace_roles || []).map((item) => `<div class="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 text-sm"><span>${item.organization}</span><span class="font-semibold text-slate-700">${item.role}</span></div>`).join('') || '<p class="text-sm text-slate-400">Rol kaydi yok.</p>'}</div>
+                            <div class="mt-3 space-y-2">${(user.workspace_roles || []).map((item) => `<div class="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 text-sm"><span>${item.organization}</span><span class="font-semibold text-slate-700">${item.role}</span></div>`).join('') || '<p class="text-sm text-slate-400">Rol kaydı yok.</p>'}</div>
                         </section>
                     </div>
                 </div>`;
@@ -298,7 +298,7 @@
             const conversations = data.results || data;
             const container = document.getElementById('chat-conversations');
             container.innerHTML = conversations.length
-                ? conversations.map((item) => `<button type="button" data-title="${escapeHtml(item.name || 'Konusma')}" onclick="openConversation(${item.id}, this.dataset.title)" class="mb-2 w-full rounded-2xl px-3 py-3 text-left text-sm ${selectedConversationId === item.id ? 'bg-[#243b53] text-white' : 'bg-[#f7f1ea] text-slate-700'}">${escapeHtml(item.name || 'Direkt sohbet')}</button>`).join('')
+                ? conversations.map((item) => `<button type="button" data-title="${escapeHtml(item.name || 'Konuşma')}" onclick="openConversation(${item.id}, this.dataset.title)" class="mb-2 w-full rounded-2xl px-3 py-3 text-left text-sm ${selectedConversationId === item.id ? 'bg-[#243b53] text-white' : 'bg-[#f7f1ea] text-slate-700'}">${escapeHtml(item.name || 'Direkt sohbet')}</button>`).join('')
                 : '<p class="px-2 py-3 text-xs text-slate-400">Sohbet yok.</p>';
         }
 
@@ -313,7 +313,7 @@
 
         async function openConversation(conversationId, title) {
             selectedConversationId = conversationId;
-            document.getElementById('chat-widget-title').textContent = title || 'Konusma';
+            document.getElementById('chat-widget-title').textContent = title || 'Konuşma';
             await loadConversations();
             const response = await fetch(`/api/conversations/${conversationId}/messages`);
             if (!response.ok) return;

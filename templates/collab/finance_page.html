@@ -20,21 +20,21 @@
     </section>
 
     <section class="grid gap-4 md:grid-cols-3">
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Acik toplam</p><p class="ws-stat-value">{{ finance_totals.open_total }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Açık toplam</p><p class="ws-stat-value">{{ finance_totals.open_total }}</p></div>
         <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Kritik bildirim</p><p class="ws-stat-value">{{ finance_totals.critical_count }}</p></div>
-        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Cozulen</p><p class="ws-stat-value">{{ finance_totals.resolved_count }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Çözülen</p><p class="ws-stat-value">{{ finance_totals.resolved_count }}</p></div>
     </section>
 
     <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Yonetim</p>
-                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Finans detaylari</h2>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Yönetim</p>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Finans detayları</h2>
             </div>
-            <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">Formu ac</button>
+            <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">Formu aç</button>
         </div>
         <form id="finance-form" class="mt-6 hidden grid gap-4 rounded-3xl border border-[#ece3d8] bg-[#fcfaf6] p-5 md:grid-cols-2">
-            <input name="title" class="ws-input md:col-span-2" placeholder="Baslik">
+            <input name="title" class="ws-input md:col-span-2" placeholder="Başlık">
             <select name="project" class="ws-input ws-select">
                 <option value="">Projesiz</option>
                 {% for project in projects %}
@@ -42,21 +42,21 @@
                 {% endfor %}
             </select>
             <select name="status" class="ws-input ws-select">
-                <option value="open">Open</option>
-                <option value="review">In Review</option>
-                <option value="resolved">Resolved</option>
+                <option value="open">Açık</option>
+                <option value="review">İncelemede</option>
+                <option value="resolved">Çözüldü</option>
             </select>
             <select name="severity" class="ws-input ws-select">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="low">Düşük</option>
+                <option value="medium">Orta</option>
+                <option value="high">Yüksek</option>
+                <option value="critical">Kritik</option>
             </select>
             <input type="number" step="0.01" name="amount" class="ws-input" placeholder="Tutar">
             <input name="currency" class="ws-input" value="TRY">
             <textarea name="notes" rows="4" class="ws-input md:col-span-2" placeholder="Notlar"></textarea>
             <div class="md:col-span-2 flex justify-end gap-2">
-                <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">İptal</button>
                 <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
             </div>
         </form>
@@ -76,7 +76,7 @@
             <p class="mt-4 text-xs text-slate-400">{{ alert.get_status_display }}{% if alert.project %} · {{ alert.project.name }}{% endif %}</p>
         </div>
         {% empty %}
-        <p class="text-sm text-slate-400">Finans kaydi bulunmuyor.</p>
+        <p class="text-sm text-slate-400">Finans kaydı bulunmuyor.</p>
         {% endfor %}
     </div>
 </div>

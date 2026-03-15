@@ -1,7 +1,7 @@
 {% extends 'collab/app_base.html' %}
 
-{% block title %}Gorevler · Workspace{% endblock %}
-{% block page_heading %}Gorevler{% endblock %}
+{% block title %}Görevler · Workspace{% endblock %}
+{% block page_heading %}Görevler{% endblock %}
 
 {% block content %}
 <div class="space-y-5">
@@ -13,14 +13,14 @@
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     <span>Kampanyalar</span>
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                    <span class="text-slate-700">Calismalar</span>
+                    <span class="text-slate-700">Çalışmalar</span>
                 </div>
-                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Calisma listesi</h2>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Çalışma listesi</h2>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" class="ws-btn ws-btn-secondary">Otomasyonlar</button>
                 <button type="button" class="ws-btn ws-btn-secondary">Aktivite</button>
-                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-primary">Yeni gorev</button>
+                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-primary">Yeni görev</button>
             </div>
         </div>
 
@@ -29,14 +29,14 @@
             <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Plan</button>
             <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Dashboard</button>
             <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Masa</button>
-            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Dokumantasyon</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Dokümantasyon</button>
             <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">+ Ekle</button>
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" class="rounded-full border border-[#d7d0ff] bg-[#f1efff] px-3 py-1.5 text-xs font-semibold text-[#6d5bd0]">Grup: Status</button>
-                <button type="button" class="rounded-full border border-[#d7d0ff] bg-[#f6f4ff] px-3 py-1.5 text-xs font-semibold text-[#6d5bd0]">Alt gorevler: Gorunur</button>
+                <button type="button" class="rounded-full border border-[#d7d0ff] bg-[#f6f4ff] px-3 py-1.5 text-xs font-semibold text-[#6d5bd0]">Alt görevler: Görünür</button>
                 <button type="button" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Filtreler</button>
                 <button type="button" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Ben modu</button>
                 <button type="button" onclick="createTag()" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Etiket ekle</button>
@@ -44,7 +44,7 @@
             <div class="flex items-center gap-3">
                 <label class="hidden items-center gap-2 rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-2 text-sm text-slate-400 md:flex">
                     <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                    <input id="task-search" type="search" placeholder="Gorevlerde ara..." class="w-56 bg-transparent text-slate-700 outline-none placeholder:text-slate-400">
+                    <input id="task-search" type="search" placeholder="Görevlerde ara..." class="w-56 bg-transparent text-slate-700 outline-none placeholder:text-slate-400">
                 </label>
             </div>
         </div>
@@ -55,8 +55,8 @@
                 <option value="{{ project.id }}">{{ project.name }}</option>
                 {% endfor %}
             </select>
-            <input name="title" class="ws-input" placeholder="Baslik">
-            <textarea name="description" rows="4" class="ws-input md:col-span-2" placeholder="Aciklama"></textarea>
+            <input name="title" class="ws-input" placeholder="Başlık">
+            <textarea name="description" rows="4" class="ws-input md:col-span-2" placeholder="Açıklama"></textarea>
             <select name="status" class="ws-input ws-select">
                 {% for value, label in task_statuses %}
                 <option value="{{ value }}">{{ label }}</option>
@@ -68,7 +68,7 @@
                 {% endfor %}
             </select>
             <select name="assignee_id" class="ws-input ws-select">
-                <option value="">Atanmamis</option>
+                <option value="">Atanmamış</option>
                 {% for membership in memberships %}
                 <option value="{{ membership.user.id }}">{{ membership.user.get_full_name|default:membership.user.username }}</option>
                 {% endfor %}
@@ -79,7 +79,7 @@
                 {% endfor %}
             </select>
             <div class="md:col-span-2 flex justify-end gap-2">
-                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-secondary">İptal</button>
                 <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
             </div>
         </form>
@@ -101,7 +101,7 @@
                     <span>Ad</span>
                     <span>Atanan</span>
                     <span>Termin</span>
-                    <span>Oncelik</span>
+                    <span>Öncelik</span>
                     <span>Not</span>
                     <span></span>
                 </div>
@@ -116,7 +116,7 @@
                                     <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                                         <span>{{ task.project.name }}</span>
                                         <span>•</span>
-                                        <span>{{ task.subtasks.count }} alt gorev</span>
+                                        <span>{{ task.subtasks.count }} alt görev</span>
                                         {% if task.tags.all %}
                                         <span>•</span>
                                         <span class="truncate">{% for tag in task.tags.all|slice:':2' %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
@@ -145,7 +145,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="px-5 py-8 text-sm text-slate-400">Bu grupta gorev yok.</div>
+                    <div class="px-5 py-8 text-sm text-slate-400">Bu grupta görev yok.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -158,12 +158,12 @@
 <aside id="task-detail-panel" class="fixed right-0 top-0 z-50 h-screen w-full max-w-[480px] translate-x-full overflow-y-auto border-l border-[#e5ddd2] bg-[#fcfaf6] p-6 shadow-2xl transition-transform duration-300">
     <div class="flex items-start justify-between gap-3">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Gorev detayi</p>
-            <h3 id="task-detail-title" class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Bir gorev secin</h3>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Görev detayı</p>
+            <h3 id="task-detail-title" class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Bir görev seçin</h3>
         </div>
         <button type="button" onclick="closeTaskDetail()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#e5ddd2] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div id="task-detail-content" class="mt-5 text-sm text-slate-500">Gorev istatistikleri ve yonetimi burada gorunur.</div>
+    <div id="task-detail-content" class="mt-5 text-sm text-slate-500">Görev istatistikleri ve yönetimi burada görünür.</div>
 </aside>
 {% endblock %}
 
@@ -207,7 +207,7 @@
     }
 
     async function createTag() {
-        const name = window.prompt('Etiket adi');
+        const name = window.prompt('Etiket adı');
         if (!name) return;
         const color = window.prompt('Etiket rengi', 'slate') || 'slate';
         const response = await fetch('/api/tags', {
@@ -263,11 +263,11 @@
                                 <button type="button" class="mt-0.5 h-5 w-5 rounded-full border ${subtask.is_completed ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 bg-[#fcfaf6]'}" onclick="toggleSubtaskCompleted(${subtask.id}, ${subtask.is_completed})"></button>
                                 <div>
                                     <p class="text-sm font-semibold text-slate-900">${escapeHtml(subtask.title)}</p>
-                                    <p class="mt-1 text-xs text-slate-400">${subtask.assignee ? escapeHtml(subtask.assignee.username) : 'Atanmamis'}${subtask.due_date ? ` · ${escapeHtml(subtask.due_date)}` : ''}</p>
+                                    <p class="mt-1 text-xs text-slate-400">${subtask.assignee ? escapeHtml(subtask.assignee.username) : 'Atanmamış'}${subtask.due_date ? ` · ${escapeHtml(subtask.due_date)}` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button type="button" class="text-xs font-semibold text-slate-500" onclick="toggleSubtaskChildren(${subtask.id})">${subtask.children?.length ? 'Ac/Kapat' : 'Detay'}</button>
+                                <button type="button" class="text-xs font-semibold text-slate-500" onclick="toggleSubtaskChildren(${subtask.id})">${subtask.children?.length ? 'Aç/Kapat' : 'Detay'}</button>
                                 <button type="button" class="text-xs font-semibold text-blue-600" onclick="addSubtask(${subtask.id})">Alt ekle</button>
                             </div>
                         </div>
@@ -333,7 +333,7 @@
 
     async function addSubtask(parentId = null) {
         if (!activeTask) return;
-        const title = window.prompt('Alt gorev basligi');
+        const title = window.prompt('Alt görev başlığı');
         if (!title) return;
         const response = await fetch(`/api/tasks/${activeTask.id}/subtasks`, {
             method: 'POST',
@@ -379,34 +379,34 @@
         document.getElementById('task-detail-content').innerHTML = `
             <div class="space-y-5">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aciklama</p>
-                    <p class="mt-2 text-sm leading-7 text-slate-600">${task.description || 'Aciklama yok.'}</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Açıklama</p>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">${task.description || 'Açıklama yok.'}</p>
                 </div>
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Durum</p><p class="mt-1 font-semibold text-slate-900">${task.status}</p></div>
-                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Oncelik</p><p class="mt-1 font-semibold text-slate-900">${task.priority}</p></div>
+                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Öncelik</p><p class="mt-1 font-semibold text-slate-900">${task.priority}</p></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Yorum</p><p class="mt-1 font-semibold text-slate-900">${task.comments_count}</p></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Ek dosya</p><p class="mt-1 font-semibold text-slate-900">${task.attachments_count}</p></div>
                 </div>
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Ilerleme</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">İlerleme</p>
                     <div class="mt-2 h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full bg-blue-500" style="width: ${task.progress_percentage}%"></div></div>
                 </div>
                 <div>
                     <div class="flex items-center justify-between gap-3">
                         <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Etiketler</p>
-                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="saveTaskTags()">Guncelle</button>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="saveTaskTags()">Güncelle</button>
                     </div>
                     <div class="mt-2">${renderTagPills(task.tags)}</div>
                     <select id="task-detail-tags" class="ws-input mt-3 min-h-24" multiple>${renderTagOptions(task.tags)}</select>
                 </div>
                 <div>
                     <div class="flex items-center justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Alt gorevler</p>
-                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="addSubtask()">Yeni alt gorev</button>
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Alt görevler</p>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="addSubtask()">Yeni alt görev</button>
                     </div>
                     <div class="mt-3">${renderSubtaskTree(task.subtasks || [])}</div>
-                    <p class="mt-3 text-xs text-slate-400">Surukleyip bir listenin icine birakarak sira degistirebilir veya altina tasiyabilirsiniz.</p>
+                    <p class="mt-3 text-xs text-slate-400">Sürükleyip bir listenin içine bırakarak sıra değiştirebilir veya altına taşıyabilirsiniz.</p>
                 </div>
             </div>`;
         bindSubtaskDnD();

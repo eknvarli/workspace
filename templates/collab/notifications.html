@@ -13,7 +13,7 @@
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     <span class="text-slate-700">Bildirimler</span>
                 </div>
-                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Tum bildirimler</h2>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Tüm bildirimler</h2>
             </div>
             <button type="button" onclick="markAllNotificationsRead()" class="ws-btn ws-btn-primary">Hepsini okundu yap</button>
         </div>
@@ -40,7 +40,7 @@
         <span>Sayfa {{ notifications_page_obj.number }} / {{ notifications_page_obj.paginator.num_pages }}</span>
         <div class="flex gap-2">
             {% if notifications_page_obj.has_previous %}
-            <a class="ws-btn ws-btn-secondary" href="?workspace={{ current_organization.slug }}&page={{ notifications_page_obj.previous_page_number }}">Onceki</a>
+            <a class="ws-btn ws-btn-secondary" href="?workspace={{ current_organization.slug }}&page={{ notifications_page_obj.previous_page_number }}">Önceki</a>
             {% endif %}
             {% if notifications_page_obj.has_next %}
             <a class="ws-btn ws-btn-secondary" href="?workspace={{ current_organization.slug }}&page={{ notifications_page_obj.next_page_number }}">Sonraki</a>

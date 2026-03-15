@@ -1,7 +1,7 @@
 {% extends 'collab/app_base.html' %}
 
-{% block title %}Musteriler · Workspace{% endblock %}
-{% block page_heading %}Musteriler{% endblock %}
+{% block title %}Müşteriler · Workspace{% endblock %}
+{% block page_heading %}Müşteriler{% endblock %}
 
 {% block content %}
 <div class="space-y-5">
@@ -11,11 +11,11 @@
                 <div class="flex items-center gap-2 text-sm text-slate-400">
                     <span>{{ current_organization.name }}</span>
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                    <span class="text-slate-700">Musteriler</span>
+                    <span class="text-slate-700">Müşteriler</span>
                 </div>
-                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Musteri yonetimi</h2>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Müşteri yönetimi</h2>
             </div>
-            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-primary">Yeni musteri</button>
+            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-primary">Yeni müşteri</button>
         </div>
     </section>
 
@@ -23,24 +23,24 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">Liste</p>
-                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Musteri yonetimi</h2>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Müşteri yönetimi</h2>
             </div>
-            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">Formu ac</button>
+            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">Formu aç</button>
         </div>
         <form id="customer-form" class="mt-6 hidden grid gap-4 rounded-3xl border border-[#ece3d8] bg-[#fcfaf6] p-5 md:grid-cols-2">
             <input name="name" class="ws-input" placeholder="Ad">
-            <input name="company" class="ws-input" placeholder="Sirket">
+            <input name="company" class="ws-input" placeholder="Şirket">
             <input name="email" class="ws-input" placeholder="E-posta">
             <input name="phone" class="ws-input" placeholder="Telefon">
             <select name="status" class="ws-input ws-select">
                 <option value="lead">Lead</option>
-                <option value="active">Active</option>
-                <option value="at_risk">At Risk</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">Aktif</option>
+                <option value="at_risk">Riskte</option>
+                <option value="inactive">Pasif</option>
             </select>
             <textarea name="notes" rows="3" class="ws-input md:col-span-2" placeholder="Notlar"></textarea>
             <div class="md:col-span-2 flex justify-end gap-2">
-                <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">İptal</button>
                 <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
             </div>
         </form>
@@ -48,7 +48,7 @@
 
     <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] shadow-sm overflow-hidden">
         <div class="grid grid-cols-[1.2fr_1fr_1fr_0.7fr_0.8fr] gap-3 border-b border-[#f1ebe4] bg-[#fcfaf6] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-            <span>Ad</span><span>Sirket</span><span>Iletisim</span><span>Durum</span><span>Sahip</span>
+            <span>Ad</span><span>Şirket</span><span>İletişim</span><span>Durum</span><span>Sahip</span>
         </div>
         <div class="divide-y divide-[#f5efe8]">
             {% for customer in customers_page_obj %}
@@ -60,7 +60,7 @@
                 <span class="text-slate-600">{{ customer.owner.username }}</span>
             </div>
             {% empty %}
-            <div class="px-5 py-12 text-center text-sm text-slate-400">Musteri yok.</div>
+            <div class="px-5 py-12 text-center text-sm text-slate-400">Müşteri yok.</div>
             {% endfor %}
         </div>
     </div>
@@ -69,7 +69,7 @@
         <span>Sayfa {{ customers_page_obj.number }} / {{ customers_page_obj.paginator.num_pages }}</span>
         <div class="flex gap-2">
             {% if customers_page_obj.has_previous %}
-            <a href="?workspace={{ current_organization.slug }}&page={{ customers_page_obj.previous_page_number }}" class="ws-btn ws-btn-secondary">Onceki</a>
+            <a href="?workspace={{ current_organization.slug }}&page={{ customers_page_obj.previous_page_number }}" class="ws-btn ws-btn-secondary">Önceki</a>
             {% endif %}
             {% if customers_page_obj.has_next %}
             <a href="?workspace={{ current_organization.slug }}&page={{ customers_page_obj.next_page_number }}" class="ws-btn ws-btn-secondary">Sonraki</a>

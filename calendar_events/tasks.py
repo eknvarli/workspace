@@ -42,13 +42,13 @@ def send_upcoming_meeting_notifications() -> int:
                 local_start = timezone.localtime(event.start_at, ZoneInfo(timezone_name))
             except Exception:
                 local_start = timezone.localtime(event.start_at)
-            message = f'{event.title} toplantisi {local_start.strftime("%d.%m.%Y %H:%M")} saatinde basliyor.'
+            message = f'{event.title} toplantısı {local_start.strftime("%d.%m.%Y %H:%M")} saatinde başlıyor.'
             notification = Notification.objects.create(
                 recipient=user,
                 organization=event.organization,
                 actor=event.created_by,
                 type=Notification.Type.MEETING_REMINDER,
-                title='Yaklasan toplanti',
+                title='Yaklaşan toplantı',
                 message=message,
                 data={'calendar_event_id': event.id, 'meeting_url': event.meeting_url},
             )
