@@ -2,66 +2,66 @@
 {% block title %}Giriş Yap{% endblock %}
 
 {% block content %}
-<div class="text-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-100">Tekrar Hoş Geldiniz</h1>
-    <p class="text-sm text-gray-400 mt-2">Notlarınıza erişmek için giriş yapın</p>
-    <p class="text-xs text-gray-500 mt-2">Yeni hesaplar sadece superkullanıcı tarafından admin panel üzerinden oluşturulur.</p>
+<div class="text-center mb-7">
+    <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Tekrar Hoş Geldiniz</h1>
+    <p class="text-sm text-slate-500 mt-2">Çalışma alanınıza erişmek için giriş yapın</p>
 </div>
 
 {% if messages %}
-<div class="mb-4">
+<div class="mb-5">
     {% for message in messages %}
-    <div class="p-3 rounded-lg text-sm text-red-500 bg-red-500/10 border border-red-500/20">
-        {{ message }}
+    <div class="p-3 rounded-xl text-sm text-red-600 bg-red-50 border border-red-100 flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+        <span>{{ message }}</span>
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<form method="post" action="{% url 'login' %}" class="space-y-4">
+<form method="post" action="{% url 'login' %}" class="space-y-5">
     {% csrf_token %}
 
     <div>
-        <label class="block text-sm font-medium text-gray-400 mb-1" for="username">Kullanıcı Adı</label>
+        <label class="ws-label" for="username">Kullanıcı Adı</label>
         <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fa-solid fa-user text-gray-500"></i>
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <i class="fa-solid fa-user text-slate-400 text-sm"></i>
             </div>
             <input type="text" name="username" id="username" required
-                class="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="ornek_kullanici">
+                class="ws-input pl-10"
+                placeholder="kullanici_adi">
         </div>
     </div>
 
     <div>
-        <label class="block text-sm font-medium text-gray-400 mb-1" for="password">Şifre</label>
+        <label class="ws-label" for="password">Şifre</label>
         <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fa-solid fa-lock text-gray-500"></i>
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <i class="fa-solid fa-lock text-slate-400 text-sm"></i>
             </div>
             <input type="password" name="password" id="password" required
-                class="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                class="ws-input pl-10"
                 placeholder="••••••••">
         </div>
     </div>
 
-    <div class="flex items-center justify-between mt-2 mb-4">
-        <div class="flex items-center">
+    <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 cursor-pointer group">
             <input id="remember-me" name="remember-me" type="checkbox"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded bg-gray-800">
-            <label for="remember-me" class="ml-2 block text-sm text-gray-400">
-                Beni hatırla
-            </label>
-        </div>
+                class="w-4 h-4 text-blue-500 border-slate-300 rounded focus:ring-blue-500 focus:ring-offset-0">
+            <span class="text-sm text-slate-500 group-hover:text-slate-700 transition">Beni hatırla</span>
+        </label>
     </div>
 
     <button type="submit"
-        class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-md shadow-blue-500/20 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 transition">
+        class="ws-btn ws-btn-primary w-full py-2.5 text-sm">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i>
         Giriş Yap
     </button>
 </form>
 
-<div class="mt-6 text-center text-sm text-gray-500">
-    Hesabınız yoksa sistem yöneticinizle iletişime geçin.
+<div class="mt-6 pt-5 border-t border-slate-100 text-center">
+    <p class="text-xs text-slate-400">Hesabınız yoksa sistem yöneticinizle iletişime geçin.</p>
+    <p class="text-[11px] text-slate-300 mt-2">Yeni hesaplar sadece yönetici tarafından oluşturulur.</p>
 </div>
 {% endblock %}

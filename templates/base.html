@@ -1,206 +1,130 @@
-{% load pwa %}
+{% load static pwa %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Notes{% endblock %} - Workspace</title>
-    {% block styles %}
-    {% endblock %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body.theme-dark {
-            background-color: #111827;
-            color: #e5e7eb;
-        }
-
-        body.theme-light {
-            background-color: #f3f4f6;
-            color: #111827;
-        }
-
-        body.theme-light .bg-gray-950,
-        body.theme-light .bg-gray-900 {
-            background-color: #ffffff !important;
-        }
-
-        body.theme-light .bg-gray-800,
-        body.theme-light .bg-gray-800\/50 {
-            background-color: #f3f4f6 !important;
-        }
-
-        body.theme-light .bg-gray-700 {
-            background-color: #e5e7eb !important;
-        }
-
-        body.theme-light .border-gray-800,
-        body.theme-light .border-gray-700 {
-            border-color: #d1d5db !important;
-        }
-
-        body.theme-light .text-gray-100,
-        body.theme-light .text-gray-200 {
-            color: #111827 !important;
-        }
-
-        body.theme-light .text-gray-300,
-        body.theme-light .text-gray-400 {
-            color: #374151 !important;
-        }
-
-        body.theme-light .text-gray-500,
-        body.theme-light .text-gray-600 {
-            color: #6b7280 !important;
-        }
-
-        body.theme-light .hover\:bg-gray-800:hover,
-        body.theme-light .hover\:bg-gray-800\/50:hover,
-        body.theme-light .hover\:bg-gray-700:hover {
-            background-color: #e5e7eb !important;
-        }
-
-        body.theme-light .hover\:text-gray-200:hover,
-        body.theme-light .hover\:text-gray-300:hover {
-            color: #111827 !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        body.theme-dark ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-
-        body.theme-dark ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 4px;
-        }
-
-        body.theme-dark ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
-        }
-
-        body.theme-light ::-webkit-scrollbar-track {
-            background: #e5e7eb;
-        }
-
-        body.theme-light ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        body.theme-light ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <title>{% block title %}Dashboard{% endblock %} — Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        surface: '#FFFFFF',
+                        body: '#F1F5F9',
+                    }
+                }
+            }
+        }
+    </script>
+    {% block styles %}{% endblock %}
     {% progressive_web_app_meta %}
 </head>
 
-<body data-theme-preference="{{ active_theme|default:'dark' }}" class="theme-dark bg-gray-900 text-gray-200 font-sans antialiased h-screen overflow-hidden">
+<body class="font-sans h-screen overflow-hidden antialiased">
     <div class="flex h-full">
-        <div id="sidebar-overlay"
-            class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
 
-        <aside id="sidebar"
-            class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-50 transform -translate-x-full md:translate-x-0 md:static md:flex transition-transform duration-300 ease-in-out flex-shrink-0">
-            <div class="h-16 flex items-center px-6 border-b border-gray-800">
-                <i class="fa-solid fa-book-open text-blue-500 text-xl mr-3"></i>
-                <span class="text-xl font-bold text-gray-100 tracking-tight">Workspace</span>
-            </div>
-
-            <div
-                class="p-4 border-b border-gray-800 flex items-center space-x-3 hover:bg-gray-800/50 cursor-pointer transition">
-                <img class="w-8 h-8 rounded-md bg-gray-700"
-                    src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=1e3a8a&color=bfdbfe&rounded=true"
-                    alt="User">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-200 truncate">{{ request.user.username|default:'Misafir' }}
-                    </p>
-                    <p class="text-xs text-gray-500 truncate">{% if request.user.is_superuser %}Administrator{% elif request.user.is_staff %}Moderator{% else %}User{% endif %}</p>
+        <!-- Sidebar -->
+        <aside id="sidebar" class="ws-sidebar fixed inset-y-0 left-0 w-[260px] flex flex-col transform -translate-x-full md:translate-x-0 md:static md:flex transition-transform duration-300 ease-in-out flex-shrink-0">
+            <!-- Brand -->
+            <div class="ws-sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-cubes"></i>
                 </div>
+                <span class="brand-text">Workspace</span>
             </div>
 
+            <!-- User -->
+            <div class="ws-sidebar-user cursor-pointer">
+                <img class="user-avatar"
+                    src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=3B82F6&color=fff&rounded=true&bold=true&size=72"
+                    alt="User">
+                <div class="min-w-0 flex-1">
+                    <p class="user-name truncate">{{ request.user.username|default:'Misafir' }}</p>
+                    <p class="user-role">{% if request.user.is_superuser %}Administrator{% elif request.user.is_staff %}Moderator{% else %}Kullanıcı{% endif %}</p>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0 ring-2 ring-emerald-100" title="Çevrimiçi"></div>
+            </div>
+
+            <!-- Navigation -->
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">Koleksiyonlar</div>
+                <div class="ws-nav-label mb-2">Ana Menü</div>
 
                 <a href="{% url 'index' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if not request.GET.category and not request.GET.favorite and not request.GET.tag %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-file-lines mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if not request.GET.category and not request.GET.favorite and not request.GET.tag %}active{% endif %}{% endif %}">
+                    <i class="fa-solid fa-file-lines"></i>
                     Tüm Notlar
                 </a>
                 <a href="{% url 'index' %}?favorite=1"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if request.GET.favorite == '1' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-star mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'note_detail' %}{% if request.GET.favorite == '1' %}active{% endif %}{% endif %}">
+                    <i class="fa-solid fa-star"></i>
                     Favoriler
                 </a>
                 <a href="{% url 'projects' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'projects' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-folder-open mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'project_detail' %}active{% endif %}">
+                    <i class="fa-solid fa-folder-open"></i>
                     Projeler
                 </a>
                 <a href="{% url 'customers' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'customers' or request.resolver_match.url_name == 'customer_detail' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-address-book mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'customers' or request.resolver_match.url_name == 'customer_detail' %}active{% endif %}">
+                    <i class="fa-solid fa-building"></i>
                     Müşteriler
                 </a>
                 <a href="{% url 'tasks' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'tasks' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-check-square mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i>
                     Görevler
                 </a>
 
-                <div
-                    class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-6 mb-2 px-3 flex justify-between items-center">
+                <div class="ws-nav-label mt-6 mb-2 flex justify-between items-center">
                     <span>Etiketler</span>
-                    <button class="hover:text-gray-300"><i class="fa-solid fa-plus"></i></button>
+                    <button class="text-slate-400 hover:text-blue-500 transition"><i class="fa-solid fa-plus text-[9px]"></i></button>
                 </div>
                 {% for tag in request.user.tags.all %}
                 <a href="{% url 'index' %}?tag={{tag.name}}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.GET.tag == tag.name %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-hashtag text-{{tag.color|default:'gray-500'}} mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.GET.tag == tag.name %}active{% endif %}">
+                    <i class="fa-solid fa-hashtag"></i>
                     {{ tag.name }}
                 </a>
                 {% empty %}
-                <div class="px-5 text-xs text-gray-600 italic">Henüz etiket yok</div>
+                <div class="px-3 py-2 text-xs text-slate-400 italic">Henüz etiket yok</div>
                 {% endfor %}
             </nav>
 
-            <div class="p-4 border-t border-gray-800 space-y-1">
+            <!-- Bottom Actions -->
+            <div class="p-3 border-t border-slate-200 space-y-0.5">
                 <a href="{% url 'settings' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {% if request.resolver_match.url_name == 'settings' %}bg-blue-900/20 text-blue-400{% else %}text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition{% endif %}">
-                    <i class="fa-solid fa-gear mr-3 w-4 text-center"></i>
+                    class="ws-nav-item {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                    <i class="fa-solid fa-gear"></i>
                     Ayarlar
                 </a>
                 <a href="{% url 'logout' %}"
-                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-400 hover:text-red-400 hover:bg-gray-800 transition">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-3 w-4 text-center"></i>
+                    class="ws-nav-item hover:!text-red-500 hover:!bg-red-50">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     Çıkış Yap
                 </a>
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col min-w-0 bg-gray-900 overflow-hidden relative">
-            <header
-                class="h-16 border-b border-gray-800 flex items-center px-4 md:hidden flex-shrink-0 bg-gray-900 z-30">
-                <button id="mobile-menu-button"
-                    class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-200 focus:outline-none">
-                    <i class="fa-solid fa-bars text-xl"></i>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <!-- Mobile Header -->
+            <header class="h-14 border-b border-slate-200 flex items-center px-4 md:hidden flex-shrink-0 bg-white z-30 shadow-sm">
+                <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
-                <div class="flex-1 font-bold text-gray-100 px-2 tracking-tight">Workspace</div>
+                <div class="flex-1 font-bold text-slate-800 px-3 tracking-tight">Workspace</div>
                 <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0">
                     {% csrf_token %}
-                    <button type="submit"
-                        class="w-10 h-10 flex items-center justify-center text-blue-500 hover:text-blue-400">
-                        <i class="fa-solid fa-pen-to-square text-xl"></i>
+                    <button type="submit" class="w-10 h-10 flex items-center justify-center text-blue-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
                     </button>
                 </form>
             </header>
@@ -212,49 +136,50 @@
         </div>
     </div>
 
-    <div id="user-profile-popup" class="fixed inset-0 bg-black/50 hidden z-[70] items-center justify-center px-4" onclick="closeUserProfilePopup()">
-        <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-100">Kullanıcı Bilgisi</h3>
-                <button type="button" onclick="closeUserProfilePopup()" class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition">
+    <!-- User Profile Popup -->
+    <div id="user-profile-popup" class="ws-popup-backdrop" onclick="closeUserProfilePopup()">
+        <div class="ws-modal max-w-md p-6" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-800">Kullanıcı Bilgisi</h3>
+                <button type="button" onclick="closeUserProfilePopup()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="space-y-3">
-                <div class="bg-gray-800 rounded-lg p-3">
-                    <p id="user-popup-username" class="text-sm font-semibold text-gray-100">-</p>
-                    <p id="user-popup-position" class="text-xs text-blue-400 mt-1">-</p>
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                    <p id="user-popup-username" class="text-sm font-bold text-slate-800">-</p>
+                    <p id="user-popup-position" class="text-xs text-blue-600 mt-1 font-medium">-</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="bg-gray-800 rounded p-2.5">
-                        <p class="text-gray-500">Kayıt Tarihi</p>
-                        <p id="user-popup-registered" class="text-gray-200 mt-1">-</p>
+                    <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                        <p class="text-slate-400 font-medium">Kayıt Tarihi</p>
+                        <p id="user-popup-registered" class="text-slate-700 mt-1 font-semibold">-</p>
                     </div>
-                    <div class="bg-gray-800 rounded p-2.5">
-                        <p class="text-gray-500">Son Aktif</p>
-                        <p id="user-popup-last-active" class="text-gray-200 mt-1">-</p>
+                    <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                        <p class="text-slate-400 font-medium">Son Aktif</p>
+                        <p id="user-popup-last-active" class="text-slate-700 mt-1 font-semibold">-</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 text-[11px]">
-                    <div class="bg-gray-800 rounded p-2 text-center">
-                        <p id="user-popup-projects" class="text-gray-100 font-semibold">0</p>
-                        <p class="text-gray-500 mt-1">Projeler</p>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-center">
+                        <p id="user-popup-projects" class="text-blue-700 font-bold text-base">0</p>
+                        <p class="text-blue-400 mt-0.5 font-medium">Projeler</p>
                     </div>
-                    <div class="bg-gray-800 rounded p-2 text-center">
-                        <p id="user-popup-tasks" class="text-gray-100 font-semibold">0</p>
-                        <p class="text-gray-500 mt-1">Görevler</p>
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
+                        <p id="user-popup-tasks" class="text-emerald-700 font-bold text-base">0</p>
+                        <p class="text-emerald-400 mt-0.5 font-medium">Görevler</p>
                     </div>
-                    <div class="bg-gray-800 rounded p-2 text-center">
-                        <p id="user-popup-notes" class="text-gray-100 font-semibold">0</p>
-                        <p class="text-gray-500 mt-1">Notlar</p>
+                    <div class="bg-violet-50 border border-violet-100 rounded-lg p-3 text-center">
+                        <p id="user-popup-notes" class="text-violet-700 font-bold text-base">0</p>
+                        <p class="text-violet-400 mt-0.5 font-medium">Notlar</p>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-xs text-gray-500 mb-2">Son İşlemler</p>
+                    <p class="text-xs text-slate-400 font-semibold mb-2">Son İşlemler</p>
                     <div id="user-popup-actions" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
             </div>
@@ -263,27 +188,7 @@
 
     {% block scripts %}
     <script>
-        const themePreference = document.body.dataset.themePreference || 'dark';
-        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        function applyTheme(preference) {
-            let resolvedTheme = preference;
-            if (preference === 'system') {
-                resolvedTheme = darkModeQuery.matches ? 'dark' : 'light';
-            }
-
-            document.body.classList.remove('theme-dark', 'theme-light');
-            document.body.classList.add(`theme-${resolvedTheme}`);
-        }
-
-        applyTheme(themePreference);
-
-        if (themePreference === 'system') {
-            darkModeQuery.addEventListener('change', function () {
-                applyTheme('system');
-            });
-        }
-
+        /* === Sidebar Toggle === */
         const mobileMenuBtn = document.getElementById('mobile-menu-button');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -301,9 +206,7 @@
                 sidebar.classList.add('-translate-x-full');
                 sidebarOverlay.classList.remove('opacity-100');
                 sidebarOverlay.classList.add('opacity-0');
-                setTimeout(() => {
-                    sidebarOverlay.classList.add('hidden');
-                }, 300);
+                setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
                 document.body.classList.remove('overflow-hidden');
             }
         }
@@ -313,27 +216,20 @@
 
         sidebar?.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
-                if (window.innerWidth < 768) {
-                    toggleSidebar();
-                }
+                if (window.innerWidth < 768) toggleSidebar();
             });
         });
 
+        /* === User Profile Popup === */
         function closeUserProfilePopup() {
-            const popup = document.getElementById('user-profile-popup');
-            popup.classList.remove('flex');
-            popup.classList.add('hidden');
+            document.getElementById('user-profile-popup').classList.remove('active');
         }
 
         async function openUserProfileById(userId) {
             if (!userId) return;
-
             try {
                 const response = await fetch(`/users/${userId}/summary/`);
-                if (!response.ok) {
-                    throw new Error('Kullanıcı bilgisi alınamadı.');
-                }
-
+                if (!response.ok) throw new Error('Kullanıcı bilgisi alınamadı.');
                 const data = await response.json();
 
                 document.getElementById('user-popup-username').textContent = data.username || '-';
@@ -349,20 +245,15 @@
                 if (data.recent_actions && data.recent_actions.length) {
                     data.recent_actions.forEach(item => {
                         const row = document.createElement('div');
-                        row.className = 'bg-gray-800 rounded p-2';
-                        row.innerHTML = `<p class="text-xs text-gray-200">${item.text}</p><p class="text-[11px] text-gray-500 mt-1">${item.date}</p>`;
+                        row.className = 'bg-slate-50 border border-slate-100 rounded-lg p-2.5';
+                        row.innerHTML = `<p class="text-xs text-slate-700">${item.text}</p><p class="text-[11px] text-slate-400 mt-1">${item.date}</p>`;
                         actionsContainer.appendChild(row);
                     });
                 } else {
-                    const empty = document.createElement('p');
-                    empty.className = 'text-xs text-gray-500';
-                    empty.textContent = 'İşlem kaydı bulunmuyor.';
-                    actionsContainer.appendChild(empty);
+                    actionsContainer.innerHTML = '<p class="text-xs text-slate-400">İşlem kaydı bulunmuyor.</p>';
                 }
 
-                const popup = document.getElementById('user-profile-popup');
-                popup.classList.remove('hidden');
-                popup.classList.add('flex');
+                document.getElementById('user-profile-popup').classList.add('active');
             } catch (error) {
                 console.error(error);
             }
@@ -371,7 +262,6 @@
         document.addEventListener('click', function (event) {
             const trigger = event.target.closest('.user-profile-trigger');
             if (!trigger) return;
-
             event.preventDefault();
             event.stopPropagation();
             openUserProfileById(trigger.dataset.userId);
@@ -379,5 +269,4 @@
     </script>
     {% endblock %}
 </body>
-
 </html>

@@ -2,255 +2,251 @@
 {% load static %}
 
 {% block content %}
-<div class="flex-1 flex w-full h-full overflow-hidden bg-gray-900 relative">
+<div class="flex-1 flex w-full h-full overflow-hidden relative">
 
+    <!-- Note List Panel -->
     <div id="note-list-container"
-        class="w-full md:w-80 border-r border-gray-800 flex flex-col bg-gray-900 flex-shrink-0 z-10 transition-transform duration-300 {% if active_note %}hidden md:flex{% else %}flex{% endif %}">
-        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-100">Tüm Notlar</h2>
+        class="w-full md:w-80 border-r border-slate-200 flex flex-col bg-white flex-shrink-0 z-10 transition-transform duration-300 {% if active_note %}hidden md:flex{% else %}flex{% endif %}">
+
+        <!-- List Header -->
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-800">Tüm Notlar</h2>
             <div class="flex items-center gap-2">
                 <button type="button" onclick="openProjectModal()"
-                    class="px-2.5 h-8 rounded-md border border-gray-700 text-gray-300 text-xs hover:text-white hover:border-gray-500 transition flex items-center">
-                    <i class="fa-solid fa-diagram-project mr-1.5"></i> Proje
+                    class="ws-btn ws-btn-secondary ws-btn-sm">
+                    <i class="fa-solid fa-diagram-project text-xs"></i> Proje
                 </button>
                 <form action="{% url 'note_create' %}" method="POST" class="m-0 p-0 inline">
                     {% csrf_token %}
                     <button type="submit"
-                        class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shadow-lg shadow-blue-500/20">
-                        <i class="fa-solid fa-plus"></i>
+                        class="w-8 h-8 rounded-lg bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition shadow-md shadow-blue-500/20 hover:shadow-blue-500/30">
+                        <i class="fa-solid fa-plus text-sm"></i>
                     </button>
                 </form>
             </div>
         </div>
 
-        <div class="p-3 border-b border-gray-800">
+        <!-- Search -->
+        <div class="p-3 border-b border-slate-200">
             <form method="GET" action="{% url 'index' %}" class="relative">
                 {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
                 {% if request.GET.favorite %}<input type="hidden" name="favorite" value="{{ request.GET.favorite }}">{% endif %}
                 {% if request.GET.tag %}<input type="hidden" name="tag" value="{{ request.GET.tag }}">{% endif %}
-                <i
-                    class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"></i>
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input id="note-search-input" name="q" value="{{ query|default:'' }}" type="text" placeholder="Notlarda ara..."
-                    class="w-full bg-gray-800 text-sm text-gray-200 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-gray-500 border border-gray-700">
+                    class="ws-input pl-9 !text-sm !py-2">
             </form>
         </div>
 
+        <!-- Note Items -->
         <div class="flex-1 overflow-y-auto">
             {% for note in notes %}
             <a href="{% url 'note_detail' note.id %}"
-                class="note-item block p-4 border-b border-gray-800 cursor-pointer transition border-l-2 {% if active_note and note.id == active_note.id %}bg-blue-900/20 border-l-blue-500{% else %}hover:bg-gray-800/50 border-l-transparent{% endif %}"
+                class="note-item ws-note-item {% if active_note and note.id == active_note.id %}active{% endif %}"
                 data-note-id="{{ note.id }}"
                 data-assign-url="{% url 'note_assign' note.id %}">
                 <div class="flex justify-between items-start mb-1">
-                    <h3 class="text-sm font-semibold text-gray-100 truncate pr-2">{{ note.title }}
+                    <h3 class="text-sm font-semibold text-slate-800 truncate pr-2">{{ note.title }}
                         <span data-user-id="{{ note.user.id }}"
-                            class="user-profile-trigger text-gray-400 text-xs hover:text-gray-200 transition cursor-pointer">({{ note.user.username }})</span>
+                            class="user-profile-trigger text-slate-400 text-xs hover:text-blue-500 transition cursor-pointer font-normal">({{ note.user.username }})</span>
                     </h3>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">{{ note.updated_at|date:"H:i" }}</span>
+                    <span class="text-[11px] text-slate-400 whitespace-nowrap font-medium">{{ note.updated_at|date:"H:i" }}</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-1 truncate whitespace-nowrap">
+                <p class="text-xs text-slate-500 mt-1 truncate whitespace-nowrap">
                     {{ note.content|striptags|default:"İçerik yok..." }}
                 </p>
-                <div class="assignment-badges flex items-center gap-2 mt-2 flex-wrap">
+                <div class="assignment-badges flex items-center gap-1.5 mt-2 flex-wrap">
                     {% if note.assigned_user %}
-                    <span class="assigned-user-badge user-profile-trigger px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300 hover:text-white transition cursor-pointer"
+                    <span class="assigned-user-badge user-profile-trigger ws-badge ws-badge-blue cursor-pointer"
                         data-user-id="{{ note.assigned_user.id }}">
                         <i class="fa-regular fa-user mr-1"></i>{{ note.assigned_user.username }}
                     </span>
                     {% endif %}
                     {% if note.assigned_project %}
-                    <span class="assigned-project-badge px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300">
+                    <span class="assigned-project-badge ws-badge ws-badge-violet">
                         <i class="fa-solid fa-diagram-project mr-1"></i>{{ note.assigned_project.name }}
                     </span>
                     {% endif %}
                 </div>
             </a>
             {% empty %}
-            <div class="p-4 text-center text-gray-500 text-sm">
-                Henüz hiç notunuz yok.
+            <div class="p-8 text-center">
+                <i class="fa-regular fa-file-lines text-3xl text-slate-300 mb-2"></i>
+                <p class="text-sm text-slate-400">Henüz hiç notunuz yok.</p>
             </div>
             {% endfor %}
-            <div id="note-search-empty-state" class="hidden p-4 text-center text-gray-500 text-sm">
-                Aramanıza uygun not bulunamadı.
+            <div id="note-search-empty-state" class="hidden p-8 text-center">
+                <i class="fa-solid fa-magnifying-glass text-2xl text-slate-300 mb-2"></i>
+                <p class="text-sm text-slate-400">Aramanıza uygun not bulunamadı.</p>
             </div>
         </div>
     </div>
 
+    <!-- Editor Panel -->
     <div id="note-editor-container"
-        class="flex-1 flex-col bg-gray-950 relative z-0 {% if active_note %}flex{% else %}hidden md:flex{% endif %}">
+        class="flex-1 flex-col relative z-0 {% if active_note %}flex{% else %}hidden md:flex{% endif %}">
 
-        <div
-            class="h-14 border-b border-gray-800 px-4 md:px-6 flex items-center justify-between bg-gray-900 flex-shrink-0 relative z-10">
-            <div id="editor-toolbar" class="flex items-center space-x-1">
+        <!-- Editor Toolbar -->
+        <div class="ws-editor-toolbar flex-shrink-0 relative z-10">
+            <div id="editor-toolbar" class="flex items-center flex-1">
                 <button type="button" onclick="showNoteList()"
-                    class="md:hidden w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition mr-2">
+                    class="md:hidden ws-toolbar-btn mr-2">
                     <i class="fa-solid fa-chevron-left text-sm"></i>
                 </button>
 
-                <button type="button" onclick="formatDoc('bold')"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition">
-                    <i class="fa-solid fa-bold text-sm"></i>
+                <button type="button" onclick="formatDoc('bold')" class="ws-toolbar-btn" title="Kalın">
+                    <i class="fa-solid fa-bold"></i>
                 </button>
-                <button type="button" onclick="formatDoc('italic')"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition">
-                    <i class="fa-solid fa-italic text-sm"></i>
+                <button type="button" onclick="formatDoc('italic')" class="ws-toolbar-btn" title="İtalik">
+                    <i class="fa-solid fa-italic"></i>
                 </button>
-                <button type="button" onclick="formatDoc('underline')"
-                    class="hidden sm:flex w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center justify-center transition">
-                    <i class="fa-solid fa-underline text-sm"></i>
+                <button type="button" onclick="formatDoc('underline')" class="hidden sm:flex ws-toolbar-btn" title="Altı Çizili">
+                    <i class="fa-solid fa-underline"></i>
                 </button>
-                <div class="hidden sm:block w-px h-5 bg-gray-700 mx-2"></div>
-                <button type="button" onclick="formatDoc('formatBlock', 'H3')"
-                    class="hidden sm:flex w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center justify-center transition">
-                    <i class="fa-solid fa-heading text-sm"></i>
+                <div class="ws-toolbar-divider hidden sm:block"></div>
+                <button type="button" onclick="formatDoc('formatBlock', 'H3')" class="hidden sm:flex ws-toolbar-btn" title="Başlık">
+                    <i class="fa-solid fa-heading"></i>
                 </button>
-                <button type="button" onclick="formatDoc('insertUnorderedList')"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition">
-                    <i class="fa-solid fa-list-ul text-sm"></i>
+                <button type="button" onclick="formatDoc('insertUnorderedList')" class="ws-toolbar-btn" title="Liste">
+                    <i class="fa-solid fa-list-ul"></i>
                 </button>
-                <button type="button" onclick="formatDoc('insertOrderedList')"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition">
-                    <i class="fa-solid fa-list-ol text-sm"></i>
+                <button type="button" onclick="formatDoc('insertOrderedList')" class="ws-toolbar-btn" title="Numaralı Liste">
+                    <i class="fa-solid fa-list-ol"></i>
                 </button>
-                <div class="hidden sm:block w-px h-5 bg-gray-700 mx-2"></div>
-                <button type="button" onclick="formatDoc('formatBlock', 'PRE')"
-                    class="hidden sm:flex w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center justify-center transition">
-                    <i class="fa-solid fa-code text-sm"></i>
+                <div class="ws-toolbar-divider hidden sm:block"></div>
+                <button type="button" onclick="formatDoc('formatBlock', 'PRE')" class="hidden sm:flex ws-toolbar-btn" title="Kod">
+                    <i class="fa-solid fa-code"></i>
                 </button>
-                <button type="button" onclick="addLink()"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 flex items-center justify-center transition">
-                    <i class="fa-solid fa-link text-sm"></i>
+                <button type="button" onclick="addLink()" class="ws-toolbar-btn" title="Bağlantı">
+                    <i class="fa-solid fa-link"></i>
                 </button>
-                <button type="button" onclick="addImage()"
-                    class="hidden sm:flex w-8 h-8 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center justify-center transition">
-                    <i class="fa-solid fa-image text-sm"></i>
+                <button type="button" onclick="addImage()" class="hidden sm:flex ws-toolbar-btn" title="Görsel">
+                    <i class="fa-solid fa-image"></i>
                 </button>
             </div>
 
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
                 {% if active_note %}
-                <span class="text-xs text-gray-500 mr-2">Son kayıt: {{ active_note.updated_at|date:"H:i" }}</span>
+                <span class="text-[11px] text-slate-400 mr-1 hidden sm:inline font-medium">{{ active_note.updated_at|date:"H:i" }}</span>
                 <button type="button" onclick="toggleFavorite()"
                     id="favorite-button"
                     data-url="{% url 'note_toggle_favorite' active_note.id %}"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-yellow-400 hover:bg-gray-800 flex items-center justify-center transition"
+                    class="ws-toolbar-btn hover:!text-amber-400"
                     title="Favorilere Ekle">
                     <i id="favorite-icon"
-                        class="{% if active_note.is_favorite %}fa-solid text-yellow-400{% else %}fa-regular{% endif %} fa-star"></i>
+                        class="{% if active_note.is_favorite %}fa-solid text-amber-400{% else %}fa-regular text-slate-400{% endif %} fa-star"></i>
                 </button>
-
                 <a href="{% url 'note_delete' active_note.id %}"
                     onclick="return confirm('Bu notu silmek istediğinize emin misiniz?');"
-                    class="w-8 h-8 rounded text-gray-400 hover:text-red-400 hover:bg-gray-800 flex items-center justify-center transition"
+                    class="ws-toolbar-btn hover:!text-red-400"
                     title="Sil">
                     <i class="fa-regular fa-trash-can"></i>
                 </a>
-
                 <button type="submit" form="note-form"
-                    class="px-4 py-1.5 ml-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-md transition shadow shadow-blue-500/20">Kaydet</button>
+                    class="ws-btn ws-btn-primary ws-btn-sm ml-1">
+                    <i class="fa-solid fa-check text-xs"></i> Kaydet
+                </button>
                 {% endif %}
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto w-full max-w-4xl mx-auto px-6 md:px-10 py-8 md:py-12">
-            {% if active_note %}
-            <form id="note-form" action="{% url 'note_save' active_note.id %}" method="POST"
-                class="h-full flex flex-col">
-                {% csrf_token %}
-                <input type="text" name="title" value="{{ active_note.title }}"
-                    class="w-full bg-transparent text-2xl md:text-3xl font-bold text-gray-100 placeholder-gray-600 border-none focus:outline-none focus:ring-0 mb-4"
-                    placeholder="Not Başlığı...">
-
-                <div class="mb-6">
-                    <select id="select-category" onchange="document.getElementById('input-category').value = this.value"
-                        class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-1">
-                        <option value="note" {% if active_note.category == 'note' %}selected{% endif %}>Not</option>
-                        <option value="project" {% if active_note.category == 'project' %}selected{% endif %}>Proje
-                        </option>
-                        <option value="task" {% if active_note.category == 'task' %}selected{% endif %}>Görev</option>
-                    </select>
-                </div>
-
-                <input type="hidden" name="is_favorite" id="input-is-favorite"
-                    value="{% if active_note.is_favorite %}true{% else %}false{% endif %}">
-                <input type="hidden" name="category" id="input-category" value="{{ active_note.category }}">
-
-                {% with active_tags=active_note.tags.all %}
-                <input type="hidden" name="tags" id="input-tags"
-                    value="{% for tag in active_tags %}{{ tag.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
-
-                <div class="flex items-center gap-2 mb-8 flex-wrap" id="tags-container">
-                    {% for tag in active_tags %}
-                    <span
-                        class="px-3 py-1 bg-gray-800 text-{{tag.color|default:'blue-500'}} rounded-md text-xs font-medium flex items-center">
-                        <i class="fa-solid fa-hashtag mr-1.5"></i> {{ tag.name }}
-                        <button type="button" class="ml-2 hover:text-white" onclick="removeTag('{{ tag.name }}', this)">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </span>
-                    {% endfor %}
-                    <button type="button" onclick="promptAddTag()"
-                        class="px-3 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500 rounded-md text-xs font-medium transition flex items-center">
-                        <i class="fa-solid fa-plus mr-1"></i> Etiket Ekle
-                    </button>
-                </div>
-                {% endwith %}
-
-                <input type="hidden" name="content" id="hidden-content">
-                <div id="editor-content" contenteditable="true"
-                    class="w-full h-full min-h-[500px] bg-transparent text-gray-300 border-none focus:outline-none focus:ring-0 leading-relaxed text-[15px] prose prose-invert max-w-none"
-                    placeholder="Notunuzu buraya yazmaya başlayın...">{{ active_note.content|safe }}</div>
-            </form>
-            {% else %}
-            <div class="h-full flex flex-col items-center justify-center text-gray-500">
-                <i class="fa-regular fa-file-lines text-6xl mb-4 text-gray-700"></i>
-                <p class="text-xl font-medium text-gray-400">Not görüntülemek için seçim yapın</p>
-                <p class="text-sm mt-2">veya yeni bir not oluşturun</p>
-                <form action="{% url 'note_create' %}" method="POST" class="mt-6">
+        <!-- Editor Content Area -->
+        <div class="flex-1 overflow-y-auto w-full bg-white">
+            <div class="max-w-4xl mx-auto px-6 md:px-12 py-8 md:py-12">
+                {% if active_note %}
+                <form id="note-form" action="{% url 'note_save' active_note.id %}" method="POST"
+                    class="h-full flex flex-col">
                     {% csrf_token %}
-                    <button type="submit"
-                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition shadow-lg shadow-blue-500/20 flex items-center">
-                        <i class="fa-solid fa-plus mr-2"></i> Yeni Not Oluştur
-                    </button>
+                    <input type="text" name="title" value="{{ active_note.title }}"
+                        class="w-full bg-transparent text-2xl md:text-3xl font-bold text-slate-800 placeholder-slate-300 border-none focus:outline-none focus:ring-0 mb-4 tracking-tight"
+                        placeholder="Not Başlığı...">
+
+                    <div class="mb-5">
+                        <select id="select-category" onchange="document.getElementById('input-category').value = this.value"
+                            class="ws-input ws-select !w-auto !inline-block !py-1.5 !px-3 !text-xs !font-medium">
+                            <option value="note" {% if active_note.category == 'note' %}selected{% endif %}>Not</option>
+                            <option value="project" {% if active_note.category == 'project' %}selected{% endif %}>Proje</option>
+                            <option value="task" {% if active_note.category == 'task' %}selected{% endif %}>Görev</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="is_favorite" id="input-is-favorite"
+                        value="{% if active_note.is_favorite %}true{% else %}false{% endif %}">
+                    <input type="hidden" name="category" id="input-category" value="{{ active_note.category }}">
+
+                    {% with active_tags=active_note.tags.all %}
+                    <input type="hidden" name="tags" id="input-tags"
+                        value="{% for tag in active_tags %}{{ tag.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+                    <div class="flex items-center gap-2 mb-8 flex-wrap" id="tags-container">
+                        {% for tag in active_tags %}
+                        <span class="ws-badge ws-badge-blue flex items-center gap-1 !py-1 !px-2.5">
+                            <i class="fa-solid fa-hashtag text-[9px]"></i> {{ tag.name }}
+                            <button type="button" class="ml-1 hover:text-blue-700" onclick="removeTag('{{ tag.name }}', this)">
+                                <i class="fa-solid fa-xmark text-[10px]"></i>
+                            </button>
+                        </span>
+                        {% endfor %}
+                        <button type="button" onclick="promptAddTag()"
+                            class="ws-btn ws-btn-secondary ws-btn-sm !text-xs !py-1 !px-2.5 !rounded-full">
+                            <i class="fa-solid fa-plus text-[9px]"></i> Etiket Ekle
+                        </button>
+                    </div>
+                    {% endwith %}
+
+                    <input type="hidden" name="content" id="hidden-content">
+                    <div id="editor-content" contenteditable="true"
+                        class="w-full h-full min-h-[500px] bg-transparent border-none focus:outline-none focus:ring-0 leading-relaxed prose max-w-none"
+                        placeholder="Notunuzu buraya yazmaya başlayın...">{{ active_note.content|safe }}</div>
                 </form>
+                {% else %}
+                <div class="h-full flex flex-col items-center justify-center py-20">
+                    <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+                        <i class="fa-regular fa-file-lines text-3xl text-slate-300"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-slate-600">Not görüntülemek için seçim yapın</p>
+                    <p class="text-sm text-slate-400 mt-1">veya yeni bir not oluşturun</p>
+                    <form action="{% url 'note_create' %}" method="POST" class="mt-6">
+                        {% csrf_token %}
+                        <button type="submit" class="ws-btn ws-btn-primary">
+                            <i class="fa-solid fa-plus"></i> Yeni Not Oluştur
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<div id="input-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeInputModal()">
-    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
-        <h3 id="input-modal-title" class="text-lg font-semibold text-gray-100 mb-3">Girdi</h3>
-        <input id="input-modal-field" type="text"
-            class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="">
+<!-- Input Modal -->
+<div id="input-modal" class="ws-modal-backdrop" onclick="closeInputModal()">
+    <div class="ws-modal max-w-md p-5" onclick="event.stopPropagation()">
+        <h3 id="input-modal-title" class="text-base font-bold text-slate-800 mb-3">Girdi</h3>
+        <input id="input-modal-field" type="text" class="ws-input" placeholder="">
         <div id="input-modal-suggestions" class="hidden mt-3 flex flex-wrap gap-2"></div>
         <div class="flex justify-end gap-2 mt-4">
-            <button type="button" onclick="closeInputModal()"
-                class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
-            <button type="button" id="input-modal-submit" onclick="submitInputModal()"
-                class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Ekle</button>
+            <button type="button" onclick="closeInputModal()" class="ws-btn ws-btn-secondary ws-btn-sm">Vazgeç</button>
+            <button type="button" id="input-modal-submit" onclick="submitInputModal()" class="ws-btn ws-btn-primary ws-btn-sm">Ekle</button>
         </div>
     </div>
 </div>
 
-<div id="project-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4" onclick="closeProjectModal()">
-    <div class="w-full max-w-xl bg-gray-900 border border-gray-800 rounded-xl p-5" onclick="event.stopPropagation()">
-        <h3 class="text-lg font-semibold text-gray-100 mb-4">Yeni Proje Oluştur</h3>
+<!-- Project Modal -->
+<div id="project-modal" class="ws-modal-backdrop" onclick="closeProjectModal()">
+    <div class="ws-modal max-w-xl p-6" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-bold text-slate-800 mb-5">Yeni Proje Oluştur</h3>
         <form action="{% url 'project_create' %}" method="POST" class="space-y-4">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
             <div>
-                <label class="block text-xs text-gray-400 mb-1.5">Proje Adı</label>
-                <input name="name" type="text" required
-                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <label class="ws-label">Proje Adı</label>
+                <input name="name" type="text" required class="ws-input">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1.5">Proje Rengi</label>
-                    <select name="color"
-                        class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="ws-label">Proje Rengi</label>
+                    <select name="color" class="ws-input ws-select">
                         <option value="blue-500">Mavi</option>
                         <option value="emerald-500">Yeşil</option>
                         <option value="amber-500">Sarı</option>
@@ -259,9 +255,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1.5">Proje Temsilcisi</label>
-                    <select name="representative_id"
-                        class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="ws-label">Proje Temsilcisi</label>
+                    <select name="representative_id" class="ws-input ws-select">
                         <option value="">Seçiniz</option>
                         {% for user_item in users %}
                         <option value="{{ user_item.id }}">{{ user_item.username }}</option>
@@ -270,56 +265,54 @@
                 </div>
             </div>
             <div>
-                <label class="block text-xs text-gray-400 mb-1.5">Proje Katılımcıları</label>
-                <select name="participant_ids" multiple
-                    class="w-full h-32 bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <label class="ws-label">Proje Katılımcıları</label>
+                <select name="participant_ids" multiple class="ws-input !h-28">
                     {% for user_item in users %}
                     <option value="{{ user_item.id }}">{{ user_item.username }}</option>
                     {% endfor %}
                 </select>
-                <p class="text-[11px] text-gray-500 mt-1">Birden fazla seçim için Ctrl tuşunu kullanın.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Birden fazla seçim için Ctrl tuşunu kullanın.</p>
             </div>
             <div>
-                <label class="block text-xs text-gray-400 mb-1.5">Proje Açıklaması</label>
-                <textarea name="description" rows="3"
-                    class="w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                <label class="ws-label">Proje Açıklaması</label>
+                <textarea name="description" rows="3" class="ws-input"></textarea>
             </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeProjectModal()"
-                    class="px-3 py-1.5 text-sm text-gray-300 hover:text-gray-100 bg-gray-800 hover:bg-gray-700 rounded-md transition">Vazgeç</button>
-                <button type="submit"
-                    class="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md transition">Oluştur</button>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeProjectModal()" class="ws-btn ws-btn-secondary">Vazgeç</button>
+                <button type="submit" class="ws-btn ws-btn-primary">Oluştur</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="note-context-menu" class="fixed hidden z-50 w-60 bg-gray-900 border border-gray-800 rounded-lg shadow-xl p-2">
-    <div class="px-2 py-1 text-[11px] text-gray-500">Kullanıcıya Ata</div>
-    <div class="max-h-28 overflow-y-auto mb-2">
+<!-- Note Context Menu -->
+<div id="note-context-menu" class="ws-context-menu hidden">
+    <div class="ws-context-label">Kullanıcıya Ata</div>
+    <div class="max-h-28 overflow-y-auto mb-1">
         {% for user_item in users %}
-        <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800 rounded"
+        <button type="button" class="ws-context-btn"
             onclick="assignNote('user', '{{ user_item.id }}', '{{ user_item.username }}')">
-            <i class="fa-regular fa-user mr-1.5"></i>{{ user_item.username }}
+            <i class="fa-regular fa-user mr-2 text-slate-400"></i>{{ user_item.username }}
         </button>
         {% empty %}
-        <div class="px-2 py-1.5 text-xs text-gray-500">Kullanıcı yok</div>
+        <div class="px-2 py-1.5 text-xs text-slate-400">Kullanıcı yok</div>
         {% endfor %}
     </div>
-    <div class="px-2 py-1 text-[11px] text-gray-500">Projeye Ata</div>
-    <div class="max-h-28 overflow-y-auto mb-2">
+    <div class="ws-context-label">Projeye Ata</div>
+    <div class="max-h-28 overflow-y-auto mb-1">
         {% for project_item in projects %}
-        <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800 rounded"
+        <button type="button" class="ws-context-btn"
             onclick="assignNote('project', '{{ project_item.id }}', '{{ project_item.name|escapejs }}')">
-            <i class="fa-solid fa-diagram-project mr-1.5"></i>{{ project_item.name }}
+            <i class="fa-solid fa-diagram-project mr-2 text-slate-400"></i>{{ project_item.name }}
         </button>
         {% empty %}
-        <div class="px-2 py-1.5 text-xs text-gray-500">Proje yok</div>
+        <div class="px-2 py-1.5 text-xs text-slate-400">Proje yok</div>
         {% endfor %}
     </div>
-    <button type="button" class="w-full text-left px-2 py-1.5 text-sm text-rose-400 hover:bg-gray-800 rounded"
+    <div class="h-px bg-slate-100 my-1"></div>
+    <button type="button" class="ws-context-btn !text-red-500"
         onclick="assignNote('clear', '', '')">
-        <i class="fa-solid fa-xmark mr-1.5"></i>Atamayı Kaldır
+        <i class="fa-solid fa-xmark mr-2"></i>Atamayı Kaldır
     </button>
 </div>
 {% endblock %}
@@ -339,10 +332,8 @@
     function saveEditorSelection() {
         const editor = getEditorElement();
         if (!editor) return;
-
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return;
-
         const range = selection.getRangeAt(0);
         if (editor.contains(range.commonAncestorContainer)) {
             savedEditorRange = range.cloneRange();
@@ -352,18 +343,14 @@
     function restoreEditorSelection() {
         const editor = getEditorElement();
         if (!editor) return;
-
         editor.focus();
-
         const selection = window.getSelection();
         if (!selection) return;
-
         if (savedEditorRange && editor.contains(savedEditorRange.commonAncestorContainer)) {
             selection.removeAllRanges();
             selection.addRange(savedEditorRange);
             return;
         }
-
         const range = document.createRange();
         range.selectNodeContents(editor);
         range.collapse(false);
@@ -374,7 +361,6 @@
     function formatDoc(cmd, value = null) {
         const editor = getEditorElement();
         if (!editor) return;
-
         restoreEditorSelection();
         if (typeof document.execCommand === 'function') {
             document.execCommand(cmd, false, value);
@@ -384,37 +370,29 @@
 
     function openInputModal({ title, placeholder = '', value = '', submitText = 'Ekle', onSubmit, suggestions = [] }) {
         const modal = document.getElementById('input-modal');
-        const modalTitle = document.getElementById('input-modal-title');
+        document.getElementById('input-modal-title').textContent = title;
         const modalInput = document.getElementById('input-modal-field');
-        const modalSubmit = document.getElementById('input-modal-submit');
-        const suggestionsContainer = document.getElementById('input-modal-suggestions');
-
-        modalTitle.textContent = title;
         modalInput.placeholder = placeholder;
         modalInput.value = value;
-        modalSubmit.textContent = submitText;
+        document.getElementById('input-modal-submit').textContent = submitText;
 
+        const suggestionsContainer = document.getElementById('input-modal-suggestions');
         suggestionsContainer.innerHTML = '';
         if (suggestions.length) {
             suggestionsContainer.classList.remove('hidden');
             suggestions.forEach(tagName => {
                 const tagBtn = document.createElement('button');
                 tagBtn.type = 'button';
-                tagBtn.className = 'px-2.5 py-1 rounded border border-gray-700 text-xs text-gray-300 hover:text-white hover:border-gray-500 transition';
+                tagBtn.className = 'ws-badge ws-badge-gray cursor-pointer hover:!bg-blue-50 hover:!text-blue-600 transition';
                 tagBtn.textContent = tagName;
-                tagBtn.onclick = function () {
-                    modalInput.value = tagName;
-                    modalInput.focus();
-                };
+                tagBtn.onclick = () => { modalInput.value = tagName; modalInput.focus(); };
                 suggestionsContainer.appendChild(tagBtn);
             });
         } else {
             suggestionsContainer.classList.add('hidden');
         }
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-
+        modal.classList.add('active');
         modalSubmitHandler = onSubmit;
         setTimeout(() => modalInput.focus(), 0);
     }
@@ -422,30 +400,23 @@
     function closeInputModal() {
         const modal = document.getElementById('input-modal');
         const suggestionsContainer = document.getElementById('input-modal-suggestions');
-        modal.classList.remove('flex');
-        modal.classList.add('hidden');
+        modal.classList.remove('active');
         suggestionsContainer.innerHTML = '';
         suggestionsContainer.classList.add('hidden');
         modalSubmitHandler = null;
     }
 
     function openProjectModal() {
-        const modal = document.getElementById('project-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.getElementById('project-modal').classList.add('active');
     }
 
     function closeProjectModal() {
-        const modal = document.getElementById('project-modal');
-        modal.classList.remove('flex');
-        modal.classList.add('hidden');
+        document.getElementById('project-modal').classList.remove('active');
     }
 
     function submitInputModal() {
-        const modalInput = document.getElementById('input-modal-field');
-        const value = modalInput.value.trim();
+        const value = document.getElementById('input-modal-field').value.trim();
         if (!value || !modalSubmitHandler) return;
-
         modalSubmitHandler(value);
         closeInputModal();
     }
@@ -455,9 +426,7 @@
             title: 'Görsel Ekle',
             placeholder: 'Resim URL adresini girin (https://...)',
             submitText: 'Görsel Ekle',
-            onSubmit: function (url) {
-                formatDoc('insertImage', url);
-            }
+            onSubmit: (url) => formatDoc('insertImage', url)
         });
     }
 
@@ -475,14 +444,13 @@
         }
     }
 
-    document.getElementById('note-form')?.addEventListener('submit', function (e) {
+    document.getElementById('note-form')?.addEventListener('submit', function () {
         syncEditorContent();
     });
 
     function getCsrfToken() {
         const fromForm = document.querySelector('input[name="csrfmiddlewaretoken"]');
         if (fromForm) return fromForm.value;
-
         const cookieValue = `; ${document.cookie}`;
         const parts = cookieValue.split('; csrftoken=');
         if (parts.length === 2) return parts.pop().split(';').shift();
@@ -493,36 +461,26 @@
         const input = document.getElementById('input-is-favorite');
         const btnIcon = document.getElementById('favorite-icon');
         const favoriteButton = document.getElementById('favorite-button');
-
         if (!input || !btnIcon || !favoriteButton) return;
 
         const nextValue = input.value !== 'true';
-
         favoriteButton.disabled = true;
         try {
             const response = await fetch(favoriteButton.dataset.url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCsrfToken(),
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrfToken() },
                 body: `is_favorite=${nextValue ? 'true' : 'false'}`,
             });
-
-            if (!response.ok) {
-                throw new Error('Favori durumu güncellenemedi.');
-            }
-
+            if (!response.ok) throw new Error('Favori durumu güncellenemedi.');
             const result = await response.json();
             const isFavorite = !!result.is_favorite;
-
             input.value = isFavorite ? 'true' : 'false';
             if (isFavorite) {
-                btnIcon.classList.remove('fa-regular');
-                btnIcon.classList.add('fa-solid', 'text-yellow-400');
+                btnIcon.classList.remove('fa-regular', 'text-slate-400');
+                btnIcon.classList.add('fa-solid', 'text-amber-400');
             } else {
-                btnIcon.classList.remove('fa-solid', 'text-yellow-400');
-                btnIcon.classList.add('fa-regular');
+                btnIcon.classList.remove('fa-solid', 'text-amber-400');
+                btnIcon.classList.add('fa-regular', 'text-slate-400');
             }
         } catch (error) {
             console.error(error);
@@ -540,34 +498,19 @@
             onSubmit: function (tagName) {
                 const inputTags = document.getElementById('input-tags');
                 let currentTags = inputTags.value.split(',').map(t => t.trim()).filter(t => t !== '');
-
                 if (!currentTags.includes(tagName)) {
                     currentTags.push(tagName);
                     inputTags.value = currentTags.join(',');
-
                     const container = document.getElementById('tags-container');
                     const newSpan = document.createElement('span');
-                    newSpan.className = 'px-3 py-1 bg-gray-800 text-blue-500 rounded-md text-xs font-medium flex items-center';
-
-                    const icon = document.createElement('i');
-                    icon.className = 'fa-solid fa-hashtag mr-1.5';
-                    newSpan.appendChild(icon);
-
-                    const labelText = document.createTextNode(` ${tagName}`);
-                    newSpan.appendChild(labelText);
-
+                    newSpan.className = 'ws-badge ws-badge-blue flex items-center gap-1 !py-1 !px-2.5';
+                    newSpan.innerHTML = `<i class="fa-solid fa-hashtag text-[9px]"></i> ${tagName}`;
                     const removeButton = document.createElement('button');
                     removeButton.type = 'button';
-                    removeButton.className = 'ml-2 hover:text-white';
-                    removeButton.onclick = function () {
-                        removeTag(tagName, removeButton);
-                    };
-
-                    const removeIcon = document.createElement('i');
-                    removeIcon.className = 'fa-solid fa-xmark';
-                    removeButton.appendChild(removeIcon);
+                    removeButton.className = 'ml-1 hover:text-blue-700';
+                    removeButton.onclick = function () { removeTag(tagName, removeButton); };
+                    removeButton.innerHTML = '<i class="fa-solid fa-xmark text-[10px]"></i>';
                     newSpan.appendChild(removeButton);
-
                     container.insertBefore(newSpan, container.lastElementChild);
                 }
             }
@@ -575,13 +518,8 @@
     }
 
     document.getElementById('input-modal-field')?.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            submitInputModal();
-        }
-        if (e.key === 'Escape') {
-            closeInputModal();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); submitInputModal(); }
+        if (e.key === 'Escape') closeInputModal();
     });
 
     function removeTag(tagName, btnElement) {
@@ -607,48 +545,35 @@
     }
 
     function closeNoteContextMenu() {
-        const menu = document.getElementById('note-context-menu');
-        menu.classList.add('hidden');
+        document.getElementById('note-context-menu').classList.add('hidden');
         activeContextNote = null;
     }
 
     function openNoteContextMenu(event, noteElement) {
         event.preventDefault();
-
         const menu = document.getElementById('note-context-menu');
         activeContextNote = noteElement;
-
         menu.classList.remove('hidden');
         menu.style.left = `${event.clientX}px`;
         menu.style.top = `${event.clientY}px`;
-
         const menuRect = menu.getBoundingClientRect();
-        if (menuRect.right > window.innerWidth) {
-            menu.style.left = `${window.innerWidth - menuRect.width - 12}px`;
-        }
-        if (menuRect.bottom > window.innerHeight) {
-            menu.style.top = `${window.innerHeight - menuRect.height - 12}px`;
-        }
+        if (menuRect.right > window.innerWidth) menu.style.left = `${window.innerWidth - menuRect.width - 12}px`;
+        if (menuRect.bottom > window.innerHeight) menu.style.top = `${window.innerHeight - menuRect.height - 12}px`;
     }
 
     function updateAssignmentBadges(noteElement, assignType, targetLabel, targetId) {
         const badgesContainer = noteElement.querySelector('.assignment-badges');
         if (!badgesContainer) return;
-
         badgesContainer.innerHTML = '';
-
         if (assignType === 'user') {
             const badge = document.createElement('span');
-            badge.className = 'assigned-user-badge user-profile-trigger px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300 hover:text-white transition cursor-pointer';
+            badge.className = 'assigned-user-badge user-profile-trigger ws-badge ws-badge-blue cursor-pointer';
             badge.dataset.userId = targetId;
             badge.innerHTML = `<i class="fa-regular fa-user mr-1"></i>${targetLabel}`;
             badgesContainer.appendChild(badge);
-            return;
-        }
-
-        if (assignType === 'project') {
+        } else if (assignType === 'project') {
             const badge = document.createElement('span');
-            badge.className = 'assigned-project-badge px-2 py-0.5 rounded bg-gray-800 text-[11px] text-gray-300';
+            badge.className = 'assigned-project-badge ws-badge ws-badge-violet';
             badge.innerHTML = `<i class="fa-solid fa-diagram-project mr-1"></i>${targetLabel}`;
             badgesContainer.appendChild(badge);
         }
@@ -656,24 +581,15 @@
 
     async function assignNote(assignType, targetId, targetLabel) {
         if (!activeContextNote) return;
-
         const assignUrl = activeContextNote.dataset.assignUrl;
         if (!assignUrl) return;
-
         try {
             const response = await fetch(assignUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCsrfToken(),
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrfToken() },
                 body: `assign_type=${encodeURIComponent(assignType)}&target_id=${encodeURIComponent(targetId || '')}`,
             });
-
-            if (!response.ok) {
-                throw new Error('Atama işlemi başarısız oldu.');
-            }
-
+            if (!response.ok) throw new Error('Atama işlemi başarısız oldu.');
             updateAssignmentBadges(activeContextNote, assignType, targetLabel, targetId);
             closeNoteContextMenu();
         } catch (error) {
@@ -686,73 +602,44 @@
         const editor = getEditorElement();
         if (editor) {
             editor.setAttribute('contenteditable', 'true');
-            ['keyup', 'mouseup', 'focus', 'input'].forEach(function (eventName) {
-                editor.addEventListener(eventName, saveEditorSelection);
-            });
+            ['keyup', 'mouseup', 'focus', 'input'].forEach(ev => editor.addEventListener(ev, saveEditorSelection));
         }
 
-        document.querySelectorAll('#editor-toolbar button').forEach(function (button) {
+        document.querySelectorAll('#editor-toolbar button').forEach(button => {
             const onclickCode = button.getAttribute('onclick') || '';
             const isEditorAction = onclickCode.includes('formatDoc(') || onclickCode.includes('addLink(') || onclickCode.includes('addImage(');
             if (!isEditorAction) return;
-
-            button.addEventListener('mousedown', function (event) {
-                event.preventDefault();
-                saveEditorSelection();
-            });
+            button.addEventListener('mousedown', e => { e.preventDefault(); saveEditorSelection(); });
         });
 
-        if (window.innerWidth < 768 && "{{ active_note.id|default:'' }}" !== "") {
-            showEditor();
-        }
+        if (window.innerWidth < 768 && "{{ active_note.id|default:'' }}" !== "") showEditor();
 
-        document.querySelectorAll('.note-item').forEach(function (noteElement) {
-            noteElement.addEventListener('contextmenu', function (event) {
-                openNoteContextMenu(event, noteElement);
-            });
+        document.querySelectorAll('.note-item').forEach(noteElement => {
+            noteElement.addEventListener('contextmenu', e => openNoteContextMenu(e, noteElement));
         });
 
         const noteSearchInput = document.getElementById('note-search-input');
         if (noteSearchInput) {
-            const applyListSearchFilter = function () {
+            const applyListSearchFilter = () => {
                 const query = noteSearchInput.value.trim().toLowerCase();
                 let visibleCount = 0;
-
-                document.querySelectorAll('.note-item').forEach(function (noteElement) {
-                    const searchableText = noteElement.textContent.toLowerCase();
-                    const isVisible = !query || searchableText.includes(query);
-                    noteElement.classList.toggle('hidden', !isVisible);
-                    if (isVisible) visibleCount += 1;
+                document.querySelectorAll('.note-item').forEach(el => {
+                    const isVisible = !query || el.textContent.toLowerCase().includes(query);
+                    el.classList.toggle('hidden', !isVisible);
+                    if (isVisible) visibleCount++;
                 });
-
                 const emptyState = document.getElementById('note-search-empty-state');
-                if (emptyState) {
-                    emptyState.classList.toggle('hidden', visibleCount !== 0);
-                }
+                if (emptyState) emptyState.classList.toggle('hidden', visibleCount !== 0);
             };
-
             noteSearchInput.addEventListener('input', applyListSearchFilter);
             applyListSearchFilter();
         }
 
-        document.addEventListener('click', function (event) {
-            const menu = document.getElementById('note-context-menu');
-            if (!menu.contains(event.target)) {
-                closeNoteContextMenu();
-            }
+        document.addEventListener('click', e => {
+            if (!document.getElementById('note-context-menu').contains(e.target)) closeNoteContextMenu();
         });
-
         document.addEventListener('scroll', closeNoteContextMenu, true);
         window.addEventListener('resize', closeNoteContextMenu);
     });
 </script>
-
-<style>
-    #editor-content:empty:before {
-        content: attr(placeholder);
-        color: #4b5563;
-        pointer-events: none;
-        display: block;
-    }
-</style>
 {% endblock %}

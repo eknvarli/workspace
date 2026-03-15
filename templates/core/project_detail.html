@@ -3,87 +3,125 @@
 {% block title %}{{ project.name }}{% endblock %}
 
 {% block content %}
-<div class="flex-1 h-full overflow-y-auto bg-gray-950">
+<div class="flex-1 h-full overflow-y-auto">
     <div class="max-w-7xl mx-auto px-6 md:px-10 py-8">
+        <!-- Breadcrumb & Header -->
         <div class="mb-8">
-            <a href="{% url 'projects' %}" class="text-sm text-gray-400 hover:text-gray-200 transition">
-                <i class="fa-solid fa-arrow-left mr-1.5"></i>Projelere Dön
+            <a href="{% url 'projects' %}" class="inline-flex items-center text-sm text-slate-400 hover:text-blue-500 transition font-medium mb-3">
+                <i class="fa-solid fa-arrow-left mr-2 text-xs"></i>Projelere Dön
             </a>
-            <div class="mt-3 flex items-start justify-between gap-4">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-100">{{ project.name }}</h1>
-                    <p class="text-sm text-gray-400 mt-1">{{ project.description|default:'Açıklama girilmemiş.' }}</p>
+                    <h1 class="ws-page-title">{{ project.name }}</h1>
+                    <p class="ws-page-subtitle mt-1">{{ project.description|default:'Açıklama girilmemiş.' }}</p>
                 </div>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-{{ project.color|default:'blue-500' }}/20 text-{{ project.color|default:'blue-500' }} border border-{{ project.color|default:'blue-500' }}/40">
-                    Proje Rengi
+                <span class="ws-badge ws-badge-blue !text-xs !px-3 !py-1.5 flex-shrink-0">
+                    <i class="fa-solid fa-circle text-{{ project.color|default:'blue-500' }} mr-1.5 text-[8px]"></i>
+                    Proje
                 </span>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Temsilci</p>
-                <p class="text-sm font-medium text-gray-200">
-                    {% if project.representative %}
-                    <span data-user-id="{{ project.representative.id }}" class="user-profile-trigger hover:text-white transition cursor-pointer">{{ project.representative.username }}</span>
-                    {% else %}Belirtilmedi{% endif %}
-                </p>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div class="ws-stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="ws-stat-label">Temsilci</p>
+                        <p class="text-sm font-semibold text-slate-700 mt-1">
+                            {% if project.representative %}
+                            <span data-user-id="{{ project.representative.id }}" class="user-profile-trigger hover:text-blue-600 transition cursor-pointer">{{ project.representative.username }}</span>
+                            {% else %}Belirtilmedi{% endif %}
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                        <i class="fa-solid fa-user-tie text-blue-500"></i>
+                    </div>
+                </div>
             </div>
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Görev Sayısı</p>
-                <p class="text-sm font-medium text-gray-200">{{ project_tasks.count }}</p>
+            <div class="ws-stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="ws-stat-label">Görev Sayısı</p>
+                        <p class="ws-stat-value">{{ project_tasks.count }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                        <i class="fa-solid fa-list-check text-emerald-500"></i>
+                    </div>
+                </div>
             </div>
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Not Sayısı</p>
-                <p class="text-sm font-medium text-gray-200">{{ project_notes.count }}</p>
+            <div class="ws-stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="ws-stat-label">Not Sayısı</p>
+                        <p class="ws-stat-value">{{ project_notes.count }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                        <i class="fa-solid fa-file-lines text-violet-500"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Content Grid -->
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <section class="xl:col-span-1 bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <h2 class="text-base font-semibold text-gray-100 mb-4">Kullanıcılar</h2>
+            <!-- Users -->
+            <section class="ws-card p-5">
+                <h2 class="ws-section-title mb-4">
+                    <i class="fa-solid fa-users text-blue-400 mr-2"></i>Kullanıcılar
+                </h2>
                 <div class="space-y-2">
                     {% for member in project_users %}
-                    <div class="px-3 py-2 bg-gray-800 rounded-lg text-sm text-gray-200 flex items-center justify-between">
-                        <span data-user-id="{{ member.id }}" class="user-profile-trigger hover:text-white transition cursor-pointer"><i class="fa-regular fa-user mr-2"></i>{{ member.username }}</span>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition text-sm">
+                        <span data-user-id="{{ member.id }}" class="user-profile-trigger hover:text-blue-600 transition cursor-pointer font-medium text-slate-700">
+                            <i class="fa-regular fa-user mr-2 text-slate-400"></i>{{ member.username }}
+                        </span>
                         {% if project.representative and project.representative.id == member.id %}
-                        <span class="text-[11px] text-blue-400">Temsilci</span>
+                        <span class="ws-badge ws-badge-blue">Temsilci</span>
                         {% endif %}
                     </div>
                     {% empty %}
-                    <p class="text-sm text-gray-500">Katılımcı bulunmuyor.</p>
+                    <p class="text-sm text-slate-400">Katılımcı bulunmuyor.</p>
                     {% endfor %}
                 </div>
             </section>
 
-            <section class="xl:col-span-1 bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <h2 class="text-base font-semibold text-gray-100 mb-4">Görevler</h2>
+            <!-- Tasks -->
+            <section class="ws-card p-5">
+                <h2 class="ws-section-title mb-4">
+                    <i class="fa-solid fa-list-check text-emerald-400 mr-2"></i>Görevler
+                </h2>
                 <div class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                     {% for task in project_tasks %}
-                    <a href="{% url 'note_detail' task.id %}" class="block px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                        <p class="text-sm text-gray-200 truncate">{{ task.title }}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {% if task.assigned_user %}Atanan:
-                            <span data-user-id="{{ task.assigned_user.id }}" class="user-profile-trigger hover:text-gray-300 transition cursor-pointer">{{ task.assigned_user.username }}</span>
+                    <a href="{% url 'note_detail' task.id %}" class="block p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 transition">
+                        <p class="text-sm font-medium text-slate-700 truncate">{{ task.title }}</p>
+                        <p class="text-xs text-slate-400 mt-1.5">
+                            {% if task.assigned_user %}
+                            <span data-user-id="{{ task.assigned_user.id }}" class="user-profile-trigger hover:text-slate-600 transition cursor-pointer">
+                                <i class="fa-regular fa-user mr-1"></i>{{ task.assigned_user.username }}
+                            </span>
                             {% else %}Atanan yok{% endif %}
                         </p>
                     </a>
                     {% empty %}
-                    <p class="text-sm text-gray-500">Bu projeye bağlı görev bulunmuyor.</p>
+                    <p class="text-sm text-slate-400 text-center py-4">Bu projeye bağlı görev bulunmuyor.</p>
                     {% endfor %}
                 </div>
             </section>
 
-            <section class="xl:col-span-1 bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <h2 class="text-base font-semibold text-gray-100 mb-4">Notlar</h2>
+            <!-- Notes -->
+            <section class="ws-card p-5">
+                <h2 class="ws-section-title mb-4">
+                    <i class="fa-solid fa-file-lines text-violet-400 mr-2"></i>Notlar
+                </h2>
                 <div class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                     {% for note in project_notes %}
-                    <a href="{% url 'note_detail' note.id %}" class="block px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-                        <p class="text-sm text-gray-200 truncate">{{ note.title }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ note.updated_at|date:'d.m.Y H:i' }}</p>
+                    <a href="{% url 'note_detail' note.id %}" class="block p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-violet-200 transition">
+                        <p class="text-sm font-medium text-slate-700 truncate">{{ note.title }}</p>
+                        <p class="text-xs text-slate-400 mt-1.5">{{ note.updated_at|date:'d.m.Y H:i' }}</p>
                     </a>
                     {% empty %}
-                    <p class="text-sm text-gray-500">Bu projeye bağlı not bulunmuyor.</p>
+                    <p class="text-sm text-slate-400 text-center py-4">Bu projeye bağlı not bulunmuyor.</p>
                     {% endfor %}
                 </div>
             </section>
