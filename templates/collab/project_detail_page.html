@@ -143,7 +143,10 @@
                 <div class="mt-4 space-y-3">
                     {% for note in plan_notes %}
                     <div class="rounded-3xl border border-slate-200 p-4">
-                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız plan' }}</p>
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız plan' }}</p>
+                            <button type="button" class="text-xs font-semibold text-blue-600" onclick="openProjectNoteEditor('plan', this)" data-id="{{ note.id }}" data-title="{{ note.title|default:''|escapejs }}" data-content="{{ note.content|default:''|escapejs }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">Düzenle</button>
+                        </div>
                         <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:220 }}</p>
                     </div>
                     {% empty %}
@@ -155,9 +158,10 @@
             <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
                     <h3 class="text-xl font-black tracking-tight text-slate-900">Toplantılar</h3>
-                    <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">Toplantı oluştur</button>
+                    <button type="button" onclick="openMeetingForm()" class="ws-btn ws-btn-secondary">Toplantı oluştur</button>
                 </div>
                 <form id="meeting-form" class="mt-4 hidden space-y-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p id="meeting-form-title" class="text-sm font-semibold text-slate-900">Toplantı oluştur</p>
                     <input name="title" class="ws-input" placeholder="Toplantı başlığı">
                     <textarea name="description" rows="3" class="ws-input" placeholder="Açıklama"></textarea>
                     <div class="grid gap-3 md:grid-cols-2">
@@ -178,15 +182,20 @@
                     </select>
                     <input type="number" name="reminder_minutes_before" class="ws-input" value="30" placeholder="Hatırlatma dakikası">
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="toggleMeetingForm()" class="ws-btn ws-btn-secondary">İptal</button>
+                        <button type="button" onclick="closeMeetingForm()" class="ws-btn ws-btn-secondary">İptal</button>
                         <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
                     </div>
                 </form>
                 <div class="mt-4 space-y-3">
                     {% for event in calendar_events %}
                     <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="text-sm font-semibold text-slate-900">{{ event.title }}</p>
-                        <p class="mt-1 text-xs text-slate-400">{{ event.start_at|date:'d.m.Y H:i' }} · {{ event.attendees.count }} katilimci</p>
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ event.title }}</p>
+                                <p class="mt-1 text-xs text-slate-400">{{ event.start_at|date:'d.m.Y H:i' }} · {{ event.attendees.count }} katılımcı</p>
+                            </div>
+                            <button type="button" class="text-xs font-semibold text-blue-600" onclick="editMeeting(this)" data-id="{{ event.id }}" data-title="{{ event.title|escapejs }}" data-description="{{ event.description|default:''|escapejs }}" data-start="{{ event.start_at|date:'Y-m-d\\TH:i'|escapejs }}" data-end="{{ event.end_at|date:'Y-m-d\\TH:i'|escapejs }}" data-url="{{ event.meeting_url|default:''|escapejs }}" data-attendee-ids="{% for attendee in event.attendees.all %}{{ attendee.id }}{% if not forloop.last %},{% endif %}{% endfor %}" data-attendee-roles="{{ event.attendee_roles|join:','|escapejs }}" data-reminder="{{ event.reminder_minutes_before }}">Düzenle</button>
+                        </div>
                     </div>
                     {% empty %}
                     <p class="text-sm text-slate-400">Toplantı bulunmuyor.</p>
@@ -229,7 +238,10 @@
             <div class="mt-4 space-y-3">
                 {% for note in documentation_notes %}
                 <div class="rounded-3xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız doküman' }}</p>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız doküman' }}</p>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="openProjectNoteEditor('documentation', this)" data-id="{{ note.id }}" data-title="{{ note.title|default:''|escapejs }}" data-content="{{ note.content|default:''|escapejs }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">Düzenle</button>
+                    </div>
                     <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:300 }}</p>
                 </div>
                 {% empty %}
@@ -259,8 +271,11 @@
                 {% for note in general_notes %}
                 <div class="rounded-3xl border border-slate-200 p-4">
                     <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız not' }}</p>
-                        <span class="text-xs text-slate-400">{{ note.author.username }}</span>
+                        <div class="flex items-center gap-3">
+                            <p class="text-sm font-semibold text-slate-900">{{ note.title|default:'Başlıksız not' }}</p>
+                            <span class="text-xs text-slate-400">{{ note.author.username }}</span>
+                        </div>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="openProjectNoteEditor('note', this)" data-id="{{ note.id }}" data-title="{{ note.title|default:''|escapejs }}" data-content="{{ note.content|default:''|escapejs }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">Düzenle</button>
                     </div>
                     <p class="mt-2 text-sm leading-7 text-slate-600">{{ note.content|truncatechars:280 }}</p>
                 </div>
@@ -285,6 +300,13 @@
 
 {% block page_scripts %}
 <script>
+    const selectedProjectNoteIds = {
+        plan: null,
+        documentation: null,
+        note: null,
+    };
+    let editingMeetingId = null;
+
     function setProjectTab(tabName) {
         document.querySelectorAll('.project-tab-btn').forEach((button) => {
             button.classList.toggle('ws-btn-primary', button.dataset.projectTab === tabName);
@@ -303,7 +325,17 @@
         };
     }
 
-    function openProjectNoteEditor(type) {
+    function resetProjectNoteEditor(type) {
+        const prefix = type === 'documentation' ? 'documentation' : type;
+        selectedProjectNoteIds[type] = null;
+        document.getElementById(`project-${prefix}-title`).value = '';
+        document.getElementById(`project-${prefix}-content`).value = '';
+        Array.from(document.getElementById(`project-${prefix}-tags`).options).forEach((option) => {
+            option.selected = false;
+        });
+    }
+
+    function openProjectNoteEditor(type, trigger = null) {
         const panelByType = {
             plan: 'plans',
             documentation: 'documentation',
@@ -349,7 +381,16 @@
         const titleInput = document.getElementById(`project-${prefix}-title`);
         const contentInput = document.getElementById(`project-${prefix}-content`);
         if (!titleInput || !contentInput) return;
-        if (!titleInput.value.trim() && defaultTemplates[type].title) {
+        resetProjectNoteEditor(type);
+        if (trigger?.dataset?.id) {
+            selectedProjectNoteIds[type] = Number(trigger.dataset.id);
+            titleInput.value = trigger.dataset.title || '';
+            contentInput.value = trigger.dataset.content || '';
+            const tagIds = new Set((trigger.dataset.tagIds || '').split(',').filter(Boolean));
+            Array.from(document.getElementById(`project-${prefix}-tags`).options).forEach((option) => {
+                option.selected = tagIds.has(option.value);
+            });
+        } else if (defaultTemplates[type].title) {
             titleInput.value = defaultTemplates[type].title;
         }
         if (!contentInput.value.trim() && defaultTemplates[type].content) {
@@ -377,8 +418,8 @@
             document.getElementById(`project-${type}-content`)?.focus();
             return;
         }
-        const response = await fetch('/api/notes', {
-            method: 'POST',
+        const response = await fetch(selectedProjectNoteIds[type] ? `/api/notes/${selectedProjectNoteIds[type]}` : '/api/notes', {
+            method: selectedProjectNoteIds[type] ? 'PATCH' : 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
             body: JSON.stringify({
                 organization: currentOrganizationId,
@@ -394,9 +435,52 @@
         }
     }
 
-    function toggleMeetingForm() {
-        document.getElementById('meeting-form').classList.toggle('hidden');
+    function openMeetingForm() {
+        resetMeetingForm();
+        document.getElementById('meeting-form').classList.remove('hidden');
     }
+
+    function closeMeetingForm() {
+        document.getElementById('meeting-form').classList.add('hidden');
+        resetMeetingForm();
+    }
+
+    function resetMeetingForm() {
+        editingMeetingId = null;
+        const form = document.getElementById('meeting-form');
+        form.reset();
+        form.querySelector('[name="reminder_minutes_before"]').value = 30;
+        document.getElementById('meeting-form-title').textContent = 'Toplantı oluştur';
+        Array.from(form.querySelector('[name="attendee_ids"]').options).forEach((option) => {
+            option.selected = false;
+        });
+        Array.from(form.querySelector('[name="attendee_roles"]').options).forEach((option) => {
+            option.selected = false;
+        });
+    }
+
+    function editMeeting(button) {
+        editingMeetingId = Number(button.dataset.id);
+        const form = document.getElementById('meeting-form');
+        document.getElementById('meeting-form-title').textContent = 'Toplantıyı düzenle';
+        form.classList.remove('hidden');
+        form.querySelector('[name="title"]').value = button.dataset.title || '';
+        form.querySelector('[name="description"]').value = button.dataset.description || '';
+        form.querySelector('[name="start_at"]').value = button.dataset.start || '';
+        form.querySelector('[name="end_at"]').value = button.dataset.end || '';
+        form.querySelector('[name="meeting_url"]').value = button.dataset.url || '';
+        form.querySelector('[name="reminder_minutes_before"]').value = button.dataset.reminder || 30;
+        const attendeeIds = new Set((button.dataset.attendeeIds || '').split(',').filter(Boolean));
+        Array.from(form.querySelector('[name="attendee_ids"]').options).forEach((option) => {
+            option.selected = attendeeIds.has(option.value);
+        });
+        const attendeeRoles = new Set((button.dataset.attendeeRoles || '').split(',').filter(Boolean));
+        Array.from(form.querySelector('[name="attendee_roles"]').options).forEach((option) => {
+            option.selected = attendeeRoles.has(option.value);
+        });
+        form.querySelector('[name="title"]').focus();
+    }
+
     document.getElementById('meeting-form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.target;
@@ -413,8 +497,8 @@
             attendee_roles: Array.from(form.querySelector('[name="attendee_roles"]').selectedOptions).map((item) => item.value),
             reminder_minutes_before: Number(form.querySelector('[name="reminder_minutes_before"]').value || 30),
         };
-        const response = await fetch('/api/calendar-events', {
-            method: 'POST',
+        const response = await fetch(editingMeetingId ? `/api/calendar-events/${editingMeetingId}` : '/api/calendar-events', {
+            method: editingMeetingId ? 'PATCH' : 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
             body: JSON.stringify(payload),
         });

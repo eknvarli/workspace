@@ -451,6 +451,14 @@ class CalendarEventListCreateAPIView(generics.ListCreateAPIView):
         serializer.save(created_by=self.request.user)
 
 
+class CalendarEventDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CalendarEventSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageWorkspaceContent]
+
+    def get_queryset(self):
+        return CalendarEvent.objects.filter(organization__memberships__user=self.request.user).select_related('project', 'created_by').prefetch_related('attendees__profile')
+
+
 class CustomerListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CustomerSerializer
     pagination_class = DefaultPagination
@@ -467,6 +475,14 @@ class CustomerListCreateAPIView(generics.ListCreateAPIView):
         serializer.save(owner=self.request.user)
 
 
+class CustomerDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CustomerSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageWorkspaceContent]
+
+    def get_queryset(self):
+        return Customer.objects.filter(organization__memberships__user=self.request.user).select_related('owner')
+
+
 class FinanceAlertListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = FinanceAlertSerializer
     pagination_class = DefaultPagination
@@ -481,6 +497,14 @@ class FinanceAlertListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+
+class FinanceAlertDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FinanceAlertSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageWorkspaceContent]
+
+    def get_queryset(self):
+        return FinanceAlert.objects.filter(organization__memberships__user=self.request.user).select_related('project', 'created_by')
 
 
 class ConversationListCreateAPIView(generics.ListCreateAPIView):
