@@ -30,12 +30,6 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-const SetupGuard = ({ children }) => {
-    const { isSetupRequired } = useAuthStore();
-    if (isSetupRequired) return <Navigate to="/setup" replace />;
-    return children;
-};
-
 export default function AppRouter() {
     const { isSetupRequired, setSetupRequired } = useAuthStore();
     const [loading, setLoading] = useState(true);
@@ -55,29 +49,36 @@ export default function AppRouter() {
         checkSetup();
     }, [setSetupRequired]);
 
-    if (loading) return null;
-
-    if (isSetupRequired && location.pathname !== "/setup") {
-        return <Navigate to="/setup" replace />;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+                <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
-    if (!isSetupRequired && location.pathname === "/setup") {
-        return <Navigate to="/login" replace />;
+    if (isSetupRequired) {
+        if (location.pathname !== "/setup") {
+            return <Navigate to="/setup" replace />;
+        }
+    } else {
+        if (location.pathname === "/setup") {
+            return <Navigate to="/login" replace />;
+        }
     }
 
     return (
         <Routes>
             <Route path="/" element={<HomeRedirect />} />
             <Route path="/setup" element={<Setup />} />
-            <Route path="/login" element={<SetupGuard><Login /></SetupGuard>} />
-            <Route path="/register" element={<SetupGuard><Register /></SetupGuard>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={
-                <SetupGuard>
-                    <ProtectedRoute>
-                        <Dashboard />
-                    </ProtectedRoute>
-                </SetupGuard>
+                <ProtectedRoute>
+                    <Dashboard />
+                </ProtectedRoute>
             } />
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }
