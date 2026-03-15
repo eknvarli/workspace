@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar · Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+    <div class="mx-auto max-w-7xl px-4 py-6 lg:px-8 lg:py-8">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.26em] text-blue-600">Workspace account</p>
+                <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Hesap ayarlari</h1>
+                <p class="mt-2 text-sm text-slate-500">Legacy ayarlar tamamen kaldirildi. Tum hesap ve profil yonetimi bu ekran uzerinden yapilir.</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/" class="ws-btn ws-btn-secondary"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+                <a href="{% url 'logout' %}" class="ws-btn ws-btn-primary"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cikis</a>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="mt-6 space-y-3">
+            {% for message in messages %}
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="mt-8 grid gap-6 xl:grid-cols-[340px_1fr]">
+            <aside class="space-y-6">
+                <section class="ws-card p-6 text-center">
+                    {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="Avatar" class="mx-auto h-24 w-24 rounded-3xl object-cover shadow-sm">
+                    {% else %}
+                    <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-50 text-3xl font-black text-blue-600 shadow-sm">{{ request.user.username|first|upper }}</div>
+                    {% endif %}
+                    <h2 class="mt-4 text-xl font-black tracking-tight text-slate-900">{{ request.user.get_full_name|default:request.user.username }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ profile.job_title|default:'Rol tanimlanmadi' }}</p>
+                    <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                        <span class="h-2.5 w-2.5 rounded-full {% if profile.presence_status == 'online' %}bg-emerald-500{% elif profile.presence_status == 'away' %}bg-amber-400{% elif profile.presence_status == 'dnd' %}bg-rose-500{% else %}bg-slate-400{% endif %}"></span>
+                        {{ profile.get_presence_status_display }}
+                    </div>
+                    <div class="mt-6 rounded-2xl bg-slate-50 px-4 py-4 text-left">
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Son aktivite</p>
+                        <p class="mt-2 text-sm font-medium text-slate-700">{{ profile.last_seen_at|date:'d.m.Y H:i'|default:'Henuz kayit yok' }}</p>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="space-y-6">
+                <section class="ws-card p-6 lg:p-8">
+                    <div class="mb-6">
+                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Profil</p>
+                        <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Kisisel bilgiler</h3>
+                    </div>
+                    <form method="post" enctype="multipart/form-data" class="space-y-5">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="profile">
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="ws-label">Ad</label>
+                                {{ user_form.first_name }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Soyad</label>
+                                {{ user_form.last_name }}
+                            </div>
+                            <div>
+                                <label class="ws-label">E-posta</label>
+                                {{ user_form.email }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Kullanici adi</label>
+                                {{ user_form.username }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Unvan</label>
+                                {{ profile_form.job_title }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Avatar</label>
+                                {{ profile_form.avatar }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Dil</label>
+                                {{ profile_form.locale }}
+                            </div>
+                            <div>
+                                <label class="ws-label">Saat dilimi</label>
+                                {{ profile_form.timezone }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="ws-label">Durum</label>
+                                {{ profile_form.presence_status }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="ws-label">Bio</label>
+                                {{ profile_form.bio }}
+                            </div>
+                        </div>
+                        {% if user_form.errors or profile_form.errors %}
+                        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">Form alanlarini kontrol edin.</div>
+                        {% endif %}
+                        <div class="flex justify-end">
+                            <button type="submit" class="ws-btn ws-btn-primary">Profili kaydet</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="ws-card p-6 lg:p-8">
+                    <div class="mb-6">
+                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Guvenlik</p>
+                        <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Sifre degistir</h3>
+                    </div>
+                    <form method="post" class="grid gap-4 md:grid-cols-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="password">
+                        <div>
+                            <label class="ws-label">Mevcut sifre</label>
+                            {{ password_form.old_password }}
+                        </div>
+                        <div>
+                            <label class="ws-label">Yeni sifre</label>
+                            {{ password_form.new_password1 }}
+                        </div>
+                        <div>
+                            <label class="ws-label">Yeni sifre tekrar</label>
+                            {{ password_form.new_password2 }}
+                        </div>
+                        {% if password_form.errors %}
+                        <div class="md:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">Sifre guncellenemedi. Alanlari tekrar kontrol edin.</div>
+                        {% endif %}
+                        <div class="md:col-span-3 flex justify-end">
+                            <button type="submit" class="ws-btn ws-btn-secondary">Sifreyi guncelle</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

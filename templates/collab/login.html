@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap · Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+    <div class="min-h-screen grid lg:grid-cols-2">
+        <div class="hidden lg:flex relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white p-12">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.22),_transparent_30%)]"></div>
+            <div class="relative z-10 flex flex-col justify-between w-full">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur border border-white/10 flex items-center justify-center">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold tracking-wide">Workspace OS</p>
+                        <p class="text-sm text-slate-300">Team collaboration platform</p>
+                    </div>
+                </div>
+                <div class="max-w-xl">
+                    <h1 class="text-5xl font-black tracking-tight leading-tight">Görevleri, ekipleri ve iş akışını tek bir modern panelde yönetin.</h1>
+                    <p class="text-slate-300 mt-5 text-lg leading-8">ClickUp, Asana ve Linear benzeri deneyimi Django tabanlı güçlü bir çalışma alanı ile birleştirir.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 max-w-2xl">
+                    <div class="rounded-3xl bg-white/5 border border-white/10 p-5 backdrop-blur">
+                        <p class="text-3xl font-black">4</p>
+                        <p class="text-sm text-slate-300 mt-1">Farklı görev görünümü</p>
+                    </div>
+                    <div class="rounded-3xl bg-white/5 border border-white/10 p-5 backdrop-blur">
+                        <p class="text-3xl font-black">Canlı</p>
+                        <p class="text-sm text-slate-300 mt-1">WebSocket güncellemeleri</p>
+                    </div>
+                    <div class="rounded-3xl bg-white/5 border border-white/10 p-5 backdrop-blur">
+                        <p class="text-3xl font-black">JWT</p>
+                        <p class="text-sm text-slate-300 mt-1">API erişimi hazır</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-center p-6 lg:p-10">
+            <div class="w-full max-w-md ws-card p-8 lg:p-10">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-black tracking-tight text-slate-900">Giriş yap</h2>
+                    <p class="text-sm text-slate-500 mt-2">Workspace hesabınızla devam edin.</p>
+                </div>
+                {% if form.errors %}
+                <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">Kullanıcı adı veya şifre hatalı.</div>
+                {% endif %}
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="ws-label">Kullanıcı Adı</label>
+                        <input name="username" type="text" class="ws-input" required autofocus>
+                    </div>
+                    <div>
+                        <label class="ws-label">Şifre</label>
+                        <input name="password" type="password" class="ws-input" required>
+                    </div>
+                    <button type="submit" class="ws-btn ws-btn-primary w-full py-3">Giriş Yap</button>
+                </form>
+                <p class="text-sm text-slate-500 mt-6">Hesabınız yok mu? <a href="{% url 'register' %}" class="text-blue-600 font-semibold hover:text-blue-700">Kayıt olun</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

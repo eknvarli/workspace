@@ -1,3 +1,15 @@
 django
 python-dotenv
 django-pwa
+djangorestframework
+djangorestframework-simplejwt
+drf-spectacular
+django-filter
+channels
+channels-redis
+celery
+redis
+psycopg[binary]
+Pillow
+whitenoise
+daphne

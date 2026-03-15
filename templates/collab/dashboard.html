@@ -1,0 +1,633 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_organization.name }} · Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased">
+    <form id="csrf-form" class="hidden">{% csrf_token %}</form>
+    <div class="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-[280px] -translate-x-full border-r border-slate-200 bg-slate-950 text-white transition-transform duration-300 lg:translate-x-0 lg:static">
+            <div class="flex h-full flex-col">
+                <div class="border-b border-white/10 p-5">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 border border-white/10">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Workspace OS</p>
+                            <p class="text-xs text-slate-400">Team operating system</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-b border-white/10">
+                    <label class="text-[11px] uppercase tracking-[0.24em] text-slate-500 font-semibold">Workspace</label>
+                    <form method="get" class="mt-2">
+                        <select name="workspace" onchange="this.form.submit()" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            {% for org in organizations %}
+                            <option value="{{ org.slug }}" {% if org.id == current_organization.id %}selected{% endif %} class="text-slate-900">{{ org.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <nav class="flex-1 space-y-1 p-4 overflow-y-auto">
+                    <a href="/" class="flex items-center gap-3 rounded-2xl px-4 py-3 bg-white/10 text-white font-semibold"><i class="fa-solid fa-table-columns w-4"></i> Dashboard</a>
+                    <a href="#projects" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-folder-tree w-4"></i> Projects</a>
+                    <a href="#tasks" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-list-check w-4"></i> Tasks</a>
+                    <a href="#teams" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-people-group w-4"></i> Teams</a>
+                    <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-bell w-4"></i> Notifications</a>
+                    <a href="/api/docs" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-code w-4"></i> API Docs</a>
+                    <a href="{% url 'settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-gear w-4"></i> Settings</a>
+                </nav>
+                <div class="border-t border-white/10 p-4">
+                    <a href="{% url 'logout' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-300 hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Logout</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="min-w-0">
+            <header class="sticky top-0 z-30 border-b border-slate-200 bg-slate-100/90 backdrop-blur">
+                <div class="flex items-center gap-3 px-4 py-4 lg:px-8">
+                    <button id="menu-toggle" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 lg:hidden">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="min-w-0 flex-1">
+                        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm relative">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                                <input id="global-search" type="text" placeholder="Görev, proje veya kullanıcı ara" class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400">
+                            </div>
+                            <div id="search-results" class="hidden absolute left-0 right-0 top-[calc(100%+8px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"></div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="openCreateModal('task')" class="hidden sm:inline-flex ws-btn ws-btn-primary"><i class="fa-solid fa-plus"></i> Quick Task</button>
+                    <button type="button" onclick="toggleNotifications()" class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="notification-count" class="absolute -right-1 -top-1 inline-flex min-w-5 justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ notifications|length }}</span>
+                    </button>
+                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                        {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="h-10 w-10 rounded-2xl object-cover">
+                        {% else %}
+                        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-sm font-bold text-blue-600">{{ request.user.username|first|upper }}</div>
+                        {% endif %}
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-semibold text-slate-800">{{ request.user.get_full_name|default:request.user.username }}</p>
+                            <p class="text-xs text-slate-500">{{ request.user.profile.get_presence_status_display|default:'Offline' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="px-4 py-6 lg:px-8 lg:py-8 space-y-8">
+                <section class="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
+                    <div class="ws-card p-6 bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_60%,#eef4ff_100%)]">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-[0.28em] text-blue-600">Active workspace</p>
+                                <h1 class="mt-3 text-3xl lg:text-4xl font-black tracking-tight text-slate-900">{{ current_organization.name }}</h1>
+                                <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-500">{{ current_organization.description|default:'Projeleri, görevleri, bildirimleri ve ekip iş akışlarını tek panelden yönetin.' }}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="openCreateModal('project')" class="ws-btn ws-btn-secondary"><i class="fa-solid fa-folder-plus"></i> New Project</button>
+                                <button type="button" onclick="openCreateModal('task')" class="ws-btn ws-btn-primary"><i class="fa-solid fa-bolt"></i> New Task</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="ws-stat-card">
+                            <p class="ws-stat-label">Open Tasks</p>
+                            <p class="ws-stat-value">{{ tasks|length }}</p>
+                        </div>
+                        <div class="ws-stat-card">
+                            <p class="ws-stat-label">Projects</p>
+                            <p class="ws-stat-value">{{ projects|length }}</p>
+                        </div>
+                        <div class="ws-stat-card">
+                            <p class="ws-stat-label">Members</p>
+                            <p class="ws-stat-value">{{ memberships|length }}</p>
+                        </div>
+                        <div class="ws-stat-card">
+                            <p class="ws-stat-label">Unread</p>
+                            <p class="ws-stat-value">{{ notifications|length }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="grid gap-6 xl:grid-cols-[1fr_340px]">
+                    <div class="space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                                <h2 class="text-xl font-black tracking-tight text-slate-900">Task Views</h2>
+                                <p class="text-sm text-slate-500">Liste, kanban, tablo ve takvim görünümü arasında anında geçiş yapın.</p>
+                            </div>
+                            <div class="inline-flex rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+                                <button class="view-switch-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-500" data-target="list-view">List</button>
+                                <button class="view-switch-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-500" data-target="kanban-view">Board</button>
+                                <button class="view-switch-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-500" data-target="table-view">Table</button>
+                                <button class="view-switch-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-500" data-target="calendar-view">Calendar</button>
+                            </div>
+                        </div>
+
+                        <div id="list-view" class="task-view ws-card overflow-hidden">
+                            <div class="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                                <span>Task</span><span>Assignee</span><span>Due Date</span><span>Priority</span><span>Status</span><span>Tags</span>
+                            </div>
+                            <div class="divide-y divide-slate-100">
+                                {% for task in tasks %}
+                                <button type="button" onclick="openTaskDetail({{ task.id }})" class="grid w-full grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-3 px-5 py-4 text-left hover:bg-slate-50 transition">
+                                    <span>
+                                        <span class="block text-sm font-semibold text-slate-800">{{ task.title }}</span>
+                                        <span class="block text-xs text-slate-400 mt-1">{{ task.project.name }}</span>
+                                    </span>
+                                    <span class="text-sm text-slate-600">{% if task.assignee %}{{ task.assignee.username }}{% else %}-{% endif %}</span>
+                                    <span class="text-sm text-slate-600">{{ task.due_date|date:'d M Y'|default:'-' }}</span>
+                                    <span><span class="ws-badge {% if task.priority == 'urgent' %}ws-badge-red{% elif task.priority == 'high' %}ws-badge-amber{% elif task.priority == 'medium' %}ws-badge-blue{% else %}ws-badge-gray{% endif %}">{{ task.get_priority_display }}</span></span>
+                                    <span><span class="ws-badge {% if task.status == 'completed' %}ws-badge-green{% elif task.status == 'in_review' %}ws-badge-violet{% elif task.status == 'in_progress' %}ws-badge-blue{% else %}ws-badge-gray{% endif %}">{{ task.get_status_display }}</span></span>
+                                    <span class="flex flex-wrap gap-1">{% for tag in task.tags.all|slice:':2' %}<span class="ws-badge ws-badge-gray">{{ tag.name }}</span>{% empty %}<span class="text-xs text-slate-300">No tags</span>{% endfor %}</span>
+                                </button>
+                                {% empty %}
+                                <div class="px-5 py-12 text-center text-sm text-slate-400">Henüz görev bulunmuyor.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div id="kanban-view" class="task-view hidden">
+                            <div class="grid gap-4 xl:grid-cols-5">
+                                {% for column in status_columns %}
+                                <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="mb-4 flex items-center justify-between">
+                                        <h3 class="text-sm font-bold text-slate-700">{{ column.label }}</h3>
+                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">{{ column.items|length }}</span>
+                                    </div>
+                                    <div class="space-y-3">
+                                        {% for task in column.items %}
+                                        <button type="button" onclick="openTaskDetail({{ task.id }})" class="ws-card w-full p-4 text-left hover:-translate-y-0.5 transition">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <p class="text-sm font-semibold text-slate-800">{{ task.title }}</p>
+                                                <span class="ws-badge {% if task.priority == 'urgent' %}ws-badge-red{% elif task.priority == 'high' %}ws-badge-amber{% elif task.priority == 'medium' %}ws-badge-blue{% else %}ws-badge-gray{% endif %}">{{ task.get_priority_display }}</span>
+                                            </div>
+                                            <p class="mt-2 text-xs text-slate-400">{{ task.project.name }}</p>
+                                            <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+                                                <span>{% if task.assignee %}{{ task.assignee.username }}{% else %}Unassigned{% endif %}</span>
+                                                <span>{{ task.due_date|date:'d M'|default:'No due' }}</span>
+                                            </div>
+                                        </button>
+                                        {% empty %}
+                                        <div class="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-xs text-slate-400">No tasks</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div id="table-view" class="task-view hidden ws-card overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-slate-50 text-left text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                                    <tr>
+                                        <th class="px-5 py-3">Task</th>
+                                        <th class="px-5 py-3">Project</th>
+                                        <th class="px-5 py-3">Comments</th>
+                                        <th class="px-5 py-3">Attachments</th>
+                                        <th class="px-5 py-3">Owner</th>
+                                        <th class="px-5 py-3">Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {% for task in all_tasks %}
+                                    <tr class="hover:bg-slate-50 cursor-pointer" onclick="openTaskDetail({{ task.id }})">
+                                        <td class="px-5 py-4 font-semibold text-slate-800">{{ task.title }}</td>
+                                        <td class="px-5 py-4 text-slate-500">{{ task.project.name }}</td>
+                                        <td class="px-5 py-4 text-slate-500">{{ task.comments_count }}</td>
+                                        <td class="px-5 py-4 text-slate-500">{{ task.attachments_count }}</td>
+                                        <td class="px-5 py-4 text-slate-500">{{ task.creator.username }}</td>
+                                        <td class="px-5 py-4 text-slate-500">{{ task.updated_at|date:'d.m.Y H:i' }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" class="px-5 py-12 text-center text-slate-400">Henüz görev yok.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="calendar-view" class="task-view hidden grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            {% for task in all_tasks %}
+                            <button type="button" onclick="openTaskDetail({{ task.id }})" class="ws-card p-5 text-left">
+                                <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">{{ task.due_date|date:'d M Y'|default:'No deadline' }}</p>
+                                <p class="mt-3 text-base font-bold text-slate-800">{{ task.title }}</p>
+                                <p class="mt-2 text-sm text-slate-500">{{ task.project.name }}</p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="ws-badge {% if task.status == 'completed' %}ws-badge-green{% elif task.status == 'in_review' %}ws-badge-violet{% elif task.status == 'in_progress' %}ws-badge-blue{% else %}ws-badge-gray{% endif %}">{{ task.get_status_display }}</span>
+                                    <span class="text-xs text-slate-500">{% if task.assignee %}{{ task.assignee.username }}{% else %}Unassigned{% endif %}</span>
+                                </div>
+                            </button>
+                            {% empty %}
+                            <div class="ws-card p-10 text-center text-slate-400 col-span-full">Gösterilecek tarihli görev yok.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <aside class="space-y-6">
+                        <section id="projects" class="ws-card p-5">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-base font-black tracking-tight text-slate-900">Projects</h2>
+                                <button type="button" onclick="openCreateModal('project')" class="text-sm font-semibold text-blue-600">New</button>
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                {% for project in projects %}
+                                <div class="rounded-2xl border border-slate-200 p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800">{{ project.name }}</p>
+                                            <p class="text-xs text-slate-400 mt-1">{{ project.get_visibility_display }} · {{ project.get_status_display }}</p>
+                                        </div>
+                                        <span class="h-3 w-3 rounded-full" style="background: {{ project.color }}"></span>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-sm text-slate-400">Henüz proje oluşturulmadı.</p>
+                                {% endfor %}
+                            </div>
+                        </section>
+
+                        <section id="teams" class="ws-card p-5">
+                            <h2 class="text-base font-black tracking-tight text-slate-900">Workspace Members</h2>
+                            <div class="mt-4 space-y-3">
+                                {% for membership in memberships %}
+                                <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-3 py-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-sm font-bold text-slate-700">{{ membership.user.username|first|upper }}</div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-semibold text-slate-800">{{ membership.user.get_full_name|default:membership.user.username }}</p>
+                                        <p class="text-xs text-slate-500">{{ membership.get_role_display }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </section>
+
+                        <section class="ws-card p-5">
+                            <h2 class="text-base font-black tracking-tight text-slate-900">Activity</h2>
+                            <div class="mt-4 space-y-3">
+                                {% for activity in activity_logs %}
+                                <div class="rounded-2xl border border-slate-200 p-3">
+                                    <p class="text-sm font-medium text-slate-700">{{ activity.verb }}</p>
+                                    <p class="mt-1 text-xs text-slate-400">{{ activity.created_at|date:'d.m.Y H:i' }}</p>
+                                </div>
+                                {% empty %}
+                                <p class="text-sm text-slate-400">Henüz aktivite yok.</p>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    </aside>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
+
+    <div id="notifications-panel" class="hidden fixed right-4 top-20 z-50 w-[360px] rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div class="flex items-center justify-between">
+            <h3 class="text-base font-black tracking-tight">Notifications</h3>
+            <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="text-xs font-semibold text-blue-600">Mark read</a>
+        </div>
+        <div id="notifications-list" class="mt-4 space-y-3 max-h-[420px] overflow-y-auto">
+            {% for notification in notifications %}
+            <div class="rounded-2xl border border-slate-200 p-3">
+                <p class="text-sm font-semibold text-slate-800">{{ notification.title }}</p>
+                <p class="mt-1 text-sm text-slate-500">{{ notification.message }}</p>
+                <p class="mt-2 text-xs text-slate-400">{{ notification.created_at|date:'d.m.Y H:i' }}</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-slate-400">Yeni bildirim yok.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="create-modal" class="ws-modal-backdrop">
+        <div class="ws-modal max-w-2xl p-6" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p id="create-modal-label" class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Quick create</p>
+                    <h3 id="create-modal-title" class="mt-2 text-2xl font-black tracking-tight text-slate-900">Yeni görev oluştur</h3>
+                </div>
+                <button type="button" onclick="closeCreateModal()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="quick-create-form" class="mt-6 space-y-4">
+                <input type="hidden" name="organization" value="{{ current_organization.id }}">
+                <div id="project-picker-wrap">
+                    <label class="ws-label">Project</label>
+                    <select name="project" class="ws-input ws-select">
+                        {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="ws-label">Title</label>
+                    <input name="name" id="quick-create-name" class="ws-input" required>
+                </div>
+                <div id="task-description-wrap">
+                    <label class="ws-label">Description</label>
+                    <textarea name="description" class="ws-input" rows="4"></textarea>
+                </div>
+                <div id="task-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="ws-label">Status</label>
+                        <select name="status" class="ws-input ws-select">
+                            {% for value, label in task_statuses %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ws-label">Priority</label>
+                        <select name="priority" class="ws-input ws-select">
+                            {% for value, label in task_priorities %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ws-label">Assignee</label>
+                        <select name="assignee_id" class="ws-input ws-select">
+                            <option value="">Unassigned</option>
+                            {% for membership in memberships %}
+                            <option value="{{ membership.user.id }}">{{ membership.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeCreateModal()" class="ws-btn ws-btn-secondary">Cancel</button>
+                    <button type="submit" class="ws-btn ws-btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside id="task-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl translate-x-full border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300">
+        <div class="flex h-full flex-col">
+            <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Task detail</p>
+                    <h3 id="drawer-title" class="mt-2 text-2xl font-black tracking-tight text-slate-900">Görev</h3>
+                    <p id="drawer-meta" class="mt-2 text-sm text-slate-500"></p>
+                </div>
+                <button type="button" onclick="closeTaskDrawer()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+                <div>
+                    <label class="ws-label">Description</label>
+                    <div id="drawer-description" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 min-h-24"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="ws-label">Status</label>
+                        <select id="drawer-status" class="ws-input ws-select" onchange="updateSelectedTask()">
+                            {% for value, label in task_statuses %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ws-label">Priority</label>
+                        <select id="drawer-priority" class="ws-input ws-select" onchange="updateSelectedTask()">
+                            {% for value, label in task_priorities %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ws-label">Assignee</label>
+                        <select id="drawer-assignee" class="ws-input ws-select" onchange="updateSelectedTask()">
+                            <option value="">Unassigned</option>
+                            {% for membership in memberships %}
+                            <option value="{{ membership.user.id }}">{{ membership.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <section>
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500">Subtasks</h4>
+                        </div>
+                        <div id="drawer-subtasks" class="mt-3 space-y-2"></div>
+                    </section>
+                    <section>
+                        <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500">Attachments</h4>
+                        <div id="drawer-attachments" class="mt-3 space-y-2"></div>
+                    </section>
+                </div>
+                <section>
+                    <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500">Comments</h4>
+                    <div id="drawer-comments" class="mt-3 space-y-3"></div>
+                    <form id="drawer-comment-form" class="mt-4 space-y-3" onsubmit="submitComment(event)">
+                        <textarea id="drawer-comment-input" class="ws-input" rows="3" placeholder="Yorum yazın. Mention için @kullanici kullanın"></textarea>
+                        <button type="submit" class="ws-btn ws-btn-primary">Add comment</button>
+                    </form>
+                </section>
+                <section>
+                    <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500">Activity</h4>
+                    <div id="drawer-activity" class="mt-3 space-y-2"></div>
+                </section>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        const currentOrganizationId = '{{ current_organization.id }}';
+        const currentWorkspaceSlug = '{{ current_organization.slug }}';
+        let selectedTaskId = null;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        function toggleNotifications() {
+            document.getElementById('notifications-panel').classList.toggle('hidden');
+        }
+
+        document.getElementById('menu-toggle')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.remove('hidden');
+        });
+
+        document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.add('hidden');
+        });
+
+        const viewButtons = document.querySelectorAll('.view-switch-btn');
+        const taskViews = document.querySelectorAll('.task-view');
+        function activateView(targetId) {
+            taskViews.forEach((view) => view.classList.toggle('hidden', view.id !== targetId));
+            viewButtons.forEach((button) => {
+                const active = button.dataset.target === targetId;
+                button.classList.toggle('bg-slate-900', active);
+                button.classList.toggle('text-white', active);
+                button.classList.toggle('text-slate-500', !active);
+            });
+        }
+        viewButtons.forEach((button) => button.addEventListener('click', () => activateView(button.dataset.target)));
+        activateView('{{ view_mode }}-view');
+
+        let createMode = 'task';
+        function openCreateModal(mode) {
+            createMode = mode;
+            const modal = document.getElementById('create-modal');
+            const title = document.getElementById('create-modal-title');
+            document.getElementById('project-picker-wrap').classList.toggle('hidden', mode === 'project');
+            document.getElementById('task-description-wrap').classList.toggle('hidden', mode === 'project');
+            document.getElementById('task-grid').classList.toggle('hidden', mode === 'project');
+            title.textContent = mode === 'project' ? 'Yeni proje oluştur' : 'Yeni görev oluştur';
+            document.getElementById('quick-create-name').name = mode === 'project' ? 'name' : 'title';
+            modal.classList.add('active');
+        }
+        function closeCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
+            document.getElementById('quick-create-form').reset();
+        }
+        document.getElementById('create-modal').addEventListener('click', closeCreateModal);
+
+        document.getElementById('quick-create-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const payload = Object.fromEntries(formData.entries());
+            const url = createMode === 'project' ? '/api/projects' : '/api/tasks';
+            if (createMode === 'project') {
+                payload.color = '#3B82F6';
+                payload.visibility = 'workspace';
+                payload.status = 'active';
+            }
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                if (!response.ok) throw new Error('Kayıt oluşturulamadı');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        async function openTaskDetail(taskId) {
+            selectedTaskId = taskId;
+            const response = await fetch(`/api/tasks/${taskId}`);
+            if (!response.ok) return;
+            const task = await response.json();
+            document.getElementById('drawer-title').textContent = task.title;
+            document.getElementById('drawer-meta').textContent = `${task.project_name} · ${task.creator.username}`;
+            document.getElementById('drawer-description').textContent = task.description || 'Açıklama girilmemiş.';
+            document.getElementById('drawer-status').value = task.status;
+            document.getElementById('drawer-priority').value = task.priority;
+            document.getElementById('drawer-assignee').value = task.assignee ? task.assignee.id : '';
+
+            document.getElementById('drawer-subtasks').innerHTML = task.subtasks.length
+                ? task.subtasks.map((item) => `<div class="rounded-2xl border border-slate-200 px-3 py-2 text-sm ${item.is_completed ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-slate-700'}">${item.title}</div>`).join('')
+                : '<p class="text-sm text-slate-400">Alt görev yok.</p>';
+
+            document.getElementById('drawer-attachments').innerHTML = task.attachments.length
+                ? task.attachments.map((item) => `<a class="block rounded-2xl border border-slate-200 px-3 py-2 text-sm text-blue-600 hover:bg-slate-50" href="${item.file}" target="_blank" rel="noreferrer">${item.original_name}</a>`).join('')
+                : '<p class="text-sm text-slate-400">Ek dosya yok.</p>';
+
+            document.getElementById('drawer-comments').innerHTML = task.comments.length
+                ? task.comments.map((item) => `<div class="rounded-2xl border border-slate-200 p-3"><div class="flex items-center justify-between gap-2"><p class="text-sm font-semibold text-slate-800">${item.author.username}</p><span class="text-xs text-slate-400">${new Date(item.created_at).toLocaleString('tr-TR')}</span></div><p class="mt-2 text-sm text-slate-600 whitespace-pre-wrap">${item.body}</p></div>`).join('')
+                : '<p class="text-sm text-slate-400">Yorum yok.</p>';
+
+            document.getElementById('drawer-activity').innerHTML = task.activity_logs.length
+                ? task.activity_logs.map((item) => `<div class="rounded-2xl border border-slate-200 px-3 py-2 text-sm"><p class="font-medium text-slate-700">${item.verb}</p><p class="mt-1 text-xs text-slate-400">${new Date(item.created_at).toLocaleString('tr-TR')}</p></div>`).join('')
+                : '<p class="text-sm text-slate-400">Aktivite kaydı yok.</p>';
+
+            document.getElementById('task-drawer').classList.remove('translate-x-full');
+        }
+
+        function closeTaskDrawer() {
+            document.getElementById('task-drawer').classList.add('translate-x-full');
+        }
+
+        async function updateSelectedTask() {
+            if (!selectedTaskId) return;
+            await fetch(`/api/tasks/${selectedTaskId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    status: document.getElementById('drawer-status').value,
+                    priority: document.getElementById('drawer-priority').value,
+                    assignee_id: document.getElementById('drawer-assignee').value || null,
+                }),
+            });
+        }
+
+        async function submitComment(event) {
+            event.preventDefault();
+            if (!selectedTaskId) return;
+            const input = document.getElementById('drawer-comment-input');
+            const body = input.value.trim();
+            if (!body) return;
+            const response = await fetch(`/api/tasks/${selectedTaskId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ body }),
+            });
+            if (response.ok) {
+                input.value = '';
+                openTaskDetail(selectedTaskId);
+            }
+        }
+
+        let searchTimer;
+        document.getElementById('global-search').addEventListener('input', (event) => {
+            clearTimeout(searchTimer);
+            const value = event.target.value.trim();
+            const container = document.getElementById('search-results');
+            if (!value) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+            searchTimer = setTimeout(async () => {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(value)}&organization=${currentOrganizationId}`);
+                if (!response.ok) return;
+                const data = await response.json();
+                const taskRows = data.tasks.map((item) => `<button type="button" class="w-full px-4 py-3 text-left hover:bg-slate-50" onclick="openTaskDetail(${item.id}); document.getElementById('search-results').classList.add('hidden');"><p class="text-sm font-semibold text-slate-800">${item.title}</p><p class="text-xs text-slate-400 mt-1">Task</p></button>`);
+                const projectRows = data.projects.map((item) => `<div class="px-4 py-3 border-t border-slate-100"><p class="text-sm font-semibold text-slate-800">${item.name}</p><p class="text-xs text-slate-400 mt-1">Project</p></div>`);
+                const userRows = data.users.map((item) => `<div class="px-4 py-3 border-t border-slate-100"><p class="text-sm font-semibold text-slate-800">${item.username}</p><p class="text-xs text-slate-400 mt-1">User</p></div>`);
+                container.innerHTML = taskRows.concat(projectRows, userRows).join('') || '<div class="px-4 py-4 text-sm text-slate-400">Sonuç bulunamadı.</div>';
+                container.classList.remove('hidden');
+            }, 250);
+        });
+
+        const socketProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const socket = new WebSocket(`${socketProtocol}://${window.location.host}/ws/organization/${currentOrganizationId}/`);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.event === 'notification.created') {
+                const badge = document.getElementById('notification-count');
+                badge.textContent = String(Number(badge.textContent || '0') + 1);
+                const list = document.getElementById('notifications-list');
+                const row = document.createElement('div');
+                row.className = 'rounded-2xl border border-slate-200 p-3';
+                row.innerHTML = `<p class="text-sm font-semibold text-slate-800">${data.payload.title}</p><p class="mt-1 text-sm text-slate-500">${data.payload.message}</p>`;
+                list.prepend(row);
+            }
+        };
+        socket.onopen = () => socket.send(JSON.stringify({ event: 'presence.ping' }));
+    </script>
+</body>
+</html>
