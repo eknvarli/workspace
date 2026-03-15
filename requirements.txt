@@ -13,3 +13,5 @@ psycopg[binary]
 Pillow
 whitenoise
 daphne
+markdown
+bleach

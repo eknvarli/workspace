@@ -1,0 +1,109 @@
+{% extends 'collab/app_base.html' %}
+
+{% block title %}Musteriler · Workspace{% endblock %}
+{% block page_heading %}Musteriler{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fbf8f3] p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-slate-400">
+                    <span>{{ current_organization.name }}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span class="text-slate-700">Musteriler</span>
+                </div>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Musteri yonetimi</h2>
+            </div>
+            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-primary">Yeni musteri</button>
+        </div>
+    </section>
+
+    <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">Liste</p>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Musteri yonetimi</h2>
+            </div>
+            <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">Formu ac</button>
+        </div>
+        <form id="customer-form" class="mt-6 hidden grid gap-4 rounded-3xl border border-[#ece3d8] bg-[#fcfaf6] p-5 md:grid-cols-2">
+            <input name="name" class="ws-input" placeholder="Ad">
+            <input name="company" class="ws-input" placeholder="Sirket">
+            <input name="email" class="ws-input" placeholder="E-posta">
+            <input name="phone" class="ws-input" placeholder="Telefon">
+            <select name="status" class="ws-input ws-select">
+                <option value="lead">Lead</option>
+                <option value="active">Active</option>
+                <option value="at_risk">At Risk</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <textarea name="notes" rows="3" class="ws-input md:col-span-2" placeholder="Notlar"></textarea>
+            <div class="md:col-span-2 flex justify-end gap-2">
+                <button type="button" onclick="toggleCustomerForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] shadow-sm overflow-hidden">
+        <div class="grid grid-cols-[1.2fr_1fr_1fr_0.7fr_0.8fr] gap-3 border-b border-[#f1ebe4] bg-[#fcfaf6] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+            <span>Ad</span><span>Sirket</span><span>Iletisim</span><span>Durum</span><span>Sahip</span>
+        </div>
+        <div class="divide-y divide-[#f5efe8]">
+            {% for customer in customers_page_obj %}
+            <div class="grid grid-cols-[1.2fr_1fr_1fr_0.7fr_0.8fr] gap-3 px-5 py-4 text-sm hover:bg-[#fcfaf6]">
+                <span class="font-semibold text-slate-900">{{ customer.name }}</span>
+                <span class="text-slate-600">{{ customer.company|default:'-' }}</span>
+                <span class="text-slate-600">{{ customer.email|default:customer.phone|default:'-' }}</span>
+                <span><span class="ws-badge {% if customer.status == 'active' %}ws-badge-green{% elif customer.status == 'at_risk' %}ws-badge-red{% else %}ws-badge-gray{% endif %}">{{ customer.get_status_display }}</span></span>
+                <span class="text-slate-600">{{ customer.owner.username }}</span>
+            </div>
+            {% empty %}
+            <div class="px-5 py-12 text-center text-sm text-slate-400">Musteri yok.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between text-sm text-slate-500">
+        <span>Sayfa {{ customers_page_obj.number }} / {{ customers_page_obj.paginator.num_pages }}</span>
+        <div class="flex gap-2">
+            {% if customers_page_obj.has_previous %}
+            <a href="?workspace={{ current_organization.slug }}&page={{ customers_page_obj.previous_page_number }}" class="ws-btn ws-btn-secondary">Onceki</a>
+            {% endif %}
+            {% if customers_page_obj.has_next %}
+            <a href="?workspace={{ current_organization.slug }}&page={{ customers_page_obj.next_page_number }}" class="ws-btn ws-btn-secondary">Sonraki</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    function toggleCustomerForm() {
+        document.getElementById('customer-form').classList.toggle('hidden');
+    }
+    document.getElementById('customer-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            organization: currentOrganizationId,
+            name: form.querySelector('[name="name"]').value,
+            company: form.querySelector('[name="company"]').value,
+            email: form.querySelector('[name="email"]').value,
+            phone: form.querySelector('[name="phone"]').value,
+            status: form.querySelector('[name="status"]').value,
+            notes: form.querySelector('[name="notes"]').value,
+        };
+        const response = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+</script>
+{% endblock %}

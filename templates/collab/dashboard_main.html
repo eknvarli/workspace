@@ -1,0 +1,345 @@
+{% extends 'collab/app_base.html' %}
+
+{% block title %}Dashboard · Workspace{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fbf8f3] p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#ece3d8] pb-4">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-slate-400">
+                    <span>{{ current_organization.name }}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span class="text-slate-700">Dashboard</span>
+                </div>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Genel bakis</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="createTag()" class="ws-btn ws-btn-secondary">Etiket ekle</button>
+                <button type="button" onclick="createNote()" class="ws-btn ws-btn-primary">Yeni not</button>
+            </div>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+            <button type="button" class="rounded-xl bg-[#f7f1ea] px-3 py-2 font-semibold text-slate-900 shadow-sm">Genel</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Projeler</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Aktivite</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Notlar</button>
+        </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif proje</p><p class="ws-stat-value">{{ workspace_metrics.project_active }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Tum proje</p><p class="ws-stat-value">{{ workspace_metrics.project_total }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Acik gorev</p><p class="ws-stat-value">{{ workspace_metrics.task_open }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Aktif kullanici</p><p class="ws-stat-value">{{ workspace_metrics.member_active }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Gelen istek</p><p class="ws-stat-value">{{ workspace_metrics.pending_requests }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Kritik uyari</p><p class="ws-stat-value">{{ workspace_metrics.critical_alerts }}</p></div>
+    </section>
+
+    <div class="grid gap-6 xl:grid-cols-[320px_1fr_340px]">
+        <section class="space-y-6">
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Canli durum</p>
+                        <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Aktif ekip</h2>
+                    </div>
+                    <span class="text-xs text-slate-400">{{ active_members|length }}</span>
+                </div>
+                <div class="mt-4 space-y-3">
+                    {% for membership in active_members %}
+                    <button type="button" onclick="openUserProfile({{ membership.user.id }})" class="flex w-full items-center gap-3 rounded-3xl border border-[#eee7de] bg-[#f7f1ea] p-3 text-left transition hover:bg-[#f4eee7]">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4ecf6] text-sm font-bold text-[#2f5b8f]">{{ membership.user.username|first|upper }}</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-semibold text-slate-900">{{ membership.user.get_full_name|default:membership.user.username }}</p>
+                            <p class="mt-1 truncate text-xs text-slate-400">{{ membership.user.profile.job_title|default:membership.get_role_display }} · {{ membership.user.profile.presence_status|default:'offline' }}</p>
+                        </div>
+                    </button>
+                    {% empty %}
+                    <p class="text-sm text-slate-400">Aktif kullanici gorunmuyor.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Gelen kutusu</p>
+                        <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Bekleyen istekler</h2>
+                    </div>
+                    <span class="text-xs text-slate-400">{{ pending_invitations|length }}</span>
+                </div>
+                <div class="mt-4 space-y-3">
+                    {% for invitation in pending_invitations %}
+                    <div class="rounded-3xl border border-[#eadab8] bg-[#f8efe0] p-4">
+                        <p class="text-sm font-semibold text-slate-900">{{ invitation.email }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ invitation.get_role_display }} · Son {{ invitation.expires_at|date:'d.m.Y H:i' }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-400">Bekleyen davet yok.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Duyurular</p>
+                        <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900">Guncellemeler</h2>
+                    </div>
+                    <span class="text-xs text-slate-400">{{ announcements|length }}</span>
+                </div>
+                <div class="mt-4 space-y-3">
+                    {% for announcement in announcements %}
+                    <button type="button" onclick="openAnnouncement('{{ announcement.title|escapejs }}', `{{ announcement.body|escapejs }}`, '{{ announcement.author.username|escapejs }}', '{{ announcement.published_at|date:'d.m.Y H:i'|escapejs }}')" class="w-full rounded-3xl border border-[#eee7de] bg-[#f7f1ea] p-4 text-left transition hover:bg-[#f4eee7]">
+                        <p class="text-sm font-semibold text-slate-900">{{ announcement.title }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ announcement.author.username }} · {{ announcement.published_at|date:'d.m.Y H:i' }}</p>
+                    </button>
+                    {% empty %}
+                    <p class="text-sm text-slate-400">Henüz duyuru yok.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Ana kontrol</p>
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Workspace ozeti</h2>
+                    </div>
+                </div>
+                <div class="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-[#ece3d8] bg-[#fcfaf6] p-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-black tracking-tight text-slate-900">Aktif projeler</h3>
+                            <span class="text-xs text-slate-400">{{ active_projects|length }}</span>
+                        </div>
+                        <div class="mt-4 space-y-3">
+                            {% for project in active_projects %}
+                            <a href="{% url 'project_detail_page' project.id %}?workspace={{ current_organization.slug }}" class="block rounded-2xl border border-[#eee7de] bg-[#f7f1ea] p-4 transition hover:bg-[#f4eee7]">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-900">{{ project.name }}</p>
+                                        <p class="mt-1 text-xs text-slate-400">{{ project.get_visibility_display }} · {{ project.project_memberships.count }} uye</p>
+                                    </div>
+                                    <span class="h-3 w-3 rounded-full" style="background: {{ project.color }}"></span>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <p class="text-sm text-slate-400">Aktif proje bulunmuyor.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="rounded-3xl border border-[#ebd6d0] bg-[#f8ece8] p-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-black tracking-tight text-slate-900">Uyarilar</h3>
+                            <span class="text-xs text-slate-400">{{ critical_alerts|length }}</span>
+                        </div>
+                        <div class="mt-4 space-y-3">
+                            {% for alert in critical_alerts %}
+                            <div class="rounded-2xl border border-[#ebd6d0] bg-[#fcf6f2] p-4">
+                                <p class="text-sm font-semibold text-slate-900">{{ alert.title }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ alert.project.name|default:'Genel' }} · {{ alert.amount }} {{ alert.currency }}</p>
+                            </div>
+                            {% empty %}
+                            <p class="text-sm text-slate-400">Kritik finans uyarisi yok.</p>
+                            {% endfor %}
+                            {% for task in due_tasks %}
+                            <div class="rounded-2xl border border-[#eadab8] bg-[#fbf4ea] p-4">
+                                <p class="text-sm font-semibold text-slate-900">{{ task.title }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ task.project.name }} · {{ task.due_date|date:'d.m.Y' }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Merkez alan</p>
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Notlar ve dokumantasyon</h2>
+                    </div>
+                </div>
+                <div class="mt-6 grid gap-5 lg:grid-cols-[260px_1fr]">
+                    <div id="note-list" class="space-y-2">
+                        {% for note in notes %}
+                        <button type="button" class="note-item w-full rounded-2xl border border-[#eee7de] bg-[#f7f1ea] px-4 py-3 text-left transition hover:bg-[#f4eee7]" data-id="{{ note.id }}" data-title="{{ note.title|escapejs }}" data-content="{{ note.content|escapejs }}" data-pinned="{{ note.is_pinned|yesno:'true,false' }}" data-project-id="{{ note.project_id|default:'' }}" data-note-type="{{ note.note_type }}" data-tag-ids="{% for tag in note.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}" onclick="selectNote(this)">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ note.title|default:'Basliksiz not' }}</p>
+                                    <p class="mt-1 truncate text-xs text-slate-400">{{ note.get_note_type_display }}{% if note.project %} · {{ note.project.name }}{% endif %}</p>
+                                </div>
+                                {% if note.is_pinned %}<span class="text-xs text-[#2f5b8f]">Sabit</span>{% endif %}
+                            </div>
+                        </button>
+                        {% empty %}
+                        <p class="text-sm text-slate-400">Ilk notunuzu olusturun.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="rounded-3xl border border-[#ece3d8] bg-[#f7f1ea] p-5">
+                        <div class="grid gap-3 md:grid-cols-3">
+                            <select id="note-project" class="ws-input ws-select">
+                                <option value="">Proje bagla</option>
+                                {% for project in available_projects %}
+                                <option value="{{ project.id }}" {% if selected_note.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select id="note-type" class="ws-input ws-select">
+                                <option value="note" {% if selected_note.note_type == 'note' or not selected_note %}selected{% endif %}>Not</option>
+                                <option value="documentation" {% if selected_note.note_type == 'documentation' %}selected{% endif %}>Dokumantasyon</option>
+                                <option value="plan" {% if selected_note.note_type == 'plan' %}selected{% endif %}>Plan</option>
+                            </select>
+                            <select id="note-tags" class="ws-input min-h-14" multiple>
+                                {% for tag in available_tags %}
+                                <option value="{{ tag.id }}" {% if selected_note and tag in selected_note.tags.all %}selected{% endif %}>{{ tag.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input id="note-title" class="mt-4 w-full bg-transparent text-2xl font-black tracking-tight text-slate-900 outline-none" placeholder="Not basligi" value="{{ selected_note.title|default:'' }}">
+                        <textarea id="note-content" class="mt-4 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-slate-600 outline-none" placeholder="Buraya istediginiz notlari yazin...">{{ selected_note.content|default:'' }}</textarea>
+                        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-600"><input id="note-pinned" type="checkbox" {% if selected_note and selected_note.is_pinned %}checked{% endif %}> Sabitle</label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="deleteNote()" class="ws-btn ws-btn-secondary">Sil</button>
+                                <button type="button" onclick="saveNote()" class="ws-btn ws-btn-primary">Kaydet</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+                <h2 class="text-xl font-black tracking-tight text-slate-900">Son aktiviteler</h2>
+                <div class="mt-4 space-y-3">
+                    {% for activity in activity_logs %}
+                    <div class="rounded-2xl border border-[#eee7de] bg-[#fcfaf6] p-4">
+                        <p class="text-sm font-semibold text-slate-800">{{ activity.verb }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ activity.created_at|date:'d.m.Y H:i' }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-400">Aktivite kaydi yok.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+                <h2 class="text-xl font-black tracking-tight text-slate-900">Projeler</h2>
+                <div class="mt-4 space-y-3">
+                    {% for project in projects %}
+                    <a href="{% url 'project_detail_page' project.id %}?workspace={{ current_organization.slug }}" class="block rounded-3xl border border-[#eee7de] bg-[#f7f1ea] p-4 transition hover:bg-[#f4eee7]">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ project.name }}</p>
+                                <p class="mt-1 text-xs text-slate-400">{{ project.get_status_display }} · {{ project.get_visibility_display }}</p>
+                            </div>
+                            <span class="h-3 w-3 rounded-full" style="background: {{ project.color }}"></span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-sm text-slate-400">Proje bulunmuyor.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    let selectedNoteId = {{ selected_note.id|default:'null' }};
+
+    function getSelectedValues(elementId) {
+        return Array.from(document.getElementById(elementId).selectedOptions).map((item) => Number(item.value));
+    }
+
+    function selectNote(element) {
+        document.querySelectorAll('.note-item').forEach((item) => item.classList.remove('border-[#c7d5e6]', 'bg-[#edf3f8]'));
+        element.classList.add('border-[#c7d5e6]', 'bg-[#edf3f8]');
+        selectedNoteId = Number(element.dataset.id);
+        document.getElementById('note-title').value = element.dataset.title || '';
+        document.getElementById('note-content').value = element.dataset.content || '';
+        document.getElementById('note-pinned').checked = element.dataset.pinned === 'true';
+        document.getElementById('note-project').value = element.dataset.projectId || '';
+        document.getElementById('note-type').value = element.dataset.noteType || 'note';
+        const tagIds = new Set((element.dataset.tagIds || '').split(',').filter(Boolean));
+        Array.from(document.getElementById('note-tags').options).forEach((option) => {
+            option.selected = tagIds.has(option.value);
+        });
+    }
+
+    async function createNote() {
+        const response = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({
+                organization: currentOrganizationId,
+                project: document.getElementById('note-project').value || null,
+                title: 'Yeni not',
+                content: '',
+                note_type: document.getElementById('note-type').value,
+                tag_ids: getSelectedValues('note-tags'),
+            }),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    }
+
+    async function saveNote() {
+        const payload = {
+            organization: currentOrganizationId,
+            project: document.getElementById('note-project').value || null,
+            title: document.getElementById('note-title').value,
+            content: document.getElementById('note-content').value,
+            note_type: document.getElementById('note-type').value,
+            tag_ids: getSelectedValues('note-tags'),
+            is_pinned: document.getElementById('note-pinned').checked,
+        };
+        const url = selectedNoteId ? `/api/notes/${selectedNoteId}` : '/api/notes';
+        const method = selectedNoteId ? 'PATCH' : 'POST';
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    }
+
+    async function deleteNote() {
+        if (!selectedNoteId) return;
+        const response = await fetch(`/api/notes/${selectedNoteId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': csrfToken },
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    }
+
+    async function createTag() {
+        const name = window.prompt('Etiket adi');
+        if (!name) return;
+        const color = window.prompt('Etiket rengi', 'slate') || 'slate';
+        const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ organization: currentOrganizationId, name, color }),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    }
+
+    document.querySelector('.note-item')?.classList.add('border-[#c7d5e6]', 'bg-[#edf3f8]');
+</script>
+{% endblock %}

@@ -8,13 +8,13 @@
 
 /* === CSS Variables === */
 :root {
-    --bg-body: #F1F5F9;
-    --bg-surface: #FFFFFF;
-    --bg-sidebar: #FFFFFF;
-    --bg-hover: #F8FAFC;
-    --bg-active: #EFF6FF;
-    --bg-input: #F8FAFC;
-    --bg-muted: #F1F5F9;
+    --bg-body: #F6F3EE;
+    --bg-surface: #FCFAF6;
+    --bg-sidebar: #FBF8F3;
+    --bg-hover: #F4EEE7;
+    --bg-active: #ECE5DB;
+    --bg-input: #F8F3ED;
+    --bg-muted: #F1EBE2;
 
     --text-primary: #0F172A;
     --text-secondary: #334155;
@@ -22,16 +22,16 @@
     --text-light: #94A3B8;
     --text-on-primary: #FFFFFF;
 
-    --border-color: #E2E8F0;
-    --border-light: #F1F5F9;
+    --border-color: #E3D9CC;
+    --border-light: #F0E8DD;
 
-    --primary: #3B82F6;
-    --primary-hover: #2563EB;
-    --primary-light: #DBEAFE;
-    --primary-dark: #1D4ED8;
+    --primary: #2F5B8F;
+    --primary-hover: #274C77;
+    --primary-light: #E4ECF6;
+    --primary-dark: #1F3E62;
 
-    --accent: #6366F1;
-    --accent-light: #EEF2FF;
+    --accent: #7B8CA8;
+    --accent-light: #EEF2F6;
 
     --success: #10B981;
     --success-light: #D1FAE5;
@@ -236,7 +236,7 @@ body {
 
 /* === Stat Cards === */
 .ws-stat-card {
-    background: var(--bg-surface);
+    background: linear-gradient(180deg, #fcfaf6 0%, #f7f1ea 100%);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
@@ -289,7 +289,7 @@ body {
     border-radius: var(--radius-sm);
     transition: all var(--transition);
     cursor: pointer;
-    border: none;
+    border: 1px solid transparent;
     outline: none;
     text-decoration: none;
     gap: 0.5rem;
@@ -297,19 +297,19 @@ body {
 }
 
 .ws-btn-primary {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: var(--text-on-primary);
-    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 24px rgba(47, 91, 143, 0.18);
 }
 
 .ws-btn-primary:hover {
-    background: var(--primary-hover);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-dark) 100%);
+    box-shadow: 0 14px 28px rgba(39, 76, 119, 0.24);
     transform: translateY(-1px);
 }
 
 .ws-btn-secondary {
-    background: var(--bg-surface);
+    background: #F7F1EA;
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-xs);
@@ -317,7 +317,7 @@ body {
 
 .ws-btn-secondary:hover {
     background: var(--bg-hover);
-    border-color: #CBD5E1;
+    border-color: #D5C8B8;
 }
 
 .ws-btn-success {

@@ -1,0 +1,10 @@
+from django.contrib import admin
+
+from .models import Customer
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'company', 'organization', 'owner', 'status')
+    list_filter = ('organization', 'status')
+    search_fields = ('name', 'company', 'email')

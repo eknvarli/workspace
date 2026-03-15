@@ -51,6 +51,12 @@ LOCAL_APPS = [
     'notifications',
     'activity_logs',
     'attachments',
+    'announcements',
+    'calendar_events',
+    'customers',
+    'finance',
+    'chat',
+    'notes',
     'api',
 ]
 

@@ -1,0 +1,375 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Workspace{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#f6f3ee] text-slate-900 antialiased">
+    <form id="csrf-form" class="hidden">{% csrf_token %}</form>
+    <div class="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-[280px] -translate-x-full overflow-y-auto border-r border-[#e7dfd5] bg-[#fbf8f3] text-slate-900 transition-transform duration-300 lg:translate-x-0 lg:static">
+            <div class="flex min-h-full flex-col">
+                <div class="border-b border-[#ece4da] px-5 py-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e9f2ff] text-[#3976f6]">
+                                <i class="fa-solid fa-sun"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ current_organization.name }}</p>
+                                <p class="text-xs text-slate-500">Calisma alani</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-angle-down text-sm text-slate-400"></i>
+                    </div>
+                </div>
+                <div class="border-b border-[#ece4da] p-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Workspace</label>
+                    <form method="get" class="mt-2">
+                        <select name="workspace" onchange="this.form.submit()" class="w-full rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#315c8f]/30">
+                            {% for org in organizations %}
+                            <option value="{{ org.slug }}" {% if org.id == current_organization.id %}selected{% endif %}>{{ org.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <nav class="space-y-1 border-b border-[#ece4da] p-4">
+                    <a href="/?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'dashboard' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-solid fa-house w-4 text-slate-400"></i> Ana sayfa</a>
+                    <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'notifications_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-envelope w-4 text-slate-400"></i> Gelen kutusu</a>
+                    <a href="{% url 'tasks_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'tasks_page' %}bg-[#e4ecf6] text-[#2f5b8f] shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-solid fa-list-check w-4 text-slate-400"></i> Calismalar</a>
+                    <a href="{% url 'finance_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'finance_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-chart-bar w-4 text-slate-400"></i> Panolar</a>
+                    <a href="{% url 'customers_page' %}?workspace={{ current_organization.slug }}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm {% if request.resolver_match.url_name == 'customers_page' %}bg-[#f4eee7] text-slate-900 shadow-sm{% else %}text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900{% endif %}"><i class="fa-regular fa-compass w-4 text-slate-400"></i> Hedefler</a>
+                    <a href="{% url 'settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-slate-600 hover:bg-[#f4eee7] hover:text-slate-900"><i class="fa-solid fa-ellipsis w-4 text-slate-400"></i> Daha fazla</a>
+                </nav>
+                <div class="border-b border-[#ece4da] p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Favoriler</p>
+                        <i class="fa-solid fa-angle-right text-xs text-slate-400"></i>
+                    </div>
+                    <div class="mt-3 space-y-2">
+                        {% for announcement in sidebar_announcements %}
+                        <button type="button" onclick="openAnnouncement('{{ announcement.title|escapejs }}', `{{ announcement.body|escapejs }}`, '{{ announcement.author.username|escapejs }}', '{{ announcement.published_at|date:'d.m.Y H:i'|escapejs }}')" class="w-full rounded-2xl px-3 py-2 text-left transition hover:bg-[#f4eee7]">
+                            <p class="truncate text-sm font-medium text-slate-700">{{ announcement.title }}</p>
+                            <p class="mt-1 truncate text-xs text-slate-400">{{ announcement.author.username }}</p>
+                        </button>
+                        {% empty %}
+                        <p class="rounded-2xl bg-[#f7f1ea] px-3 py-4 text-xs text-slate-400">Favori duyuru yok.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="flex-1 p-4">
+                    <div class="mb-3 flex items-center justify-between gap-3">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Alanlar</p>
+                        <span class="text-xs text-slate-400">{{ sidebar_projects|length }}</span>
+                    </div>
+                    <div class="space-y-1.5">
+                        {% for project in sidebar_projects %}
+                        <a href="{% url 'project_detail_page' project.id %}?workspace={{ current_organization.slug }}" class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-[#f4eee7] hover:text-slate-900">
+                            <span class="flex min-w-0 items-center gap-3">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-xl text-xs font-bold text-white" style="background: {{ project.color|default:'#5b6cf0' }}">{{ project.name|first|upper }}</span>
+                                <span class="truncate">{{ project.name }}</span>
+                            </span>
+                            <span class="rounded-full bg-[#f7f1ea] px-2 py-0.5 text-[11px] text-slate-400">{{ project.open_tasks }}</span>
+                        </a>
+                        {% empty %}
+                        <p class="rounded-2xl bg-[#f7f1ea] px-3 py-4 text-xs text-slate-400">Alan bulunmuyor.</p>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="mt-4 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-slate-500 transition hover:bg-[#f4eee7] hover:text-slate-900">
+                        <i class="fa-solid fa-plus"></i> Alan olustur
+                    </button>
+                </div>
+                <div class="border-t border-[#ece4da] p-4">
+                    <a href="{% url 'logout' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-500 hover:bg-[#f4eee7] hover:text-slate-900"><i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Cikis</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="min-w-0">
+            <header class="sticky top-0 z-30 border-b border-[#e7dfd5] bg-[#fbf8f3]/95 backdrop-blur">
+                <div class="flex items-center gap-3 px-4 py-4 lg:px-8">
+                    <button id="menu-toggle" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] text-slate-600 lg:hidden">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 text-sm text-slate-400">
+                            <span>{{ current_organization.name }}</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            <span class="text-slate-600">Calisma alani</span>
+                        </div>
+                        <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{% block page_heading %}Workspace{% endblock %}</h1>
+                    </div>
+                    <div class="hidden items-center gap-2 rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-2 text-sm text-slate-500 xl:flex">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        <span>Suchen</span>
+                    </div>
+                    <a href="{% url 'notifications_page' %}?workspace={{ current_organization.slug }}" class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] text-slate-600 shadow-sm">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="absolute -right-1 -top-1 inline-flex min-w-5 justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ unread_notifications }}</span>
+                    </a>
+                    <button type="button" onclick="openUserProfile({{ request.user.id }})" class="flex items-center gap-3 rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-2 shadow-sm transition hover:border-[#d5c8b8] hover:bg-[#f4eee7]">
+                        {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="h-10 w-10 rounded-2xl object-cover">
+                        {% else %}
+                        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-sm font-bold text-blue-600">{{ request.user.username|first|upper }}</div>
+                        {% endif %}
+                        <div class="hidden sm:block text-left">
+                            <p class="text-sm font-semibold text-slate-800">{{ request.user.get_full_name|default:request.user.username }}</p>
+                            <p class="text-xs text-slate-500">{{ request.user.profile.get_presence_status_display|default:'Offline' }}</p>
+                        </div>
+                    </button>
+                </div>
+            </header>
+
+            <div class="px-4 py-6 lg:px-8 lg:py-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/20 lg:hidden"></div>
+
+    <div id="announcement-modal" class="ws-modal-backdrop">
+        <div class="ws-modal max-w-2xl p-6" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Duyuru</p>
+                    <h3 id="announcement-title" class="mt-2 text-2xl font-black tracking-tight text-slate-900"></h3>
+                    <p id="announcement-meta" class="mt-2 text-xs text-slate-400"></p>
+                </div>
+                <button type="button" onclick="closeAnnouncement()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-[#f7f1ea] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="announcement-body" class="prose prose-sm mt-6 max-w-none text-slate-700 whitespace-pre-wrap"></div>
+        </div>
+    </div>
+
+    <div id="user-profile-modal" class="ws-modal-backdrop">
+        <div class="ws-modal max-w-2xl p-6" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">User profile</p>
+                    <h3 id="profile-modal-title" class="mt-2 text-2xl font-black tracking-tight text-slate-900">Profil</h3>
+                </div>
+                <button type="button" onclick="closeUserProfile()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-[#f7f1ea] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="profile-modal-body" class="mt-6"></div>
+        </div>
+    </div>
+
+    <button id="chat-fab" type="button" class="fixed bottom-5 right-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-2xl" onclick="toggleChatWidget()">
+        <i class="fa-solid fa-comments text-lg"></i>
+    </button>
+    <div id="chat-widget" class="fixed bottom-24 right-5 z-40 hidden w-[360px] overflow-hidden rounded-3xl border border-slate-200 bg-[#fcfaf6] shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+            <div>
+                <p class="text-sm font-black tracking-tight text-slate-900">Sohbet</p>
+                <p class="text-xs text-slate-400">LinkedIn tarzi hizli mesajlasma</p>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="openChatComposer()" class="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 text-slate-600"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" onclick="toggleChatWidget()" class="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 text-slate-600"><i class="fa-solid fa-minus"></i></button>
+            </div>
+        </div>
+        <div class="grid h-[460px] grid-cols-[130px_1fr]">
+            <div id="chat-conversations" class="border-r border-slate-200 bg-slate-50 p-2"></div>
+            <div class="flex h-full flex-col">
+                <div id="chat-widget-title" class="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700">Bir sohbet secin</div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-3 space-y-3"></div>
+                <form id="chat-form" class="border-t border-slate-200 p-3" onsubmit="submitConversationMessage(event)">
+                    <textarea id="chat-input" rows="3" class="ws-input" placeholder="Mesaj yazin"></textarea>
+                    <div class="mt-3 flex justify-end">
+                        <button type="submit" class="ws-btn ws-btn-primary">Gonder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-composer-modal" class="ws-modal-backdrop">
+        <div class="ws-modal max-w-xl p-6" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Yeni sohbet</p>
+                    <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Konusma olustur</h3>
+                </div>
+                <button type="button" onclick="closeChatComposer()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-[#f7f1ea] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="chat-composer-form" class="mt-6 space-y-4">
+                <div>
+                    <label class="ws-label">Konusma adi</label>
+                    <input name="name" class="ws-input">
+                </div>
+                <div>
+                    <label class="ws-label">Mod</label>
+                    <select name="is_direct" class="ws-input ws-select">
+                        <option value="false">Grup</option>
+                        <option value="true">Direkt</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="ws-label">Katilimcilar</label>
+                    <select name="participant_ids" multiple class="ws-input min-h-40">
+                        {% for membership in memberships %}
+                        <option value="{{ membership.user.id }}">{{ membership.user.get_full_name|default:membership.user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeChatComposer()" class="ws-btn ws-btn-secondary">Iptal</button>
+                    <button type="submit" class="ws-btn ws-btn-primary">Olustur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const currentOrganizationId = '{{ current_organization.id }}';
+        const currentWorkspaceSlug = '{{ current_organization.slug }}';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        let selectedConversationId = null;
+
+        document.getElementById('menu-toggle')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.remove('hidden');
+        });
+        document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.add('hidden');
+        });
+
+        function openAnnouncement(title, body, author, meta) {
+            document.getElementById('announcement-title').textContent = title;
+            document.getElementById('announcement-meta').textContent = `${author} · ${meta}`;
+            document.getElementById('announcement-body').textContent = body;
+            document.getElementById('announcement-modal').classList.add('active');
+        }
+        function closeAnnouncement() {
+            document.getElementById('announcement-modal').classList.remove('active');
+        }
+        document.getElementById('announcement-modal').addEventListener('click', closeAnnouncement);
+
+        async function openUserProfile(userId) {
+            const response = await fetch(`/api/users/${userId}?organization=${currentOrganizationId}`);
+            if (!response.ok) return;
+            const user = await response.json();
+            document.getElementById('profile-modal-title').textContent = user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : user.username;
+            document.getElementById('profile-modal-body').innerHTML = `
+                <div class="grid gap-6 md:grid-cols-[200px_1fr]">
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center">
+                        ${user.avatar ? `<img src="${user.avatar}" alt="Avatar" class="mx-auto h-24 w-24 rounded-3xl object-cover">` : `<div class="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-50 text-3xl font-black text-blue-600">${user.username.charAt(0).toUpperCase()}</div>`}
+                        <p class="mt-4 text-lg font-black text-slate-900">${user.username}</p>
+                        <p class="mt-1 text-sm text-slate-500">${user.profile?.job_title || 'Rol tanimlanmadi'}</p>
+                    </div>
+                    <div class="space-y-4">
+                        <section class="rounded-3xl border border-slate-200 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Bio</p>
+                            <p class="mt-2 text-sm text-slate-600">${user.profile?.bio || 'Bio bulunmuyor.'}</p>
+                        </section>
+                        <section class="rounded-3xl border border-slate-200 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Workspace rolleri</p>
+                            <div class="mt-3 space-y-2">${(user.workspace_roles || []).map((item) => `<div class="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 text-sm"><span>${item.organization}</span><span class="font-semibold text-slate-700">${item.role}</span></div>`).join('') || '<p class="text-sm text-slate-400">Rol kaydi yok.</p>'}</div>
+                        </section>
+                    </div>
+                </div>`;
+            document.getElementById('user-profile-modal').classList.add('active');
+        }
+        function closeUserProfile() {
+            document.getElementById('user-profile-modal').classList.remove('active');
+        }
+        document.getElementById('user-profile-modal').addEventListener('click', closeUserProfile);
+
+        function toggleChatWidget() {
+            const widget = document.getElementById('chat-widget');
+            widget.classList.toggle('hidden');
+            if (!widget.classList.contains('hidden')) {
+                loadConversations();
+            }
+        }
+
+        async function loadConversations() {
+            const response = await fetch(`/api/conversations?organization=${currentOrganizationId}`);
+            if (!response.ok) return;
+            const data = await response.json();
+            const conversations = data.results || data;
+            const container = document.getElementById('chat-conversations');
+            container.innerHTML = conversations.length
+                ? conversations.map((item) => `<button type="button" data-title="${escapeHtml(item.name || 'Konusma')}" onclick="openConversation(${item.id}, this.dataset.title)" class="mb-2 w-full rounded-2xl px-3 py-3 text-left text-sm ${selectedConversationId === item.id ? 'bg-[#243b53] text-white' : 'bg-[#f7f1ea] text-slate-700'}">${escapeHtml(item.name || 'Direkt sohbet')}</button>`).join('')
+                : '<p class="px-2 py-3 text-xs text-slate-400">Sohbet yok.</p>';
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function openConversation(conversationId, title) {
+            selectedConversationId = conversationId;
+            document.getElementById('chat-widget-title').textContent = title || 'Konusma';
+            await loadConversations();
+            const response = await fetch(`/api/conversations/${conversationId}/messages`);
+            if (!response.ok) return;
+            const data = await response.json();
+            const messages = data.results || data;
+            document.getElementById('chat-messages').innerHTML = messages.length
+                ? messages.map((item) => `<div class="rounded-2xl border border-slate-200 p-3"><div class="flex items-center justify-between gap-2"><p class="text-sm font-semibold text-slate-800">${item.sender.username}</p><span class="text-xs text-slate-400">${new Date(item.created_at).toLocaleString('tr-TR')}</span></div><div class="mt-2 text-sm text-slate-600">${item.body}</div></div>`).join('')
+                : '<p class="text-sm text-slate-400">Mesaj bulunmuyor.</p>';
+        }
+
+        async function submitConversationMessage(event) {
+            event.preventDefault();
+            if (!selectedConversationId) return;
+            const input = document.getElementById('chat-input');
+            const body = input.value.trim();
+            if (!body) return;
+            const response = await fetch(`/api/conversations/${selectedConversationId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ body }),
+            });
+            if (response.ok) {
+                input.value = '';
+                openConversation(selectedConversationId, document.getElementById('chat-widget-title').textContent);
+            }
+        }
+
+        function openChatComposer() {
+            document.getElementById('chat-composer-modal').classList.add('active');
+        }
+        function closeChatComposer() {
+            document.getElementById('chat-composer-modal').classList.remove('active');
+            document.getElementById('chat-composer-form').reset();
+        }
+        document.getElementById('chat-composer-modal').addEventListener('click', closeChatComposer);
+        document.getElementById('chat-composer-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const payload = {
+                organization: currentOrganizationId,
+                name: form.querySelector('[name="name"]').value,
+                is_direct: form.querySelector('[name="is_direct"]').value === 'true',
+                participant_ids: Array.from(form.querySelector('[name="participant_ids"]').selectedOptions).map((item) => Number(item.value)),
+            };
+            const response = await fetch('/api/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(payload),
+            });
+            if (response.ok) {
+                closeChatComposer();
+                toggleChatWidget();
+                toggleChatWidget();
+            }
+        });
+    </script>
+    {% block page_scripts %}{% endblock %}
+</body>
+</html>

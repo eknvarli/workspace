@@ -1,0 +1,113 @@
+{% extends 'collab/app_base.html' %}
+
+{% block title %}Finans · Workspace{% endblock %}
+{% block page_heading %}Finans{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fbf8f3] p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-slate-400">
+                    <span>{{ current_organization.name }}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span class="text-slate-700">Finans</span>
+                </div>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Finans merkezi</h2>
+            </div>
+            <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-primary">Yeni finans bildirimi</button>
+        </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Acik toplam</p><p class="ws-stat-value">{{ finance_totals.open_total }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Kritik bildirim</p><p class="ws-stat-value">{{ finance_totals.critical_count }}</p></div>
+        <div class="ws-stat-card bg-[#fcfaf6]"><p class="ws-stat-label">Cozulen</p><p class="ws-stat-value">{{ finance_totals.resolved_count }}</p></div>
+    </section>
+
+    <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#2f5b8f]">Yonetim</p>
+                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Finans detaylari</h2>
+            </div>
+            <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">Formu ac</button>
+        </div>
+        <form id="finance-form" class="mt-6 hidden grid gap-4 rounded-3xl border border-[#ece3d8] bg-[#fcfaf6] p-5 md:grid-cols-2">
+            <input name="title" class="ws-input md:col-span-2" placeholder="Baslik">
+            <select name="project" class="ws-input ws-select">
+                <option value="">Projesiz</option>
+                {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="ws-input ws-select">
+                <option value="open">Open</option>
+                <option value="review">In Review</option>
+                <option value="resolved">Resolved</option>
+            </select>
+            <select name="severity" class="ws-input ws-select">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+            <input type="number" step="0.01" name="amount" class="ws-input" placeholder="Tutar">
+            <input name="currency" class="ws-input" value="TRY">
+            <textarea name="notes" rows="4" class="ws-input md:col-span-2" placeholder="Notlar"></textarea>
+            <div class="md:col-span-2 flex justify-end gap-2">
+                <button type="button" onclick="toggleFinanceForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for alert in finance_alerts %}
+        <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-slate-900">{{ alert.title }}</p>
+                    <p class="mt-1 text-xs text-slate-400">{{ alert.amount }} {{ alert.currency }}</p>
+                </div>
+                <span class="ws-badge {% if alert.severity == 'critical' or alert.severity == 'high' %}ws-badge-red{% elif alert.severity == 'medium' %}ws-badge-amber{% else %}ws-badge-gray{% endif %}">{{ alert.get_severity_display }}</span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">{{ alert.notes|default:'Detay eklenmedi.' }}</p>
+            <p class="mt-4 text-xs text-slate-400">{{ alert.get_status_display }}{% if alert.project %} · {{ alert.project.name }}{% endif %}</p>
+        </div>
+        {% empty %}
+        <p class="text-sm text-slate-400">Finans kaydi bulunmuyor.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    function toggleFinanceForm() {
+        document.getElementById('finance-form').classList.toggle('hidden');
+    }
+    document.getElementById('finance-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            organization: currentOrganizationId,
+            title: form.querySelector('[name="title"]').value,
+            project: form.querySelector('[name="project"]').value || null,
+            status: form.querySelector('[name="status"]').value,
+            severity: form.querySelector('[name="severity"]').value,
+            amount: form.querySelector('[name="amount"]').value || 0,
+            currency: form.querySelector('[name="currency"]').value || 'TRY',
+            notes: form.querySelector('[name="notes"]').value,
+        };
+        const response = await fetch('/api/finance-alerts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+</script>
+{% endblock %}

@@ -11,6 +11,8 @@ class Notification(models.Model):
         COMMENT_ADDED = 'comment_added', 'Comment Added'
         COMMENT_MENTION = 'comment_mention', 'Comment Mention'
         INVITATION = 'invitation', 'Invitation'
+        ANNOUNCEMENT = 'announcement', 'Announcement'
+        MEETING_REMINDER = 'meeting_reminder', 'Meeting Reminder'
 
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     organization = models.ForeignKey('organizations.Organization', on_delete=models.CASCADE, related_name='notifications')
@@ -31,3 +33,12 @@ class Notification(models.Model):
 
     def __str__(self) -> str:
         return f'{self.recipient} - {self.type}'
+
+    def mark_as_read(self) -> None:
+        from django.utils import timezone
+
+        if self.is_read:
+            return
+        self.is_read = True
+        self.read_at = timezone.now()
+        self.save(update_fields=['is_read', 'read_at'])

@@ -4,6 +4,8 @@ from datetime import datetime
 
 from django.utils import timezone
 
+from calendar_events.tasks import send_upcoming_meeting_notifications
+
 from .models import AccountProfile
 
 
@@ -35,5 +37,23 @@ class AccountActivityMiddleware:
                     update_fields.append('presence_status')
                 profile.save(update_fields=update_fields)
                 request.session['last_active_ping'] = now.isoformat()
+
+                last_meeting_check_iso = request.session.get('last_meeting_reminder_check')
+                should_check_meetings = True
+                if last_meeting_check_iso:
+                    try:
+                        last_meeting_check = datetime.fromisoformat(last_meeting_check_iso)
+                        if timezone.is_naive(last_meeting_check):
+                            last_meeting_check = timezone.make_aware(last_meeting_check, timezone.get_current_timezone())
+                        should_check_meetings = (now - last_meeting_check).total_seconds() >= 300
+                    except ValueError:
+                        should_check_meetings = True
+
+                if should_check_meetings:
+                    try:
+                        send_upcoming_meeting_notifications.delay()
+                    except Exception:
+                        send_upcoming_meeting_notifications()
+                    request.session['last_meeting_reminder_check'] = now.isoformat()
 
         return self.get_response(request)

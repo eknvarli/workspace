@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+<body class="min-h-screen bg-[#f6f3ee] text-slate-900 antialiased">
     <div class="mx-auto max-w-7xl px-4 py-6 lg:px-8 lg:py-8">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="rounded-[28px] border border-[#e8e0d6] bg-[#fbf8f3] p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.26em] text-blue-600">Workspace account</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Hesap ayarlari</h1>
@@ -33,7 +33,7 @@
 
         <div class="mt-8 grid gap-6 xl:grid-cols-[340px_1fr]">
             <aside class="space-y-6">
-                <section class="ws-card p-6 text-center">
+            <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 text-center shadow-sm">
                     {% if profile.avatar %}
                     <img src="{{ profile.avatar.url }}" alt="Avatar" class="mx-auto h-24 w-24 rounded-3xl object-cover shadow-sm">
                     {% else %}
@@ -45,7 +45,7 @@
                         <span class="h-2.5 w-2.5 rounded-full {% if profile.presence_status == 'online' %}bg-emerald-500{% elif profile.presence_status == 'away' %}bg-amber-400{% elif profile.presence_status == 'dnd' %}bg-rose-500{% else %}bg-slate-400{% endif %}"></span>
                         {{ profile.get_presence_status_display }}
                     </div>
-                    <div class="mt-6 rounded-2xl bg-slate-50 px-4 py-4 text-left">
+                    <div class="mt-6 rounded-2xl bg-[#fcfaf6] px-4 py-4 text-left">
                         <p class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Son aktivite</p>
                         <p class="mt-2 text-sm font-medium text-slate-700">{{ profile.last_seen_at|date:'d.m.Y H:i'|default:'Henuz kayit yok' }}</p>
                     </div>
@@ -53,7 +53,7 @@
             </aside>
 
             <div class="space-y-6">
-                <section class="ws-card p-6 lg:p-8">
+                <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm lg:p-8">
                     <div class="mb-6">
                         <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Profil</p>
                         <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Kisisel bilgiler</h3>
@@ -112,7 +112,7 @@
                     </form>
                 </section>
 
-                <section class="ws-card p-6 lg:p-8">
+                <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] p-6 shadow-sm lg:p-8">
                     <div class="mb-6">
                         <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Guvenlik</p>
                         <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">Sifre degistir</h3>

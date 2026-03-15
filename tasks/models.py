@@ -61,12 +61,35 @@ class Task(models.Model):
             models.Index(fields=['due_date']),
         ]
 
+    @property
+    def progress_percentage(self) -> int:
+        prefetched_subtasks = getattr(self, '_prefetched_objects_cache', {}).get('subtasks')
+        if prefetched_subtasks is not None:
+            total = len(prefetched_subtasks)
+            completed = sum(1 for item in prefetched_subtasks if item.is_completed)
+        else:
+            total = self.subtasks.count() if self.pk else 0
+            completed = self.subtasks.filter(is_completed=True).count() if total else 0
+
+        if total:
+            return int((completed / total) * 100)
+
+        status_defaults = {
+            self.Status.TODO: 0,
+            self.Status.IN_PROGRESS: 55,
+            self.Status.IN_REVIEW: 85,
+            self.Status.COMPLETED: 100,
+            self.Status.ARCHIVED: 100,
+        }
+        return status_defaults.get(self.status, 0)
+
     def __str__(self) -> str:
         return self.title
 
 
 class SubTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', blank=True, null=True)
     title = models.CharField(max_length=255)
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name='assigned_subtasks')
     due_date = models.DateField(blank=True, null=True)
@@ -78,6 +101,7 @@ class SubTask(models.Model):
 
     class Meta:
         ordering = ['sort_order', 'created_at']
+        indexes = [models.Index(fields=['task', 'parent', 'sort_order'])]
 
     def __str__(self) -> str:
         return self.title

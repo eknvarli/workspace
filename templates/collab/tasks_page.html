@@ -1,0 +1,424 @@
+{% extends 'collab/app_base.html' %}
+
+{% block title %}Gorevler · Workspace{% endblock %}
+{% block page_heading %}Gorevler{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fbf8f3] p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#ece3d8] pb-4">
+            <div>
+                <div class="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+                    <span>{{ current_organization.name }}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span>Kampanyalar</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span class="text-slate-700">Calismalar</span>
+                </div>
+                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Calisma listesi</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" class="ws-btn ws-btn-secondary">Otomasyonlar</button>
+                <button type="button" class="ws-btn ws-btn-secondary">Aktivite</button>
+                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-primary">Yeni gorev</button>
+            </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2 border-b border-[#ece3d8] pb-4 text-sm">
+            <button type="button" class="rounded-xl bg-[#f7f1ea] px-3 py-2 font-semibold text-slate-900 shadow-sm">Liste</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Plan</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Dashboard</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Masa</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">Dokumantasyon</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#f4eee7]">+ Ekle</button>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" class="rounded-full border border-[#d7d0ff] bg-[#f1efff] px-3 py-1.5 text-xs font-semibold text-[#6d5bd0]">Grup: Status</button>
+                <button type="button" class="rounded-full border border-[#d7d0ff] bg-[#f6f4ff] px-3 py-1.5 text-xs font-semibold text-[#6d5bd0]">Alt gorevler: Gorunur</button>
+                <button type="button" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Filtreler</button>
+                <button type="button" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Ben modu</button>
+                <button type="button" onclick="createTag()" class="rounded-full border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-1.5 text-xs font-semibold text-slate-500">Etiket ekle</button>
+            </div>
+            <div class="flex items-center gap-3">
+                <label class="hidden items-center gap-2 rounded-2xl border border-[#e5ddd2] bg-[#f7f1ea] px-3 py-2 text-sm text-slate-400 md:flex">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    <input id="task-search" type="search" placeholder="Gorevlerde ara..." class="w-56 bg-transparent text-slate-700 outline-none placeholder:text-slate-400">
+                </label>
+            </div>
+        </div>
+
+        <form id="task-form" class="mt-5 hidden grid gap-4 rounded-[24px] border border-[#e5ddd2] bg-[#fcfaf6] p-5 md:grid-cols-2">
+            <select name="project" class="ws-input ws-select">
+                {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+            </select>
+            <input name="title" class="ws-input" placeholder="Baslik">
+            <textarea name="description" rows="4" class="ws-input md:col-span-2" placeholder="Aciklama"></textarea>
+            <select name="status" class="ws-input ws-select">
+                {% for value, label in task_statuses %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="priority" class="ws-input ws-select">
+                {% for value, label in task_priorities %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="assignee_id" class="ws-input ws-select">
+                <option value="">Atanmamis</option>
+                {% for membership in memberships %}
+                <option value="{{ membership.user.id }}">{{ membership.user.get_full_name|default:membership.user.username }}</option>
+                {% endfor %}
+            </select>
+            <select name="tag_ids" class="ws-input min-h-24 md:col-span-2" multiple>
+                {% for tag in available_tags %}
+                <option value="{{ tag.id }}">{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="md:col-span-2 flex justify-end gap-2">
+                <button type="button" onclick="toggleTaskForm()" class="ws-btn ws-btn-secondary">Iptal</button>
+                <button type="submit" class="ws-btn ws-btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="rounded-[28px] border border-[#e8e0d6] bg-[#fcfaf6] shadow-sm overflow-hidden">
+        {% for column in status_columns %}
+        <div class="task-status-group {% if not forloop.last %}border-b border-[#f1ebe4]{% endif %}" data-status-group="{{ column.label|slugify }}">
+            <div class="flex items-center gap-3 bg-[#fcfaf6] px-5 py-3">
+                <button type="button" class="inline-flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition hover:bg-[#f4eee7]" onclick="toggleTaskGroup('{{ column.label|slugify }}')">
+                    <i class="fa-solid fa-chevron-down text-[11px]" id="group-icon-{{ column.label|slugify }}"></i>
+                </button>
+                <span class="rounded-full px-2.5 py-1 text-xs font-semibold {% if column.value == 'todo' %}bg-slate-100 text-slate-600{% elif column.value == 'in_progress' %}bg-blue-100 text-blue-700{% elif column.value == 'in_review' %}bg-amber-100 text-amber-700{% elif column.value == 'completed' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-200 text-slate-600{% endif %}">{{ column.label }}</span>
+                <span class="text-sm font-medium text-slate-500">{{ column.items|length }}</span>
+                <button type="button" class="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-xl text-slate-400 transition hover:bg-[#f4eee7]" onclick="toggleTaskForm()"><i class="fa-solid fa-plus text-xs"></i></button>
+            </div>
+            <div id="group-body-{{ column.label|slugify }}">
+                <div class="grid grid-cols-[minmax(320px,1.8fr)_160px_120px_120px_minmax(180px,1fr)_52px] gap-3 border-b border-[#f1ebe4] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    <span>Ad</span>
+                    <span>Atanan</span>
+                    <span>Termin</span>
+                    <span>Oncelik</span>
+                    <span>Not</span>
+                    <span></span>
+                </div>
+                <div class="divide-y divide-[#f5efe8]">
+                    {% for task in column.items %}
+                    <div class="task-row grid grid-cols-[minmax(320px,1.8fr)_160px_120px_120px_minmax(180px,1fr)_52px] gap-3 px-5 py-3 text-left transition hover:bg-[#fcfaf6]" data-task-search="{{ task.title|lower }} {{ task.project.name|lower }} {{ task.description|striptags|lower }} {% for tag in task.tags.all %}{{ tag.name|lower }} {% endfor %}">
+                        <button type="button" onclick="openTaskDetail({{ task.id }})" class="min-w-0 text-left">
+                            <div class="flex items-start gap-3">
+                                <span class="mt-1 inline-flex h-4 w-4 rounded-full border border-slate-300"></span>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-slate-800">{{ task.title }}</p>
+                                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                        <span>{{ task.project.name }}</span>
+                                        <span>•</span>
+                                        <span>{{ task.subtasks.count }} alt gorev</span>
+                                        {% if task.tags.all %}
+                                        <span>•</span>
+                                        <span class="truncate">{% for tag in task.tags.all|slice:':2' %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                        <div class="flex items-center text-sm text-slate-600">
+                            {% if task.assignee %}
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#e8eefc] text-xs font-semibold text-[#4f64b7]">{{ task.assignee.username|first|upper }}</span>
+                                <span class="truncate">{{ task.assignee.get_full_name|default:task.assignee.username }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-slate-300">-</span>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center text-sm {% if task.due_date %}text-slate-600{% else %}text-slate-300{% endif %}">{{ task.due_date|date:'d M'|default:'-' }}</div>
+                        <div class="flex items-center text-sm">
+                            <span class="rounded-full px-2.5 py-1 text-xs font-semibold {% if task.priority == 'urgent' %}bg-red-50 text-red-600{% elif task.priority == 'high' %}bg-amber-50 text-amber-600{% elif task.priority == 'medium' %}bg-blue-50 text-blue-600{% else %}bg-slate-100 text-slate-500{% endif %}">{{ task.get_priority_display }}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-slate-500">{{ task.description|striptags|truncatechars:40|default:'-' }}</div>
+                        <div class="flex items-center justify-end">
+                            <button type="button" onclick="openTaskDetail({{ task.id }})" class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100"><i class="fa-solid fa-ellipsis"></i></button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="px-5 py-8 text-sm text-slate-400">Bu grupta gorev yok.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+
+<div id="task-drawer-backdrop" class="fixed inset-0 z-40 hidden bg-slate-950/20"></div>
+<aside id="task-detail-panel" class="fixed right-0 top-0 z-50 h-screen w-full max-w-[480px] translate-x-full overflow-y-auto border-l border-[#e5ddd2] bg-[#fcfaf6] p-6 shadow-2xl transition-transform duration-300">
+    <div class="flex items-start justify-between gap-3">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Gorev detayi</p>
+            <h3 id="task-detail-title" class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Bir gorev secin</h3>
+        </div>
+        <button type="button" onclick="closeTaskDetail()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#e5ddd2] text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="task-detail-content" class="mt-5 text-sm text-slate-500">Gorev istatistikleri ve yonetimi burada gorunur.</div>
+</aside>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const workspaceTags = [
+        {% for tag in available_tags %}
+        { id: {{ tag.id }}, name: '{{ tag.name|escapejs }}', color: '{{ tag.color|escapejs }}' },
+        {% endfor %}
+    ];
+    let activeTask = null;
+    let draggedSubtaskId = null;
+
+    function toggleTaskForm() {
+        document.getElementById('task-form').classList.toggle('hidden');
+    }
+
+    function openTaskDrawer() {
+        document.getElementById('task-detail-panel').classList.remove('translate-x-full');
+        document.getElementById('task-drawer-backdrop').classList.remove('hidden');
+    }
+
+    function closeTaskDetail() {
+        document.getElementById('task-detail-panel').classList.add('translate-x-full');
+        document.getElementById('task-drawer-backdrop').classList.add('hidden');
+    }
+
+    function toggleTaskGroup(groupSlug) {
+        const body = document.getElementById(`group-body-${groupSlug}`);
+        const icon = document.getElementById(`group-icon-${groupSlug}`);
+        body.classList.toggle('hidden');
+        icon.classList.toggle('-rotate-90');
+    }
+
+    function escapeHtml(value) {
+        return String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
+
+    function selectedValues(fieldName) {
+        return Array.from(document.querySelector(`[name="${fieldName}"]`).selectedOptions).map((item) => Number(item.value));
+    }
+
+    async function createTag() {
+        const name = window.prompt('Etiket adi');
+        if (!name) return;
+        const color = window.prompt('Etiket rengi', 'slate') || 'slate';
+        const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ organization: currentOrganizationId, name, color }),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    }
+
+    document.getElementById('task-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            organization: currentOrganizationId,
+            project: Number(form.querySelector('[name="project"]').value),
+            title: form.querySelector('[name="title"]').value,
+            description: form.querySelector('[name="description"]').value,
+            status: form.querySelector('[name="status"]').value,
+            priority: form.querySelector('[name="priority"]').value,
+            assignee_id: form.querySelector('[name="assignee_id"]').value || null,
+            tag_ids: selectedValues('tag_ids'),
+        };
+        const response = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+
+    function renderTagOptions(selectedIds) {
+        const selected = new Set((selectedIds || []).map((tag) => Number(tag.id || tag)));
+        return workspaceTags.map((tag) => `<option value="${tag.id}" ${selected.has(tag.id) ? 'selected' : ''}>${escapeHtml(tag.name)}</option>`).join('');
+    }
+
+    function renderTagPills(tags) {
+        if (!tags?.length) return '<p class="text-sm text-slate-400">Etiket yok.</p>';
+        return `<div class="flex flex-wrap gap-2">${tags.map((tag) => `<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">${escapeHtml(tag.name)}</span>`).join('')}</div>`;
+    }
+
+    function renderSubtaskTree(subtasks, parentId = '') {
+        return `
+            <div class="subtask-list space-y-3" data-parent-id="${parentId}">
+                ${subtasks.map((subtask) => `
+                    <div class="subtask-item rounded-3xl border border-slate-200 bg-[#f7f1ea] p-3" data-subtask-id="${subtask.id}" draggable="true">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <button type="button" class="mt-0.5 h-5 w-5 rounded-full border ${subtask.is_completed ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 bg-[#fcfaf6]'}" onclick="toggleSubtaskCompleted(${subtask.id}, ${subtask.is_completed})"></button>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-900">${escapeHtml(subtask.title)}</p>
+                                    <p class="mt-1 text-xs text-slate-400">${subtask.assignee ? escapeHtml(subtask.assignee.username) : 'Atanmamis'}${subtask.due_date ? ` · ${escapeHtml(subtask.due_date)}` : ''}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="text-xs font-semibold text-slate-500" onclick="toggleSubtaskChildren(${subtask.id})">${subtask.children?.length ? 'Ac/Kapat' : 'Detay'}</button>
+                                <button type="button" class="text-xs font-semibold text-blue-600" onclick="addSubtask(${subtask.id})">Alt ekle</button>
+                            </div>
+                        </div>
+                        <div class="subtask-children mt-3 ${subtask.children?.length ? '' : 'hidden'}" id="subtask-children-${subtask.id}">
+                            ${renderSubtaskTree(subtask.children || [], subtask.id)}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function bindSubtaskDnD() {
+        document.querySelectorAll('.subtask-item').forEach((item) => {
+            item.addEventListener('dragstart', () => {
+                draggedSubtaskId = Number(item.dataset.subtaskId);
+            });
+        });
+        document.querySelectorAll('.subtask-list').forEach((list) => {
+            list.addEventListener('dragover', (event) => event.preventDefault());
+            list.addEventListener('drop', async (event) => {
+                event.preventDefault();
+                const draggedElement = document.querySelector(`.subtask-item[data-subtask-id="${draggedSubtaskId}"]`);
+                if (!draggedElement || draggedElement.contains(list)) {
+                    return;
+                }
+                list.appendChild(draggedElement);
+                await persistSubtaskTree();
+            });
+        });
+    }
+
+    async function persistSubtaskTree() {
+        if (!activeTask) return;
+        const payload = [];
+        const visit = (listElement) => {
+            const parentId = listElement.dataset.parentId ? Number(listElement.dataset.parentId) : null;
+            Array.from(listElement.children).forEach((item) => {
+                if (!item.classList.contains('subtask-item')) return;
+                payload.push({ id: Number(item.dataset.subtaskId), parent_id: parentId });
+                const childList = item.querySelector(':scope > .subtask-children > .subtask-list');
+                if (childList) {
+                    visit(childList);
+                }
+            });
+        };
+
+        const rootList = document.querySelector('#task-detail-content .subtask-list');
+        if (!rootList) return;
+        visit(rootList);
+
+        await fetch(`/api/tasks/${activeTask.id}/subtasks/reorder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ items: payload }),
+        });
+        await openTaskDetail(activeTask.id);
+    }
+
+    function toggleSubtaskChildren(subtaskId) {
+        document.getElementById(`subtask-children-${subtaskId}`)?.classList.toggle('hidden');
+    }
+
+    async function addSubtask(parentId = null) {
+        if (!activeTask) return;
+        const title = window.prompt('Alt gorev basligi');
+        if (!title) return;
+        const response = await fetch(`/api/tasks/${activeTask.id}/subtasks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ title, parent_id: parentId }),
+        });
+        if (response.ok) {
+            await openTaskDetail(activeTask.id);
+        }
+    }
+
+    async function toggleSubtaskCompleted(subtaskId, isCompleted) {
+        const response = await fetch(`/api/subtasks/${subtaskId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ is_completed: !isCompleted }),
+        });
+        if (response.ok && activeTask) {
+            await openTaskDetail(activeTask.id);
+        }
+    }
+
+    async function saveTaskTags() {
+        if (!activeTask) return;
+        const tagIds = Array.from(document.getElementById('task-detail-tags').selectedOptions).map((item) => Number(item.value));
+        const response = await fetch(`/api/tasks/${activeTask.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ organization: currentOrganizationId, tag_ids: tagIds }),
+        });
+        if (response.ok) {
+            await openTaskDetail(activeTask.id);
+        }
+    }
+
+    async function openTaskDetail(taskId) {
+        const response = await fetch(`/api/tasks/${taskId}`);
+        if (!response.ok) return;
+        const task = await response.json();
+        activeTask = task;
+        openTaskDrawer();
+        document.getElementById('task-detail-title').textContent = task.title;
+        document.getElementById('task-detail-content').innerHTML = `
+            <div class="space-y-5">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aciklama</p>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">${task.description || 'Aciklama yok.'}</p>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Durum</p><p class="mt-1 font-semibold text-slate-900">${task.status}</p></div>
+                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Oncelik</p><p class="mt-1 font-semibold text-slate-900">${task.priority}</p></div>
+                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Yorum</p><p class="mt-1 font-semibold text-slate-900">${task.comments_count}</p></div>
+                    <div class="rounded-2xl bg-slate-50 p-4"><p class="text-xs text-slate-400">Ek dosya</p><p class="mt-1 font-semibold text-slate-900">${task.attachments_count}</p></div>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Ilerleme</p>
+                    <div class="mt-2 h-3 rounded-full bg-slate-100"><div class="h-3 rounded-full bg-blue-500" style="width: ${task.progress_percentage}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Etiketler</p>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="saveTaskTags()">Guncelle</button>
+                    </div>
+                    <div class="mt-2">${renderTagPills(task.tags)}</div>
+                    <select id="task-detail-tags" class="ws-input mt-3 min-h-24" multiple>${renderTagOptions(task.tags)}</select>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Alt gorevler</p>
+                        <button type="button" class="text-xs font-semibold text-blue-600" onclick="addSubtask()">Yeni alt gorev</button>
+                    </div>
+                    <div class="mt-3">${renderSubtaskTree(task.subtasks || [])}</div>
+                    <p class="mt-3 text-xs text-slate-400">Surukleyip bir listenin icine birakarak sira degistirebilir veya altina tasiyabilirsiniz.</p>
+                </div>
+            </div>`;
+        bindSubtaskDnD();
+    }
+
+    document.getElementById('task-drawer-backdrop').addEventListener('click', closeTaskDetail);
+    document.getElementById('task-search')?.addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        document.querySelectorAll('.task-row').forEach((row) => {
+            const haystack = row.dataset.taskSearch || '';
+            row.classList.toggle('hidden', query && !haystack.includes(query));
+        });
+    });
+</script>
+{% endblock %}

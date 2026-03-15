@@ -19,3 +19,18 @@ class Comment(models.Model):
 
     def __str__(self) -> str:
         return f'Comment #{self.pk} on {self.task}'
+
+
+class CommentReaction(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comment_reactions')
+    emoji = models.CharField(max_length=32)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('comment', 'user', 'emoji')
+        indexes = [models.Index(fields=['comment', 'emoji'])]
+        ordering = ['emoji', 'created_at']
+
+    def __str__(self) -> str:
+        return f'{self.user} reacted {self.emoji} to comment {self.comment_id}'
