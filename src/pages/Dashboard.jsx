@@ -340,12 +340,12 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen flex bg-[#f8fafc] dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500 overflow-hidden">
+        <div className="min-h-screen flex bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-500 overflow-hidden">
             {sidebarAcik && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] lg:hidden" onClick={() => setSidebarAcik(false)} />
             )}
 
-            <aside className={`fixed inset-y-0 left-0 z-[70] w-72 bg-white dark:bg-[#1e293b] border-r border-slate-200 dark:border-white/5 transition-all duration-300 lg:translate-x-0 lg:static lg:h-screen ${sidebarAcik ? "translate-x-0" : "-translate-x-full"}`}>
+            <aside className={`fixed inset-y-0 left-0 z-[70] w-72 bg-white dark:bg-[#0a0f1e] border-r border-slate-200 dark:border-white/5 transition-all duration-300 lg:translate-x-0 lg:static lg:h-screen ${sidebarAcik ? "translate-x-0" : "-translate-x-full"}`}>
                 <div className="flex flex-col h-full">
                     <div className="p-8">
                         <div className="flex items-center gap-3">
@@ -373,7 +373,7 @@ export default function Dashboard() {
                         <MenuElemani icon={<FaGear />} label="Sistem Ayarları" />
                     </nav>
 
-                    <div className="p-6 mt-auto border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-[#1e293b]">
+                    <div className="p-6 mt-auto border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-[#0a0f1e]">
                         <button onClick={temaDegistir} className="flex items-center justify-between w-full p-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl mb-4 group hover:border-blue-500 transition-all">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/10">
@@ -394,8 +394,8 @@ export default function Dashboard() {
                 </div>
             </aside>
 
-            <main className="flex-1 h-screen overflow-y-auto relative scroll-smooth bg-[#f8fafc] dark:bg-[#0f172a]">
-                <header className="sticky top-0 z-40 bg-white/70 dark:bg-[#0f172a]/70 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-6 md:px-10 py-4 flex items-center justify-between">
+            <main className="flex-1 h-screen overflow-y-auto relative scroll-smooth bg-[#f8fafc] dark:bg-[#020617]">
+                <header className="sticky top-0 z-40 bg-white/70 dark:bg-[#020617]/70 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-6 md:px-10 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <button onClick={() => setSidebarAcik(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors">
                             <FaBars size={20} />
@@ -410,7 +410,7 @@ export default function Dashboard() {
                                 className="w-80 bg-slate-100 dark:bg-white/5 border border-transparent focus:border-blue-500/50 rounded-2xl pl-11 pr-4 py-2.5 text-sm transition-all outline-none"
                             />
                             {showResults && (
-                                <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
+                                <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
                                     <div className="max-h-[400px] overflow-y-auto p-2 space-y-4">
                                         {searchResults.projects.length > 0 && (
                                             <div>
@@ -483,20 +483,20 @@ export default function Dashboard() {
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ekip Üyeleri</p>
                                     <div className="mt-3 flex items-end justify-between">
                                         <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.member_count}</h3>
                                     </div>
                                 </div>
-                                <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Bekleyen Todolar</p>
                                     <div className="mt-3 flex items-end justify-between">
                                         <h3 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{stats.total_todos - stats.completed_todos}</h3>
                                         <span className="text-[10px] font-bold text-slate-400 mb-1">Toplam: {stats.total_todos}</span>
                                     </div>
                                 </div>
-                                <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-6 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tamamlanan Görevler</p>
                                     <div className="mt-3 flex items-end justify-between">
                                         <h3 className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.completed_todos}</h3>
@@ -507,7 +507,7 @@ export default function Dashboard() {
 
                             <div className="grid lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 space-y-6">
-                                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
+                                    <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
                                         <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                                             <h3 className="font-bold text-lg">Aktif Operasyonlar</h3>
                                             <FaBolt className="text-blue-500" />
@@ -549,7 +549,7 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm">
+                                    <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm">
                                         <div className="flex items-center justify-between mb-8">
                                             <h3 className="font-bold text-lg">Son Notlar</h3>
                                             <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
@@ -579,7 +579,7 @@ export default function Dashboard() {
                             </div>
 
                             {isEditingNote ? (
-                                <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2rem] border border-slate-200 dark:border-white/5 space-y-4">
+                                <div className="bg-white dark:bg-[#0a0f1e] p-8 rounded-[2rem] border border-slate-200 dark:border-white/5 space-y-4">
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="font-bold text-lg">{currentNote.id ? "Notu Düzenle" : "Yeni Not"}</h3>
                                         <button onClick={() => { setIsEditingNote(false); if (!currentNote.id) setCurrentNote(null); }} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"><FaXmark /></button>
@@ -592,7 +592,7 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                             ) : isViewingNote ? (
-                                <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2rem] border border-slate-200 dark:border-white/5 space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                                <div className="bg-white dark:bg-[#0a0f1e] p-8 rounded-[2rem] border border-slate-200 dark:border-white/5 space-y-6 animate-in fade-in slide-in-from-bottom-4">
                                     <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-white/5">
                                         <div>
                                             <h3 className="font-black text-2xl uppercase">{currentNote.title}</h3>
@@ -610,13 +610,13 @@ export default function Dashboard() {
                             ) : (
                                 <div className="space-y-4">
                                     {notes.length === 0 ? (
-                                        <div className="bg-white dark:bg-[#1e293b] p-20 text-center rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
+                                        <div className="bg-white dark:bg-[#0a0f1e] p-20 text-center rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
                                             <FaNoteSticky className="mx-auto text-4xl text-slate-300 mb-4" />
                                             <p className="text-slate-500 font-medium">Henüz bir not paylaşılmamış.</p>
                                         </div>
                                     ) : (
                                         notes.map(note => (
-                                            <div key={note.id} className="bg-white dark:bg-[#1e293b] p-6 rounded-3xl border border-slate-200 dark:border-white/5 flex items-center justify-between hover:scale-[1.01] transition-all cursor-pointer group shadow-sm" onClick={() => { setCurrentNote(note); setIsViewingNote(true); }}>
+                                            <div key={note.id} className="bg-white dark:bg-[#0a0f1e] p-6 rounded-3xl border border-slate-200 dark:border-white/5 flex items-center justify-between hover:scale-[1.01] transition-all cursor-pointer group shadow-sm" onClick={() => { setCurrentNote(note); setIsViewingNote(true); }}>
                                                 <div className="flex items-center gap-6">
                                                     <div className="h-12 w-12 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                                                         <FaNoteSticky />
@@ -642,7 +642,7 @@ export default function Dashboard() {
                                 <button onClick={() => setShowCustomerModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Yeni Müşteri</button>
                             </div>
 
-                            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
+                            <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
@@ -693,7 +693,7 @@ export default function Dashboard() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {todos.map(todo => (
-                                    <div key={todo.id} className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm space-y-4">
+                                    <div key={todo.id} className="bg-white dark:bg-[#0a0f1e] p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm space-y-4">
                                         <div className="flex items-start justify-between">
                                             <h3 className="font-bold text-lg">{todo.title}</h3>
                                             <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${todo.status === 'Tamamlandı' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>{todo.status}</span>
@@ -739,7 +739,7 @@ export default function Dashboard() {
                                 </div>
                             )}
 
-                            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
+                            <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 rounded-[2.5rem] shadow-sm overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
@@ -786,13 +786,13 @@ export default function Dashboard() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {projects.length === 0 ? (
-                                            <div className="col-span-full py-20 text-center bg-white dark:bg-[#1e293b] rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
+                                            <div className="col-span-full py-20 text-center bg-white dark:bg-[#0a0f1e] rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
                                                 <FaDiagramProject className="mx-auto text-4xl text-slate-300 mb-4" />
                                                 <p className="text-slate-500 font-medium">Henüz bir proje oluşturulmamış.</p>
                                             </div>
                                         ) : (
                                             projects.map(p => (
-                                                <div key={p.id} onClick={() => fetchProjectDetail(p.id)} className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
+                                                <div key={p.id} onClick={() => fetchProjectDetail(p.id)} className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
                                                     <div className="flex items-start justify-between mb-6">
                                                         <div className="h-12 w-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center text-xl group-hover:bg-blue-500 group-hover:text-white transition-all"><FaDiagramProject /></div>
                                                         <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest">{p.status}</span>
@@ -820,7 +820,7 @@ export default function Dashboard() {
 
                                     <div className="grid lg:grid-cols-3 gap-8">
                                         <div className="lg:col-span-2 space-y-6">
-                                            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8">
+                                            <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8">
                                                 <div className="flex items-center justify-between mb-8">
                                                     <h3 className="text-lg font-bold flex items-center gap-2"><FaNoteSticky className="text-blue-500" /> Proje Notları</h3>
                                                 </div>
@@ -863,7 +863,7 @@ export default function Dashboard() {
                                         </div>
 
                                         <div className="space-y-6">
-                                            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8">
+                                            <div className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8">
                                                 <div className="flex items-center justify-between mb-8">
                                                     <h3 className="text-lg font-bold flex items-center gap-2"><FaFolderTree className="text-blue-500" /> Dosyalar</h3>
                                                     <label className="p-2 bg-blue-500/10 text-blue-500 rounded-xl cursor-pointer hover:bg-blue-500 hover:text-white transition-all"><FaUpload /><input type="file" className="hidden" onChange={e => e.target.files[0] && uploadProjectFile(currentProject.id, e.target.files[0])} /></label>
@@ -898,7 +898,7 @@ export default function Dashboard() {
 
             {teamRequired && (
                 <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6">
-                    <div className="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full text-center space-y-8 animate-in zoom-in-95">
+                    <div className="bg-white dark:bg-[#0a0f1e] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full text-center space-y-8 animate-in zoom-in-95">
                         <div className="h-16 w-16 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-blue-500/40">
                             <FaShieldHalved className="text-white text-3xl" />
                         </div>
@@ -917,7 +917,7 @@ export default function Dashboard() {
 
             {showTodoModal && (
                 <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-                    <div className="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8">
+                    <div className="bg-white dark:bg-[#0a0f1e] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-black">Yeni Görev</h2>
                             <button onClick={() => setShowTodoModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"><FaXmark /></button>
@@ -940,7 +940,7 @@ export default function Dashboard() {
 
             {showProjectModal && (
                 <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-                    <div className="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8 animate-in zoom-in-95">
+                    <div className="bg-white dark:bg-[#0a0f1e] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8 animate-in zoom-in-95">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-black">Yeni Proje</h2>
                             <button onClick={() => setShowProjectModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"><FaXmark /></button>
@@ -956,7 +956,7 @@ export default function Dashboard() {
 
             {showCustomerModal && (
                 <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-                    <div className="bg-white dark:bg-[#1e293b] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8">
+                    <div className="bg-white dark:bg-[#0a0f1e] p-10 rounded-[3rem] shadow-2xl max-w-lg w-full space-y-8">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-black">Yeni Müşteri</h2>
                             <button onClick={() => setShowCustomerModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl"><FaXmark /></button>
