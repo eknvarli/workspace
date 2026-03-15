@@ -29,3 +29,7 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
+
+## Kullanici Yonetimi
+
+Bu projede acik kayit sistemi yoktur. Yeni kullanicilar yalnizca Django admin paneli uzerinden bir superkullanici tarafindan olusturulabilir.
