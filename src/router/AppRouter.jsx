@@ -11,7 +11,9 @@ import Dashboard from "../pages/Dashboard";
 import HomeRedirect from "../pages/HomeRedirect";
 
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, user } = useAuthStore();
+    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+    const user = useAuthStore(state => state.user);
+
     if (!isAuthenticated) return <Navigate to="/login" replace />;
     if (user && !user.is_approved) {
         return (
@@ -31,22 +33,29 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default function AppRouter() {
-    const { isSetupRequired, setSetupRequired } = useAuthStore();
+    const isSetupRequired = useAuthStore(state => state.isSetupRequired);
+    const setSetupRequired = useAuthStore(state => state.setSetupRequired);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
+        let isMounted = true;
         const checkSetup = async () => {
             try {
                 const response = await api.get("/setup-status/");
-                setSetupRequired(response.data.setup_required);
-            } catch (error) {
-                console.error("Failed to check setup status", error);
+                if (isMounted) {
+                    setSetupRequired(response.data.setup_required);
+                }
+            } catch (err) {
+                console.error("Failed to check setup status", err);
+                if (isMounted) setError(true);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
         checkSetup();
+        return () => { isMounted = false; };
     }, [setSetupRequired]);
 
     if (loading) {
@@ -57,14 +66,20 @@ export default function AppRouter() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-center">
+                <p className="text-rose-500 font-bold uppercase tracking-widest text-xs">Sistem durumu kontrol edilemedi. Lütfen bağlantınızı kontrol edin.</p>
+            </div>
+        );
+    }
+
     if (isSetupRequired) {
         if (location.pathname !== "/setup") {
             return <Navigate to="/setup" replace />;
         }
-    } else {
-        if (location.pathname === "/setup") {
-            return <Navigate to="/login" replace />;
-        }
+    } else if (location.pathname === "/setup") {
+        return <Navigate to="/login" replace />;
     }
 
     return (
