@@ -2,13 +2,14 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaShieldHalved } from "react-icons/fa6";
 import useAuthStore from "../store/authStore";
-import api from "../api/axios";
 
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Setup from "../pages/Setup";
 import Dashboard from "../pages/Dashboard";
 import HomeRedirect from "../pages/HomeRedirect";
+
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useAuthStore(state => state.isAuthenticated);
@@ -32,31 +33,30 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default function AppRouter() {
-    const isSetupRequired = useAuthStore(state => state.isSetupRequired);
-    const setSetupRequired = useAuthStore(state => state.setSetupRequired);
+    const [setupRequired, setSetupRequired] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
-        const checkSetup = async () => {
-            try {
-                const response = await api.get("/setup-status/");
+        fetch(`${BASE_URL}/setup-status/`)
+            .then(res => res.json())
+            .then(data => {
                 if (isMounted) {
-                    setSetupRequired(response.data.setup_required);
+                    setSetupRequired(data.setup_required === true);
+                    setLoading(false);
                 }
-            } catch (err) {
-                console.error("Setup check error", err);
-                if (isMounted) setError(true);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-        checkSetup();
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setError(true);
+                    setLoading(false);
+                }
+            });
         return () => { isMounted = false; };
-    }, [setSetupRequired]);
+    }, []);
 
-    if (loading || isSetupRequired === null) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-[#020617] flex items-center justify-center">
                 <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -75,7 +75,7 @@ export default function AppRouter() {
 
     return (
         <Routes>
-            {isSetupRequired === true ? (
+            {setupRequired === true ? (
                 <>
                     <Route path="/setup" element={<Setup />} />
                     <Route path="*" element={<Navigate to="/setup" replace />} />
