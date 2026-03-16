@@ -2,19 +2,23 @@ import { create } from "zustand";
 
 const getInitialUser = () => {
     try {
-        const item = localStorage.getItem("user");
-        if (!item || item === "undefined") return null;
-        return JSON.parse(item);
+        const rawData = localStorage.getItem("user");
+        return (rawData && rawData !== "undefined") ? JSON.parse(rawData) : null;
     } catch (error) {
         localStorage.removeItem("user");
         return null;
     }
 };
 
+const getInitialToken = () => {
+    const rawData = localStorage.getItem("token");
+    return (rawData && rawData !== "undefined") ? rawData : null;
+};
+
 const useAuthStore = create((set) => ({
     user: getInitialUser(),
-    isAuthenticated: !!localStorage.getItem("token"),
-    token: localStorage.getItem("token") || null,
+    isAuthenticated: !!getInitialToken(),
+    token: getInitialToken(),
     isSetupRequired: false,
 
     setSetupRequired: (required) => set({ isSetupRequired: required }),
@@ -22,6 +26,7 @@ const useAuthStore = create((set) => ({
     login: (userData, token) => {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", token);
+        localStorage.setItem("workspace-auth-storage", "active");
         set({
             user: userData,
             isAuthenticated: true,
@@ -32,6 +37,7 @@ const useAuthStore = create((set) => ({
     logout: () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+        localStorage.removeItem("workspace-auth-storage");
         set({
             user: null,
             isAuthenticated: false,
