@@ -366,7 +366,7 @@ export default function Dashboard() {
                         <MenuElemani icon={<FaUsersGear />} label="Potansiyel Müşteriler" active={aktifSekme === "customers"} onClick={() => setAktifSekme("customers")} />
                         <MenuElemani icon={<FaDiagramProject />} label="Proje Yönetimi" active={aktifSekme === "projects"} onClick={() => setAktifSekme("projects")} />
                         {user?.is_staff && (
-                            <MenuElemani icon={<FaUserPlus />} label="Üye İstekleri" active={aktifSekme === "admin"} onClick={() => setAktifSekme("admin")} badge={pendingUsers.length > 0 ? pendingUsers.length.toString() : null} />
+                            <MenuElemani icon={<FaUserPlus />} label="Üye İstekleri" active={aktifSekme === "admin"} onClick={() => setAktifSekme("admin")} badge={pendingUsers?.length > 0 ? pendingUsers.length.toString() : null} />
                         )}
 
                         <div className="pt-8 pb-3 px-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Altyapı Yönetimi</div>
@@ -412,10 +412,9 @@ export default function Dashboard() {
                             {showResults && (
                                 <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
                                     <div className="max-h-[400px] overflow-y-auto p-2 space-y-4">
-                                        {searchResults.projects.length > 0 && (
                                             <div>
                                                 <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Projeler</p>
-                                                {searchResults.projects.map(p => (
+                                                {searchResults?.projects?.map(p => (
                                                     <div key={p.id} onClick={() => { setAktifSekme("projects"); fetchProjectDetail(p.id); setShowResults(false); setSearchTerm(""); }} className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
                                                         <p className="text-xs font-bold">{p.name}</p>
                                                         <p className="text-[10px] text-slate-500 line-clamp-1">{p.description}</p>
@@ -423,10 +422,10 @@ export default function Dashboard() {
                                                 ))}
                                             </div>
                                         )}
-                                        {searchResults.notes.length > 0 && (
+                                        {searchResults?.notes?.length > 0 && (
                                             <div>
                                                 <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Notlar</p>
-                                                {searchResults.notes.map(n => (
+                                                {searchResults?.notes?.map(n => (
                                                     <div key={n.id} onClick={() => { setAktifSekme("notes"); setCurrentNote(n); setIsViewingNote(true); setShowResults(false); setSearchTerm(""); }} className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
                                                         <p className="text-xs font-bold">{n.title}</p>
                                                         <p className="text-[10px] text-slate-500 line-clamp-1">{n.content}</p>
@@ -434,10 +433,10 @@ export default function Dashboard() {
                                                 ))}
                                             </div>
                                         )}
-                                        {searchResults.customers.length > 0 && (
+                                        {searchResults?.customers?.length > 0 && (
                                             <div>
                                                 <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Potansiyel Müşteriler</p>
-                                                {searchResults.customers.map(c => (
+                                                {searchResults?.customers?.map(c => (
                                                     <div key={c.id} onClick={() => { setAktifSekme("customers"); setShowResults(false); setSearchTerm(""); }} className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
                                                         <p className="text-xs font-bold">{c.name}</p>
                                                         <p className="text-[10px] text-slate-500">{c.company}</p>
@@ -445,7 +444,7 @@ export default function Dashboard() {
                                                 ))}
                                             </div>
                                         )}
-                                        {searchResults.projects.length === 0 && searchResults.notes.length === 0 && searchResults.customers.length === 0 && !isSearching && (
+                                        {searchResults?.projects?.length === 0 && searchResults?.notes?.length === 0 && searchResults?.customers?.length === 0 && !isSearching && (
                                             <p className="text-center py-6 text-xs text-slate-500 font-medium">Sonuç bulunamadı.</p>
                                         )}
                                         {isSearching && (
@@ -522,10 +521,10 @@ export default function Dashboard() {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                                    {stats.active_projects.length === 0 ? (
+                                                    {stats?.active_projects?.length === 0 ? (
                                                         <tr><td colSpan="3" className="px-8 py-6 text-center text-slate-400 text-sm">Aktif operasyon bulunmuyor.</td></tr>
                                                     ) : (
-                                                        stats.active_projects.map(p => (
+                                                        stats?.active_projects?.map(p => (
                                                             <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors group">
                                                                 <td className="px-8 py-6">
                                                                     <div className="flex flex-col">
@@ -555,10 +554,10 @@ export default function Dashboard() {
                                             <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
                                         </div>
                                         <div className="space-y-6">
-                                            {stats.last_notes.length === 0 ? (
+                                            {stats?.last_notes?.length === 0 ? (
                                                 <p className="text-center text-slate-400 text-sm py-4">Notlar boş.</p>
                                             ) : (
-                                                stats.last_notes.map(n => (
+                                                stats?.last_notes?.map(n => (
                                                     <AktiviteElemani key={n.id} baslik={n.title} alt={n.created_by_name} zaman={new Date(n.created_at).toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' })} icon={<FaNoteSticky className="text-blue-500" />} />
                                                 ))
                                             )}
@@ -609,13 +608,13 @@ export default function Dashboard() {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {notes.length === 0 ? (
+                                    {notes?.length === 0 ? (
                                         <div className="bg-white dark:bg-[#0a0f1e] p-20 text-center rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
                                             <FaNoteSticky className="mx-auto text-4xl text-slate-300 mb-4" />
                                             <p className="text-slate-500 font-medium">Henüz bir not paylaşılmamış.</p>
                                         </div>
                                     ) : (
-                                        notes.map(note => (
+                                        notes?.map(note => (
                                             <div key={note.id} className="bg-white dark:bg-[#0a0f1e] p-6 rounded-3xl border border-slate-200 dark:border-white/5 flex items-center justify-between hover:scale-[1.01] transition-all cursor-pointer group shadow-sm" onClick={() => { setCurrentNote(note); setIsViewingNote(true); }}>
                                                 <div className="flex items-center gap-6">
                                                     <div className="h-12 w-12 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
@@ -655,10 +654,10 @@ export default function Dashboard() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                            {customers.length === 0 ? (
+                                            {customers?.length === 0 ? (
                                                 <tr><td colSpan="5" className="px-8 py-10 text-center text-slate-400 font-medium">Müşteri bulunmuyor.</td></tr>
                                             ) : (
-                                                customers.map(c => (
+                                                customers?.map(c => (
                                                     <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
                                                         <td className="px-8 py-6 font-bold">{c.name}</td>
                                                         <td className="px-8 py-6 text-slate-500 font-medium">{c.company}</td>
@@ -692,7 +691,7 @@ export default function Dashboard() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {todos.map(todo => (
+                                {todos?.map(todo => (
                                     <div key={todo.id} className="bg-white dark:bg-[#0a0f1e] p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm space-y-4">
                                         <div className="flex items-start justify-between">
                                             <h3 className="font-bold text-lg">{todo.title}</h3>
@@ -730,7 +729,7 @@ export default function Dashboard() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-3xl font-bold">Üye İstekleri</h2>
-                                <span className="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest">{pendingUsers.length} Beklemede</span>
+                                <span className="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest">{pendingUsers?.length || 0} Beklemede</span>
                             </div>
 
                             {adminMsg.metin && (
@@ -753,10 +752,10 @@ export default function Dashboard() {
                                         <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                                             {adminLoading ? (
                                                 <tr><td colSpan="4" className="px-8 py-10 text-center text-slate-400 font-medium">Yükleniyor...</td></tr>
-                                            ) : pendingUsers.length === 0 ? (
+                                            ) : pendingUsers?.length === 0 ? (
                                                 <tr><td colSpan="4" className="px-8 py-10 text-center text-slate-400 font-medium">Onay bekleyen kullanıcı bulunmuyor.</td></tr>
                                             ) : (
-                                                pendingUsers.map(u => (
+                                                pendingUsers?.map(u => (
                                                     <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
                                                         <td className="px-8 py-6 font-bold">{u.username}</td>
                                                         <td className="px-8 py-6 text-slate-500">{u.email}</td>
@@ -785,13 +784,13 @@ export default function Dashboard() {
                                         <button onClick={() => setShowProjectModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-500 transition-all flex items-center gap-2"><FaPlus /> Yeni Proje</button>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {projects.length === 0 ? (
+                                        {projects?.length === 0 ? (
                                             <div className="col-span-full py-20 text-center bg-white dark:bg-[#0a0f1e] rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
                                                 <FaDiagramProject className="mx-auto text-4xl text-slate-300 mb-4" />
                                                 <p className="text-slate-500 font-medium">Henüz bir proje oluşturulmamış.</p>
                                             </div>
                                         ) : (
-                                            projects.map(p => (
+                                            projects?.map(p => (
                                                 <div key={p.id} onClick={() => fetchProjectDetail(p.id)} className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group">
                                                     <div className="flex items-start justify-between mb-6">
                                                         <div className="h-12 w-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center text-xl group-hover:bg-blue-500 group-hover:text-white transition-all"><FaDiagramProject /></div>
@@ -825,10 +824,10 @@ export default function Dashboard() {
                                                     <h3 className="text-lg font-bold flex items-center gap-2"><FaNoteSticky className="text-blue-500" /> Proje Notları</h3>
                                                 </div>
                                                 <div className="space-y-4 mb-8">
-                                                    {projectNotes.length === 0 ? (
+                                                    {projectNotes?.length === 0 ? (
                                                         <p className="text-center text-slate-400 py-10 italic">Henüz not eklenmemiş.</p>
                                                     ) : (
-                                                        projectNotes.map(n => (
+                                                        projectNotes?.map(n => (
                                                             <div key={n.id} className="p-6 bg-slate-50 dark:bg-white/[0.02] rounded-3xl border border-slate-100 dark:border-white/5 group">
                                                                 <div className="flex items-center justify-between">
                                                                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{n.content}</p>
@@ -869,10 +868,10 @@ export default function Dashboard() {
                                                     <label className="p-2 bg-blue-500/10 text-blue-500 rounded-xl cursor-pointer hover:bg-blue-500 hover:text-white transition-all"><FaUpload /><input type="file" className="hidden" onChange={e => e.target.files[0] && uploadProjectFile(currentProject.id, e.target.files[0])} /></label>
                                                 </div>
                                                 <div className="space-y-3">
-                                                    {projectFiles.length === 0 ? (
+                                                    {projectFiles?.length === 0 ? (
                                                         <p className="text-center text-slate-400 py-10 italic text-sm">Dosya yüklenmemiş.</p>
                                                     ) : (
-                                                        projectFiles.map(f => (
+                                                        projectFiles?.map(f => (
                                                             <div key={f.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-slate-100 dark:border-white/5 group">
                                                                 <div className="flex items-center gap-3 overflow-hidden">
                                                                     <div className="p-2 bg-white dark:bg-white/5 rounded-lg text-blue-500"><FaFileLines /></div>
@@ -928,7 +927,7 @@ export default function Dashboard() {
                             <div className="grid grid-cols-2 gap-4">
                                 <select value={newTodo.assigned_to} onChange={e => setNewTodo({ ...newTodo, assigned_to: e.target.value })} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl outline-none text-xs font-bold uppercase tracking-widest">
                                     <option value="">Üye Ata</option>
-                                    {members.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
+                                    {members?.map(m => <option key={m.id} value={m.id}>{m.username}</option>)}
                                 </select>
                                 <input type="datetime-local" value={newTodo.deadline} onChange={e => setNewTodo({ ...newTodo, deadline: e.target.value })} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl outline-none text-xs" />
                             </div>
