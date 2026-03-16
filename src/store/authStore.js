@@ -28,7 +28,7 @@ const useAuthStore = create((set) => ({
     user: getInitialUser(),
     isAuthenticated: !!getInitialToken(),
     token: getInitialToken(),
-    isSetupRequired: false,
+    isSetupRequired: null,
 
     setSetupRequired: (required) => set({ isSetupRequired: required }),
 
