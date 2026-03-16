@@ -15,6 +15,7 @@ const ProtectedRoute = ({ children }) => {
     const user = useAuthStore(state => state.user);
 
     if (!isAuthenticated) return <Navigate to="/login" replace />;
+
     if (user && !user.is_approved) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#020617] p-6">
@@ -37,7 +38,6 @@ export default function AppRouter() {
     const setSetupRequired = useAuthStore(state => state.setSetupRequired);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const location = useLocation();
 
     useEffect(() => {
         let isMounted = true;
@@ -68,32 +68,34 @@ export default function AppRouter() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-center">
-                <p className="text-rose-500 font-bold uppercase tracking-widest text-xs">Sistem durumu kontrol edilemedi. Lütfen bağlantınızı kontrol edin.</p>
+            <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 text-center">
+                <p className="text-rose-500 font-bold uppercase tracking-widest text-xs mb-4">Sistem durumu kontrol edilemedi.</p>
+                <button onClick={() => window.location.reload()} className="px-6 py-2 border border-white/10 text-white text-[10px] uppercase font-black">Yeniden Dene</button>
             </div>
         );
     }
 
-    if (isSetupRequired) {
-        if (location.pathname !== "/setup") {
-            return <Navigate to="/setup" replace />;
-        }
-    } else if (location.pathname === "/setup") {
-        return <Navigate to="/login" replace />;
-    }
-
     return (
         <Routes>
-            <Route path="/" element={<HomeRedirect />} />
-            <Route path="/setup" element={<Setup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-                <ProtectedRoute>
-                    <Dashboard />
-                </ProtectedRoute>
-            } />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {isSetupRequired ? (
+                <>
+                    <Route path="/setup" element={<Setup />} />
+                    <Route path="*" element={<Navigate to="/setup" replace />} />
+                </>
+            ) : (
+                <>
+                    <Route path="/" element={<HomeRedirect />} />
+                    <Route path="/setup" element={<Navigate to="/login" replace />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </>
+            )}
         </Routes>
     );
 }
