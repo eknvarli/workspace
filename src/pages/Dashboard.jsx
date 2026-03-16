@@ -412,15 +412,15 @@ export default function Dashboard() {
                             {showResults && (
                                 <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
                                     <div className="max-h-[400px] overflow-y-auto p-2 space-y-4">
-                                            <div>
-                                                <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Projeler</p>
-                                                {searchResults?.projects?.map(p => (
-                                                    <div key={p.id} onClick={() => { setAktifSekme("projects"); fetchProjectDetail(p.id); setShowResults(false); setSearchTerm(""); }} className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
-                                                        <p className="text-xs font-bold">{p.name}</p>
-                                                        <p className="text-[10px] text-slate-500 line-clamp-1">{p.description}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                        <div>
+                                            <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Projeler</p>
+                                            {searchResults?.projects?.map(p => (
+                                                <div key={p.id} onClick={() => { setAktifSekme("projects"); fetchProjectDetail(p.id); setShowResults(false); setSearchTerm(""); }} className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
+                                                    <p className="text-xs font-bold">{p.name}</p>
+                                                    <p className="text-[10px] text-slate-500 line-clamp-1">{p.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
                                         )}
                                         {searchResults?.notes?.length > 0 && (
                                             <div>
