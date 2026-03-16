@@ -880,7 +880,7 @@ export default function Dashboard() {
                                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{f.uploaded_by_name}</span>
                                                                     </div>
                                                                 </div>
-                                                                <a href={`http://localhost:8000${f.file}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-500 transition-all"><FaDownload /></a>
+                                                                <a href={`${process.env.REACT_APP_API_URL?.replace('/api', '') || ''}${f.file}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-500 transition-all"><FaDownload /></a>
                                                             </div>
                                                         ))
                                                     )}

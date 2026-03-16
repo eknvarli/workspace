@@ -9,7 +9,7 @@ import Setup from "../pages/Setup";
 import Dashboard from "../pages/Dashboard";
 import HomeRedirect from "../pages/HomeRedirect";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useAuthStore(state => state.isAuthenticated);
