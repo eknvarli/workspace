@@ -15,8 +15,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        const url = error.config?.url || "";
+        const publicEndpoints = ["/setup-status/", "/setup/", "/login/", "/register/"];
+        const isPublic = publicEndpoints.some(e => url.includes(e));
+        if (error.response && error.response.status === 401 && !isPublic) {
             localStorage.removeItem("token");
+            localStorage.removeItem("user");
             localStorage.removeItem("workspace-auth-storage");
         }
         return Promise.reject(error);

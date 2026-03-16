@@ -15,7 +15,6 @@ const getInitialUser = () => {
 const getInitialToken = () => {
     try {
         const rawData = localStorage.getItem("token");
-        // Token genelde düz stringdir ama bazen tırnaklı kaydedilmiş olabilir
         if (!rawData || rawData === "undefined" || rawData === "null") return null;
         return rawData;
     } catch (error) {
@@ -33,9 +32,7 @@ const useAuthStore = create((set) => ({
     setSetupRequired: (required) => set({ isSetupRequired: required }),
 
     login: (userData, token) => {
-        // Veri yazarken hata oluşmaması için kontrol
         if (!userData || !token) return;
-
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", token);
         localStorage.setItem("workspace-auth-storage", "active");
