@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'workspace.middleware.Force404Middleware',
+    'core.middleware.SetupRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'workspace.urls'

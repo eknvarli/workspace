@@ -1,5 +1,8 @@
 from django.utils import timezone
 from core.models import UserPresence
+from django.contrib.auth.models import User
+from django.urls import reverse
+from django.shortcuts import redirect
 
 
 class LastActiveMiddleware:
@@ -27,5 +30,21 @@ class LastActiveMiddleware:
                     defaults={'last_active_at': now},
                 )
                 request.session['last_active_ping'] = now.isoformat()
+
+        return self.get_response(request)
+
+
+class SetupRequiredMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.startswith('/static/') or request.path.startswith('/media/'):
+            return self.get_response(request)
+
+        if not User.objects.exists():
+            setup_url = reverse('setup_admin')
+            if request.path != setup_url:
+                return redirect(setup_url)
 
         return self.get_response(request)

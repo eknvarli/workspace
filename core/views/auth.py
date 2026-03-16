@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
+from django.contrib.auth.models import User
 
 def user_login(request):
     if request.user.is_authenticated:
@@ -47,3 +48,27 @@ def register(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
+
+
+def setup_admin(request):
+    if User.objects.exists():
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+            login(request, user)
+            messages.success(request, "Workspace kurulumu tamamlandı!")
+            return redirect('index')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'core/setup.html', {'form': form})
